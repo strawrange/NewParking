@@ -1,9 +1,9 @@
 /* *********************************************************************** *
- * project: org.matsim.*												   *
+ * project: org.matsim.*
  *                                                                         *
  * *********************************************************************** *
  *                                                                         *
- * copyright       : (C) 2008 by the members listed in the COPYING,        *
+ * copyright       : (C) 2017 by the members listed in the COPYING,        *
  *                   LICENSE and WARRANTY file.                            *
  * email           : info at matsim dot org                                *
  *                                                                         *
@@ -16,8 +16,34 @@
  *   See also COPYING, LICENSE and WARRANTY file                           *
  *                                                                         *
  * *********************************************************************** */
+
+package Run;
+
+import org.matsim.contrib.drt.run.DrtConfigGroup;
+import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
+import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.controler.Controler;
+import org.matsim.vis.otfvis.OTFVisConfigGroup;
+
 /**
- * @author nagel
- *
+ * @author michalm
  */
-package org.matsim.gui;
+public class RunDrtScenario {
+	public static void run(String configFile, boolean otfvis) {
+		Config config = ConfigUtils.loadConfig(configFile, new DrtConfigGroup(), new DvrpConfigGroup(),
+				new OTFVisConfigGroup());
+		createControler(config, otfvis).run();
+	}
+
+	public static Controler createControler(Config config, boolean otfvis) {
+		return DrtControlerCreator.createControler(config, otfvis);
+	}
+
+	public static void main(String[] args) {
+		if (args.length != 1) {
+			throw new IllegalArgumentException("RunDrtScenario needs one argument: path to the configuration file");
+		}
+		RunDrtScenario.run(args[0], false);
+	}
+}

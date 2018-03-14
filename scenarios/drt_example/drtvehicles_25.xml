@@ -1,0 +1,29 @@
+<!DOCTYPE vehicles SYSTEM "http://matsim.org/files/dtd/dvrp_vehicles_v1.dtd">
+
+<vehicles>
+	<vehicle id="taxi27" start_link="6107" t_0="0.0" t_1="86400.0" capacity="8.0"/>
+	<vehicle id="taxi108" start_link="5885" t_0="0.0" t_1="86400.0" capacity="8.0"/>
+	<vehicle id="taxi36" start_link="8960" t_0="0.0" t_1="86400.0" capacity="8.0"/>
+	<vehicle id="taxi195" start_link="5723" t_0="0.0" t_1="86400.0" capacity="8.0"/>
+	<vehicle id="taxi96" start_link="4591" t_0="0.0" t_1="86400.0" capacity="8.0"/>
+	<vehicle id="taxi118" start_link="6713" t_0="0.0" t_1="86400.0" capacity="8.0"/>
+	<vehicle id="taxi73" start_link="3572" t_0="0.0" t_1="86400.0" capacity="8.0"/>
+	<vehicle id="taxi194" start_link="3462" t_0="0.0" t_1="86400.0" capacity="8.0"/>
+	<vehicle id="taxi92" start_link="3272" t_0="0.0" t_1="86400.0" capacity="8.0"/>
+	<vehicle id="taxi88" start_link="4153" t_0="0.0" t_1="86400.0" capacity="8.0"/>
+	<vehicle id="taxi4" start_link="1030" t_0="0.0" t_1="86400.0" capacity="8.0"/>
+	<vehicle id="taxi17" start_link="9268" t_0="0.0" t_1="86400.0" capacity="8.0"/>
+	<vehicle id="taxi107" start_link="6291" t_0="0.0" t_1="86400.0" capacity="8.0"/>
+	<vehicle id="taxi141" start_link="328" t_0="0.0" t_1="86400.0" capacity="8.0"/>
+	<vehicle id="taxi78" start_link="1606" t_0="0.0" t_1="86400.0" capacity="8.0"/>
+	<vehicle id="taxi1" start_link="5298" t_0="0.0" t_1="86400.0" capacity="8.0"/>
+	<vehicle id="taxi147" start_link="9781" t_0="0.0" t_1="86400.0" capacity="8.0"/>
+	<vehicle id="taxi8" start_link="7398" t_0="0.0" t_1="86400.0" capacity="8.0"/>
+	<vehicle id="taxi51" start_link="10116" t_0="0.0" t_1="86400.0" capacity="8.0"/>
+	<vehicle id="taxi111" start_link="5033" t_0="0.0" t_1="86400.0" capacity="8.0"/>
+	<vehicle id="taxi76" start_link="8483" t_0="0.0" t_1="86400.0" capacity="8.0"/>
+	<vehicle id="taxi135" start_link="8680" t_0="0.0" t_1="86400.0" capacity="8.0"/>
+	<vehicle id="taxi109" start_link="3205" t_0="0.0" t_1="86400.0" capacity="8.0"/>
+	<vehicle id="taxi174" start_link="5328" t_0="0.0" t_1="86400.0" capacity="8.0"/>
+	<vehicle id="taxi38" start_link="6181" t_0="0.0" t_1="86400.0" capacity="8.0"/>
+</vehicles>
