@@ -116,7 +116,7 @@ public class DefaultDrtOptimizer implements DrtOptimizer {
 //		}
 //	}
 
-	private void roaming(Vehicle vehicle) {
+	private void parking(Vehicle vehicle) {
 		ParkingStrategy.ParkingLocation r = parkingStrategy.Parking(vehicle);
 		Link currentLink = ((DrtStayTask)vehicle.getSchedule().getCurrentTask()).getLink();
 		if (r != null && currentLink != r.link) {
@@ -151,8 +151,37 @@ public class DefaultDrtOptimizer implements DrtOptimizer {
 			}
 		}
 		if (parkingStrategy != null && isIdle(vehicle)) {
-			roaming(vehicle);
+			parking(vehicle);
 		}
+
+		if (parkingStrategy !=null && isParking(vehicle)){
+			parkingStrategy.Departing(vehicle);
+		}
+	}
+
+	private boolean isParking(Vehicle vehicle) {
+		Schedule schedule = vehicle.getSchedule();
+
+		// only active vehicles
+		if (schedule.getStatus() != Schedule.ScheduleStatus.STARTED) {
+			return false;
+		}
+
+		// previous task is STAY
+		int previousTaskIdx = schedule.getCurrentTask().getTaskIdx() - 1;
+		if (previousTaskIdx < 0){
+			return false;
+		}
+		DrtTask previousTask = (DrtTask)schedule.getTasks().get(previousTaskIdx);
+		if (previousTask.getDrtTaskType() != DrtTask.DrtTaskType.STAY) {
+			return false;
+		}
+
+		// previous task was STOP
+		//int previousTaskIdx = currentTask.getTaskIdx() - 1;
+		//return (previousTaskIdx >= 0
+		//		&& (((DrtTask)schedule.getTasks().get(previousTaskIdx)).getDrtTaskType() != DrtTask.DrtTaskType.STAY) );
+		return true;
 	}
 
 	private static boolean isIdle(Vehicle vehicle) {

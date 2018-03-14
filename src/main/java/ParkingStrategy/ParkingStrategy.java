@@ -22,4 +22,6 @@ public interface ParkingStrategy {
 
     ParkingLocation Parking(Vehicle vehicle);
 
+    void Departing(Vehicle vehicle);
+
 }

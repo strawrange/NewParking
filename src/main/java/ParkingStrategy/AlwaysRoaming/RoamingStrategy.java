@@ -64,6 +64,11 @@ public class RoamingStrategy implements ParkingStrategy, MobsimBeforeSimStepList
         return new ParkingLocation(vehicle.getId(), NetworkUtils.getNearestLink(network, zonalSystem.getZoneCentroid(zoneidlist.get(low))));
     }
 
+    @Override
+    public void Departing(Vehicle vehicle) {
+
+    }
+
     private void calculateProbability(double time) {
         totalWeight = new ArrayList<>();
         zoneidlist = new ArrayList<>();

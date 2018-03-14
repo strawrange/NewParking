@@ -42,7 +42,6 @@ import org.matsim.contrib.drt.passenger.DrtRequestCreator;
 import org.matsim.contrib.drt.routing.DrtStageActivityType;
 import org.matsim.contrib.drt.run.DrtConfigConsistencyChecker;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
-import org.matsim.contrib.drt.run.DrtModule;
 import org.matsim.contrib.drt.scheduler.DrtScheduler;
 import org.matsim.contrib.drt.scheduler.EmptyVehicleRelocator;
 import org.matsim.contrib.drt.vrpagent.DrtActionCreator;
@@ -86,10 +85,10 @@ public final class DrtControlerCreator {
 		Controler controler = new Controler(scenario);
 		controler.addOverridingModule(new DvrpModule(DrtControlerCreator::createModuleForQSimPlugin, DrtOptimizer.class,
 				DefaultUnplannedRequestInserter.class, ParallelPathDataProvider.class));
+		controler.addOverridingModule(new DrtZonalModule());
 		controler.addOverridingModule(new DrtModule());
 		controler.addOverridingModule(new DrtAnalysisModule());
 		//rebalancing strategy: demand based rebalancing strategy
-		controler.addOverridingModule(new DrtZonalModule());
 		if (otfvis) {
 			controler.addOverridingModule(new OTFVisLiveModule());
 		}

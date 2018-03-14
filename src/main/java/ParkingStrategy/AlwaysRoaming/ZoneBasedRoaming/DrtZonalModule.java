@@ -43,7 +43,7 @@ public class DrtZonalModule extends AbstractModule {
 		bind(ZonalDemandAggregator.class).asEagerSingleton();
 		//bind(ZonalIdleVehicleCollector.class).asEagerSingleton();
 		bind(DrtZonalSystem.class).toProvider(new DrtZonalSystemProvider(500)).asEagerSingleton();
-		bind(ParkingStrategy.class).to(RoamingStrategy.class).asEagerSingleton();
+
 	}
 
 }
