@@ -117,7 +117,7 @@ public class DefaultDrtOptimizer implements DrtOptimizer {
 //	}
 
 	private void parking(Vehicle vehicle) {
-		ParkingStrategy.ParkingLocation r = parkingStrategy.Parking(vehicle);
+		ParkingStrategy.ParkingLocation r = parkingStrategy.parking(vehicle, mobsimTimer.getTimeOfDay());
 		Link currentLink = ((DrtStayTask)vehicle.getSchedule().getCurrentTask()).getLink();
 		if (r != null && currentLink != r.link) {
 			relocator.relocateVehicle(vehicle, r.link, mobsimTimer.getTimeOfDay());
@@ -155,7 +155,7 @@ public class DefaultDrtOptimizer implements DrtOptimizer {
 		}
 
 		if (parkingStrategy !=null && isParking(vehicle)){
-			parkingStrategy.Departing(vehicle);
+			parkingStrategy.departing(vehicle, mobsimTimer.getTimeOfDay());
 		}
 	}
 
@@ -169,14 +169,24 @@ public class DefaultDrtOptimizer implements DrtOptimizer {
 
 		// previous task is STAY
 		int previousTaskIdx = schedule.getCurrentTask().getTaskIdx() - 1;
+		int nextTaskIdx = schedule.getCurrentTask().getTaskIdx() + 1;
+
 		if (previousTaskIdx < 0){
 			return false;
 		}
+
 		DrtTask previousTask = (DrtTask)schedule.getTasks().get(previousTaskIdx);
 		if (previousTask.getDrtTaskType() != DrtTask.DrtTaskType.STAY) {
 			return false;
 		}
+		if (schedule.getTasks().size() <= nextTaskIdx){
+			throw new RuntimeException("The final task should be stay task!");
+		}
 
+		DrtTask nextTask = (DrtTask) schedule.getTasks().get(nextTaskIdx);
+		if (nextTask.getDrtTaskType() == DrtTask.DrtTaskType.STAY){
+			return false; // it is relocating not parking
+		}
 		// previous task was STOP
 		//int previousTaskIdx = currentTask.getTaskIdx() - 1;
 		//return (previousTaskIdx >= 0

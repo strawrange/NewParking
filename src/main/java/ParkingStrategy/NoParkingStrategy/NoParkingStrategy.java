@@ -5,12 +5,12 @@ import org.matsim.contrib.dvrp.data.Vehicle;
 
 public class NoParkingStrategy implements ParkingStrategy {
     @Override
-    public ParkingLocation Parking(Vehicle vehicle) {
+    public ParkingLocation parking(Vehicle vehicle, double time) {
         return null;
     }
 
     @Override
-    public void Departing(Vehicle vehicle) {
+    public void departing(Vehicle vehicle, double time) {
         
     }
 

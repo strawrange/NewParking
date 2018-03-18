@@ -23,16 +23,19 @@
 package Run;
 
 
+import ParkingAnalysis.DrtAnalysisModule;
 import ParkingStrategy.DefaultDrtOptimizer;
 
 import ParkingStrategy.AlwaysRoaming.ZoneBasedRoaming.DrtZonalModule;
+import ParkingStrategy.NoParkingStrategy.NoParkingStrategy;
+import ParkingStrategy.ParkingOntheRoad.ParkingOntheRoad;
+import ParkingStrategy.ParkingStrategy;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
-import org.matsim.contrib.drt.analysis.DrtAnalysisModule;
 import org.matsim.contrib.drt.optimizer.DrtOptimizer;
 import org.matsim.contrib.drt.optimizer.insertion.DefaultUnplannedRequestInserter;
 import org.matsim.contrib.drt.optimizer.insertion.ParallelPathDataProvider;
@@ -139,6 +142,7 @@ public final class DrtControlerCreator {
 				bind(PassengerRequestCreator.class).to(DrtRequestCreator.class).asEagerSingleton();
 				bind(ParallelPathDataProvider.class).asEagerSingleton();
 				bind(PrecalculatablePathDataProvider.class).to(ParallelPathDataProvider.class);
+				bind(ParkingStrategy.class).to(ParkingOntheRoad.class).asEagerSingleton();
 			}
 
 			@Provides

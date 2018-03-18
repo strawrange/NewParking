@@ -20,8 +20,8 @@ public interface ParkingStrategy {
      * This method is called at each re-balancing step (interval defined in config).
      */
 
-    ParkingLocation Parking(Vehicle vehicle);
+    ParkingLocation parking(Vehicle vehicle, double time);
 
-    void Departing(Vehicle vehicle);
+    void departing(Vehicle vehicle, double time);
 
 }

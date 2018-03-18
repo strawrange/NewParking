@@ -60,9 +60,10 @@
 
 
 	<module name="network">
-		<param name="inputNetworkFile" value="network.xml.gz" />
-		<!-- param name="timeVariantNetwork" value="false" / if timeVariantNetwork -->
-		<!-- param name="inputChangeEventsFile" value=""/ if timeVariantNetwork -->
+		<param name="inputNetworkFile" value="network_2lanes.xml.gz" />
+		<param name="timeVariantNetwork" value="true" />
+        <!-- if timeVariantNetwork >
+		<!- param name="inputChangeEventsFile" value=""/ if timeVariantNetwork -->
 	</module>
 
 	<module name="plans">
@@ -86,7 +87,7 @@
 	</module>
 
 	<module name="controler">
-		<param name="outputDirectory" value="output/drt_stationbased_noParking" />
+		<param name="outputDirectory" value="output/drt_stationbased_NoParking" />
 		<param name="overwriteFiles" value="deleteDirectoryIfExists" />
 		<param name="firstIteration" value="0" />
 		<param name="lastIteration" value="0" />

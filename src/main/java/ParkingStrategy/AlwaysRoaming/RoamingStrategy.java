@@ -41,7 +41,7 @@ public class RoamingStrategy implements ParkingStrategy, MobsimBeforeSimStepList
     }
 
     @Override
-    public ParkingLocation Parking(Vehicle vehicle) {
+    public ParkingLocation parking(Vehicle vehicle, double time) {
         if (zoneidlist == null || zoneidlist.size() == 0) {
             Random random = new Random();
             Link randomLink = selectableLinks.get(random.nextInt(selectableLinks.size()));
@@ -65,7 +65,7 @@ public class RoamingStrategy implements ParkingStrategy, MobsimBeforeSimStepList
     }
 
     @Override
-    public void Departing(Vehicle vehicle) {
+    public void departing(Vehicle vehicle, double time) {
 
     }
 

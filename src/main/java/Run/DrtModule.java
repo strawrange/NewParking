@@ -40,7 +40,7 @@ public final class DrtModule extends AbstractModule {
 		bind(RebalancingStrategy.class).to(NoRebalancingStrategy.class);
 		bind(TravelDisutilityFactory.class).annotatedWith(Names.named(DefaultDrtOptimizer.DRT_OPTIMIZER))
 				.toInstance(timeCalculator -> new TimeAsTravelDisutility(timeCalculator));
-		bind(ParkingStrategy.class).to(NoParkingStrategy.class).asEagerSingleton();
+
 
 		switch (drtCfg.getOperationalScheme()) {
 			case door2door:
