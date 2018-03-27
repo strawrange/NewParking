@@ -5,6 +5,12 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.data.Vehicle;
 
 public interface ParkingStrategy {
+    public enum Strategies{
+        AlwaysRoaming,
+        NoParkingStrategy,
+        ParkingInDepot,
+        ParkingOntheRoad;
+    }
 
     public class ParkingLocation {
         public final Id<Vehicle> vid;

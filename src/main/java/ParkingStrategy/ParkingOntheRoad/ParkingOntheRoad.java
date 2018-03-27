@@ -11,6 +11,7 @@ import org.matsim.api.core.v01.events.ActivityEndEvent;
 import org.matsim.api.core.v01.events.handler.ActivityEndEventHandler;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.network.Node;
 import org.matsim.contrib.drt.schedule.DrtStayTask;
 import org.matsim.contrib.drt.schedule.DrtTask;
 import org.matsim.contrib.dvrp.data.Fleet;
@@ -27,6 +28,8 @@ import org.matsim.core.mobsim.framework.events.MobsimInitializedEvent;
 import org.matsim.core.mobsim.framework.listeners.MobsimInitializedListener;
 import org.matsim.core.mobsim.qsim.QSim;
 import org.matsim.core.network.NetworkChangeEvent;
+import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.network.algorithms.NetworkCleaner;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,13 +42,27 @@ public class ParkingOntheRoad implements ParkingStrategy, IterationStartsListene
     private QSim qsim;
     private final Map<Id<Link>, Integer> supply = new HashMap<>();
     private final double vehicleLength = 8.0; //TODO: Later Move to the DRTConfig or Vehicle File
+    private Network cleanNetwork;
 
 
     @Inject
     public ParkingOntheRoad(QSim qSim, @Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) Network network) {
         this.qsim = qSim;
+        cleanNetwork = NetworkUtils.createNetwork();
+        for (Node node : network.getNodes().values()) {
+            NetworkUtils.createAndAddNode(cleanNetwork,node.getId(),node.getCoord());
+        }
         for (Link link : network.getLinks().values()){
-            supply.put(link.getId(), (int) Math.floor(link.getLength() / vehicleLength));
+            NetworkUtils.createAndAddLink(cleanNetwork, link.getId(), cleanNetwork.getNodes().get(link.getFromNode().getId()), cleanNetwork.getNodes().get(link.getToNode().getId()),
+                    link.getLength(),link.getFreespeed(),link.getCapacity(), link.getNumberOfLanes());
+        }
+        new NetworkCleaner().run(cleanNetwork);
+        for (Link link : cleanNetwork.getLinks().values()){
+            if (link.getNumberOfLanes() > 1) {
+                supply.put(link.getId(), (int) Math.floor(link.getLength() / vehicleLength));
+            } else {
+                supply.put(link.getId(), 0);
+            }
         }
     }
 
@@ -67,10 +84,12 @@ public class ParkingOntheRoad implements ParkingStrategy, IterationStartsListene
     }
 
     private Link nextLink(Link currentLink){
+        Link cleanLink = cleanNetwork.getLinks().get(currentLink.getId());
         Random random = new Random();
-        Map<Id<Link>, ? extends Link> nextLinks = currentLink.getToNode().getOutLinks();
+        Map<Id<Link>, ? extends Link> nextLinks = cleanLink.getToNode().getOutLinks();
         ArrayList<Id<Link>> linksKey = new ArrayList<>(nextLinks.keySet());
-        return nextLinks.get(linksKey.get(random.nextInt(nextLinks.size())));
+        Link link = nextLinks.get(linksKey.get(random.nextInt(nextLinks.size())));
+        return currentLink.getToNode().getOutLinks().get(link.getId());
     }
 
     @Override

@@ -20,7 +20,10 @@
 package ParkingStrategy;
 
 
-import ParkingStrategy.ParkingStrategy;
+import ParkingStrategy.ParkingInDepot.Depot.DepotManager;
+import ParkingStrategy.ParkingInDepot.InsertionOptimizer.DrtScheduler;
+import ParkingStrategy.ParkingInDepot.InsertionOptimizer.EmptyVehicleRelocator;
+import ParkingStrategy.ParkingInDepot.ParkingInDepot;
 import com.google.inject.Inject;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.drt.data.DrtRequest;
@@ -32,9 +35,8 @@ import org.matsim.contrib.drt.optimizer.insertion.UnplannedRequestInserter;
 import org.matsim.contrib.drt.passenger.events.DrtRequestRejectedEvent;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.drt.schedule.DrtStayTask;
+import org.matsim.contrib.drt.schedule.DrtStopTask;
 import org.matsim.contrib.drt.schedule.DrtTask;
-import org.matsim.contrib.drt.scheduler.DrtScheduler;
-import org.matsim.contrib.drt.scheduler.EmptyVehicleRelocator;
 import org.matsim.contrib.dvrp.data.Fleet;
 import org.matsim.contrib.dvrp.data.Request;
 import org.matsim.contrib.dvrp.data.Vehicle;
@@ -67,21 +69,23 @@ public class DefaultDrtOptimizer implements DrtOptimizer {
 	private final Collection<DrtRequest> unplannedRequests = new TreeSet<DrtRequest>(
 			PassengerRequests.ABSOLUTE_COMPARATOR);
 	private boolean requiresReoptimization = false;
+	private final DepotManager depotManager;
 
 	@Inject
 	public DefaultDrtOptimizer(DrtConfigGroup drtCfg, Fleet fleet, MobsimTimer mobsimTimer, EventsManager eventsManager,
 							   DrtRequestValidator requestValidator, DepotFinder depotFinder, ParkingStrategy parkingStrategy,
-							   DrtScheduler scheduler, EmptyVehicleRelocator relocator, UnplannedRequestInserter requestInserter) {
+							   DrtScheduler scheduler, EmptyVehicleRelocator relocator, UnplannedRequestInserter requestInserter, DepotManager depotManager) {
 		this.drtCfg = drtCfg;
 		this.fleet = fleet;
 		this.mobsimTimer = mobsimTimer;
 		this.eventsManager = eventsManager;
 		this.requestValidator = requestValidator;
 		this.depotFinder = drtCfg.getIdleVehiclesReturnToDepots() ? depotFinder : null;
-		this.parkingStrategy = drtCfg.getRebalancingInterval() != 0 ? parkingStrategy : null;
+		this.parkingStrategy =  parkingStrategy;
 		this.scheduler = scheduler;
 		this.relocator = relocator;
 		this.requestInserter = requestInserter;
+		this.depotManager = depotManager;
 	}
 
 	@Override
@@ -122,6 +126,9 @@ public class DefaultDrtOptimizer implements DrtOptimizer {
 		if (r != null && currentLink != r.link) {
 			relocator.relocateVehicle(vehicle, r.link, mobsimTimer.getTimeOfDay());
 		}
+		if (parkingStrategy instanceof MixedParkingStrategy){
+			relocator.addVehicleToDepotOrStreet(vehicle, mobsimTimer.getTimeOfDay());
+		}
 	}
 
 	@Override
@@ -140,8 +147,13 @@ public class DefaultDrtOptimizer implements DrtOptimizer {
 	@Override
 	public void nextTask(Vehicle vehicle) {
 		scheduler.updateBeforeNextTask(vehicle);
+		Schedule schedule = vehicle.getSchedule();
 
-		vehicle.getSchedule().nextTask();
+		if (parkingStrategy instanceof MixedParkingStrategy && isRelocateToDepotOrStreet(vehicle)){
+			schedule.addTask(new DrtStayTask(schedule.getCurrentTask().getEndTime(), vehicle.getServiceEndTime(), ((DrtStayTask)vehicle.getSchedule().getCurrentTask()).getLink()));
+		}
+
+		schedule.nextTask();
 
 		// if STOP->STAY then choose the best depot
 		if (depotFinder != null && Depots.isSwitchingFromStopToStay(vehicle)) {
@@ -157,6 +169,44 @@ public class DefaultDrtOptimizer implements DrtOptimizer {
 		if (parkingStrategy !=null && isParking(vehicle)){
 			parkingStrategy.departing(vehicle, mobsimTimer.getTimeOfDay());
 		}
+
+		if (depotManager != null && isCancelReservation(vehicle)){
+			depotManager.vehicleLeavingDepot(vehicle);
+		}
+	}
+
+	private boolean isRelocateToDepotOrStreet(Vehicle vehicle){
+		Schedule schedule = vehicle.getSchedule();
+		if (schedule.getStatus() != Schedule.ScheduleStatus.STARTED){
+			return false;
+		}
+		if (mobsimTimer.getTimeOfDay() != MixedParkingStrategy.dayT0 && mobsimTimer.getTimeOfDay() != MixedParkingStrategy.dayT1 ){
+			return false;
+		}
+		if (!(schedule.getCurrentTask() instanceof DrtStayTask)){
+			return false;
+		}
+		if (schedule.getCurrentTask().getTaskIdx() != schedule.getTaskCount() - 1){
+			return false;
+		}
+		return true;
+	}
+
+
+
+	private boolean isCancelReservation(Vehicle vehicle){
+		Schedule schedule = vehicle.getSchedule();
+		if (schedule.getStatus() != Schedule.ScheduleStatus.STARTED){
+			return false;
+		}
+		if (! (vehicle.getSchedule().getCurrentTask() instanceof  DrtStopTask)){
+			return false;
+		}
+
+		if ( !(vehicle.getSchedule().getTasks().get(vehicle.getSchedule().getCurrentTask().getTaskIdx() - 2) instanceof  DrtStayTask)){
+			return false;
+		}
+		return true;
 	}
 
 	private boolean isParking(Vehicle vehicle) {
@@ -177,6 +227,9 @@ public class DefaultDrtOptimizer implements DrtOptimizer {
 
 		DrtTask previousTask = (DrtTask)schedule.getTasks().get(previousTaskIdx);
 		if (previousTask.getDrtTaskType() != DrtTask.DrtTaskType.STAY) {
+			return false;
+		}
+		if (schedule.getCurrentTask() instanceof DrtStayTask){
 			return false;
 		}
 		if (schedule.getTasks().size() <= nextTaskIdx){

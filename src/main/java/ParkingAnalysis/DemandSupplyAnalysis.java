@@ -49,13 +49,15 @@ public class DemandSupplyAnalysis implements ActivityStartEventHandler, Activity
         if (event.getActType().equals(DrtActionCreator.DRT_STAY_NAME)){
             ActivityStartEvent startEvent = startEventMap.get(event.getPersonId());
             startEventMap.remove(event.getPersonId());
-            int count = demandCounter.get(event.getLinkId());
-            if (event.getTime() != startEvent.getTime()) {
-                int max = demand.get(event.getLinkId());
-                demand.put(event.getLinkId(), Math.max(count, max));
+            if (demandCounter.containsKey(event.getLinkId())){
+                int count = demandCounter.get(event.getLinkId());
+                if (event.getTime() != startEvent.getTime()) {
+                    int max = demand.get(event.getLinkId());
+                    demand.put(event.getLinkId(), Math.max(count, max));
+                }
+                count--;
+                demandCounter.put(event.getLinkId(), count);
             }
-            count--;
-            demandCounter.put(event.getLinkId(), count);
         }
     }
 
@@ -63,9 +65,11 @@ public class DemandSupplyAnalysis implements ActivityStartEventHandler, Activity
     public void handleEvent(ActivityStartEvent event) {
         if (event.getActType().equals(DrtActionCreator.DRT_STAY_NAME)){
             startEventMap.put(event.getPersonId(),event);
-            int count = demandCounter.get(event.getLinkId());
-            count++;
-            demandCounter.put(event.getLinkId(), count);
+            if (demandCounter.containsKey(event.getLinkId())){
+                int count = demandCounter.get(event.getLinkId());
+                count++;
+                demandCounter.put(event.getLinkId(), count);
+            }
         }
     }
 

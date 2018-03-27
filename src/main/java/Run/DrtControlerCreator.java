@@ -27,7 +27,11 @@ import ParkingAnalysis.DrtAnalysisModule;
 import ParkingStrategy.DefaultDrtOptimizer;
 
 import ParkingStrategy.AlwaysRoaming.ZoneBasedRoaming.DrtZonalModule;
-import ParkingStrategy.NoParkingStrategy.NoParkingStrategy;
+import ParkingStrategy.ParkingInDepot.InsertionOptimizer.DefaultUnplannedRequestInserter;
+import ParkingStrategy.ParkingInDepot.InsertionOptimizer.DrtScheduler;
+import ParkingStrategy.ParkingInDepot.InsertionOptimizer.EmptyVehicleRelocator;
+import ParkingStrategy.MixedParkingStrategy;
+import ParkingStrategy.ParkingInDepot.ParkingInDepot;
 import ParkingStrategy.ParkingOntheRoad.ParkingOntheRoad;
 import ParkingStrategy.ParkingStrategy;
 import com.google.inject.Provides;
@@ -37,7 +41,6 @@ import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.contrib.drt.optimizer.DrtOptimizer;
-import org.matsim.contrib.drt.optimizer.insertion.DefaultUnplannedRequestInserter;
 import org.matsim.contrib.drt.optimizer.insertion.ParallelPathDataProvider;
 import org.matsim.contrib.drt.optimizer.insertion.PrecalculatablePathDataProvider;
 import org.matsim.contrib.drt.optimizer.insertion.UnplannedRequestInserter;
@@ -45,8 +48,6 @@ import org.matsim.contrib.drt.passenger.DrtRequestCreator;
 import org.matsim.contrib.drt.routing.DrtStageActivityType;
 import org.matsim.contrib.drt.run.DrtConfigConsistencyChecker;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
-import org.matsim.contrib.drt.scheduler.DrtScheduler;
-import org.matsim.contrib.drt.scheduler.EmptyVehicleRelocator;
 import org.matsim.contrib.drt.vrpagent.DrtActionCreator;
 import org.matsim.contrib.dvrp.optimizer.VrpOptimizer;
 import org.matsim.contrib.dvrp.passenger.PassengerRequestCreator;
@@ -132,6 +133,7 @@ public final class DrtControlerCreator {
 		return new com.google.inject.AbstractModule() {
 			@Override
 			protected void configure() {
+
 				bind(DrtOptimizer.class).to(DefaultDrtOptimizer.class).asEagerSingleton();
 				bind(VrpOptimizer.class).to(DrtOptimizer.class);
 				bind(DefaultUnplannedRequestInserter.class).asEagerSingleton();
@@ -142,7 +144,10 @@ public final class DrtControlerCreator {
 				bind(PassengerRequestCreator.class).to(DrtRequestCreator.class).asEagerSingleton();
 				bind(ParallelPathDataProvider.class).asEagerSingleton();
 				bind(PrecalculatablePathDataProvider.class).to(ParallelPathDataProvider.class);
-				bind(ParkingStrategy.class).to(ParkingOntheRoad.class).asEagerSingleton();
+				bind(ParkingOntheRoad.class).asEagerSingleton();
+				bind(ParkingInDepot.class).asEagerSingleton();
+				bind(ParkingStrategy.class).to(MixedParkingStrategy.class).asEagerSingleton();
+
 			}
 
 			@Provides

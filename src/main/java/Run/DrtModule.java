@@ -1,9 +1,7 @@
 package Run;
 
-import ParkingStrategy.AlwaysRoaming.RoamingStrategy;
-import ParkingStrategy.NoParkingStrategy.NoParkingStrategy;
-import ParkingStrategy.ParkingOntheRoad.ParkingOntheRoad;
-import ParkingStrategy.ParkingStrategy;
+import ParkingStrategy.ParkingInDepot.Depot.DepotManager;
+import ParkingStrategy.ParkingInDepot.Depot.DepotManagerProvider;
 import com.google.inject.name.Names;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.drt.data.validator.DefaultDrtRequestValidator;
@@ -20,6 +18,7 @@ import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.dvrp.data.Fleet;
 import org.matsim.contrib.dvrp.data.file.FleetProvider;
 import org.matsim.contrib.dvrp.router.TimeAsTravelDisutility;
+import org.matsim.core.config.ConfigGroup;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.router.MainModeIdentifier;
@@ -28,6 +27,7 @@ import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt.transitSchedule.api.TransitScheduleReader;
 
+
 public final class DrtModule extends AbstractModule {
 
 	@Override
@@ -35,6 +35,7 @@ public final class DrtModule extends AbstractModule {
 		DrtConfigGroup drtCfg = DrtConfigGroup.get(getConfig());
 		bind(Fleet.class).toProvider(new FleetProvider(drtCfg.getVehiclesFileUrl(getConfig().getContext())))
 				.asEagerSingleton();
+		bind(DepotManager.class).toProvider(new DepotManagerProvider(ConfigGroup.getInputFileURL(getConfig().getContext(), "drt_depot.xml"))).asEagerSingleton();
 		bind(DrtRequestValidator.class).to(DefaultDrtRequestValidator.class);
 		bind(DepotFinder.class).to(NearestStartLinkAsDepot.class);
 		bind(RebalancingStrategy.class).to(NoRebalancingStrategy.class);
