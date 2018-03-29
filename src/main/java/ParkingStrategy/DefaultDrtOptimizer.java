@@ -98,9 +98,9 @@ public class DefaultDrtOptimizer implements DrtOptimizer {
 			requestInserter.scheduleUnplannedRequests(unplannedRequests);
 			requiresReoptimization = false;
 		}
-		if (mobsimTimer.getTimeOfDay() == 24 * 3600){
-			System.out.println();
-		}
+//		if (mobsimTimer.getTimeOfDay() == 24 * 3600){
+//			System.out.println();
+//		}
 //		if (parkingStrategy != null && e.getSimulationTime() % drtCfg.getRebalancingInterval() == 0) {
 //			rebalanceFleet();
 //		}

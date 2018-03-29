@@ -1,5 +1,7 @@
 package Run;
 
+import BayInfrastructure.BayManager;
+import BayInfrastructure.QueueingForDropOrPick;
 import ParkingStrategy.ParkingInDepot.Depot.DepotManager;
 import ParkingStrategy.ParkingInDepot.Depot.DepotManagerProvider;
 import com.google.inject.name.Names;
@@ -37,6 +39,7 @@ public final class DrtModule extends AbstractModule {
 				.asEagerSingleton();
 		bind(DepotManager.class).toProvider(new DepotManagerProvider(ConfigGroup.getInputFileURL(getConfig().getContext(), "drt_depot.xml"))).asEagerSingleton();
 		bind(DrtRequestValidator.class).to(DefaultDrtRequestValidator.class);
+		bind(BayManager.class).asEagerSingleton();
 		bind(DepotFinder.class).to(NearestStartLinkAsDepot.class);
 		bind(RebalancingStrategy.class).to(NoRebalancingStrategy.class);
 		bind(TravelDisutilityFactory.class).annotatedWith(Names.named(DefaultDrtOptimizer.DRT_OPTIMIZER))

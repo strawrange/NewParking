@@ -177,7 +177,8 @@ public class DrtScheduler implements ScheduleInquiry {
 			case STOP: {
 				// TODO does not consider prebooking!!!
 				double duration = stopDuration;
-				return newBeginTime + duration;
+				return newBeginTime + duration
+						;
 			}
 
 			default:

@@ -23,6 +23,7 @@
 package Run;
 
 
+import BayInfrastructure.QueueingForDropOrPick;
 import ParkingAnalysis.DrtAnalysisModule;
 import ParkingStrategy.DefaultDrtOptimizer;
 
@@ -55,6 +56,7 @@ import org.matsim.contrib.dvrp.run.DvrpModule;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
 import org.matsim.contrib.dvrp.vrpagent.VrpAgentLogic.DynActionCreator;
 import org.matsim.contrib.otfvis.OTFVisLiveModule;
+import org.matsim.core.api.experimental.events.handler.VehicleArrivesAtFacilityEventHandler;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ModeParams;
@@ -147,6 +149,7 @@ public final class DrtControlerCreator {
 				bind(ParkingOntheRoad.class).asEagerSingleton();
 				bind(ParkingInDepot.class).asEagerSingleton();
 				bind(ParkingStrategy.class).to(MixedParkingStrategy.class).asEagerSingleton();
+				bind(QueueingForDropOrPick.class).asEagerSingleton();
 
 			}
 
