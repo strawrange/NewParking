@@ -19,9 +19,9 @@
 
 package ParkingStrategy.ParkingInDepot.InsertionOptimizer;
 
-import org.matsim.contrib.drt.data.DrtRequest;
-import org.matsim.contrib.drt.optimizer.VehicleData;
-import org.matsim.contrib.drt.optimizer.insertion.*;
+
+import ParkingStrategy.VehicleData;
+import Schedule.DrtRequest;
 
 
 import java.util.Optional;

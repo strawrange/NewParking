@@ -19,24 +19,24 @@
 
 package ParkingStrategy.ParkingInDepot.InsertionOptimizer;
 
+import ParkingStrategy.VehicleData;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import org.apache.log4j.Logger;
-import org.matsim.contrib.drt.data.DrtRequest;
-import org.matsim.contrib.drt.optimizer.VehicleData;
-import org.matsim.contrib.drt.optimizer.insertion.PrecalculatablePathDataProvider;
-import org.matsim.contrib.drt.optimizer.insertion.UnplannedRequestInserter;
 import org.matsim.contrib.drt.passenger.events.DrtRequestRejectedEvent;
 import org.matsim.contrib.drt.passenger.events.DrtRequestScheduledEvent;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
-import org.matsim.contrib.drt.schedule.DrtDriveTask;
-import org.matsim.contrib.drt.schedule.DrtStayTask;
 import org.matsim.contrib.dvrp.data.Fleet;
-import org.matsim.contrib.dvrp.data.Vehicle;
 import org.matsim.contrib.dvrp.schedule.Schedule;
+import org.matsim.contrib.dvrp.vrpagent.VrpAgentSource;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.core.mobsim.framework.events.MobsimBeforeCleanupEvent;
 import org.matsim.core.mobsim.framework.listeners.MobsimBeforeCleanupListener;
+import Schedule.DrtDriveTask;
+import Schedule.DrtRequest;
+import Schedule.DrtStayTask;
+import org.matsim.vehicles.VehicleType;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -58,14 +58,15 @@ public class DefaultUnplannedRequestInserter implements UnplannedRequestInserter
 
 	@Inject
 	public DefaultUnplannedRequestInserter(DrtConfigGroup drtCfg, Fleet fleet, MobsimTimer mobsimTimer,
-                                           EventsManager eventsManager, DrtScheduler scheduler, PrecalculatablePathDataProvider pathDataProvider) {
+										   EventsManager eventsManager, DrtScheduler scheduler, PrecalculatablePathDataProvider pathDataProvider,
+										   @Named(VrpAgentSource.DVRP_VEHICLE_TYPE) VehicleType vehicleType) {
 		this.drtCfg = drtCfg;
 		this.fleet = fleet;
 		this.mobsimTimer = mobsimTimer;
 		this.eventsManager = eventsManager;
 		this.scheduler = scheduler;
 
-		insertionProblem = new ParallelMultiVehicleInsertionProblem(pathDataProvider, drtCfg, mobsimTimer);
+		insertionProblem = new ParallelMultiVehicleInsertionProblem(pathDataProvider, drtCfg, mobsimTimer, vehicleType.getAccessTime(), vehicleType.getEgressTime());
 	}
 
 	@Override
@@ -94,11 +95,9 @@ public class DefaultUnplannedRequestInserter implements UnplannedRequestInserter
 				}
 			} else {
 				SingleVehicleInsertionProblem.BestInsertion bestInsertion = best.get();
-				Schedule schedule = bestInsertion.vehicleEntry.vehicle.getSchedule();
-				if (schedule.getCurrentTask() instanceof DrtDriveTask && schedule.getTasks().get(schedule.getCurrentTask().getTaskIdx() + 1) instanceof DrtStayTask){
-
-				}
-				scheduler.insertRequest(bestInsertion.vehicleEntry, req, bestInsertion.insertion);
+				scheduler.insertPickup(bestInsertion.vehicleEntry, req, bestInsertion.insertion);
+				vData.updateEntry(bestInsertion.vehicleEntry.vehicle);
+				scheduler.insertDropoff(bestInsertion.vehicleEntry, req, bestInsertion.insertion);
 				vData.updateEntry(bestInsertion.vehicleEntry.vehicle);
 				eventsManager.processEvent(new DrtRequestScheduledEvent(mobsimTimer.getTimeOfDay(), req.getId(),
 						bestInsertion.vehicleEntry.vehicle.getId(), req.getPickupTask().getEndTime(),

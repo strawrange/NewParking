@@ -18,7 +18,7 @@ import org.matsim.core.network.io.NetworkReaderMatsimV2;
 
 public class AddParkingInVia {
 
-    private static String FOLDER = "/home/biyu/IdeaProjects/NewParking/output/drt_D2D_pt_av_ParkingInDepot/";
+    private static String FOLDER = "/home/biyu/IdeaProjects/NewParking/output/drt_D2D_pt_av_MixedParking/";
     private static String EVENTSFILE =  FOLDER +  "output_events.xml.gz";
     private static String NETWORKSFILE = FOLDER + "output_network.xml.gz";
     public static void main(String[] args) {
@@ -43,7 +43,7 @@ class ParkingEventHandler implements ActivityStartEventHandler, ActivityEndEvent
 
     @Override
     public void handleEvent(ActivityStartEvent event) {
-        if (event.getActType().equals("DrtStay")){
+        if (event.getActType().equals("DrtStay") ){
             if (event.getTime() > MixedParkingStrategy.dayT0 && event.getTime() < MixedParkingStrategy.dayT1){
                 return;
             }
@@ -54,7 +54,7 @@ class ParkingEventHandler implements ActivityStartEventHandler, ActivityEndEvent
 
     @Override
     public void handleEvent(ActivityEndEvent event) {
-        if (event.getActType().equals("DrtStay")){
+        if (event.getActType().equals("DrtStay") ){
             if (event.getTime() > MixedParkingStrategy.dayT0 && event.getTime() < MixedParkingStrategy.dayT1){
                 return;
             }

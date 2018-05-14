@@ -5,9 +5,9 @@ import ParkingStrategy.ParkingInDepot.Depot.DepotManager;
 import ParkingStrategy.ParkingStrategy;
 import com.google.inject.Inject;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.contrib.drt.schedule.DrtStayTask;
 import org.matsim.contrib.dvrp.data.Vehicle;
 import org.matsim.contrib.util.distance.DistanceUtils;
+import Schedule.DrtStayTask;
 
 public class ParkingInDepot implements ParkingStrategy {
     DepotManager depotManager;

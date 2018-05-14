@@ -4,7 +4,7 @@
 
 	<module name="drt" >
 
-		<!-- If true, the startLink is changed to last link in the current schedule, so the taxi starts the next day at the link where it stopped operating the day before. False by default. -->
+		<!-- If true, the startLink is changed to last link in the current Schedule, so the taxi starts the next day at the link where it stopped operating the day before. False by default. -->
 		<param name="changeStartLinkToLastLinkInSchedule" value="false" />
 		<!-- Beeline distance factor for DRT. Used in analyis and in plans file. The default value is 1.3. -->
 		<param name="estimatedBeelineDistanceFactor" value="1.3" />
@@ -27,7 +27,7 @@
 		<!-- Bus stop duration. -->
 		<param name="stopDuration" value="60.0" />
 
-		<!-- Stop locations file (transit schedule format, but without lines) for DRT stops. Used only for the stopbased mode -->
+		<!-- Stop locations file (transit Schedule format, but without lines) for DRT stops. Used only for the stopbased mode -->
 		<param name="transitStopFile" value="null" />
 
 		<!-- An XML file specifying the vehicle fleet. The file format according to dvrp_vehicles_v1.dtd -->

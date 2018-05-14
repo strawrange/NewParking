@@ -18,18 +18,16 @@
 
 package ParkingStrategy.ParkingInDepot.InsertionOptimizer;
 
-import org.matsim.contrib.drt.data.DrtRequest;
-import org.matsim.contrib.drt.optimizer.VehicleData;
-import org.matsim.contrib.drt.optimizer.insertion.InsertionGenerator.Insertion;
-import org.matsim.contrib.drt.optimizer.insertion.PathDataProvider;
-import org.matsim.contrib.drt.optimizer.insertion.PathDataProvider.PathDataSet;
+
+import ParkingStrategy.VehicleData;
 import org.matsim.contrib.dvrp.path.OneToManyPathSearch.PathData;
+import Schedule.DrtRequest;
 
 /**
  * @author michalm
  */
 class InsertionWithPathDataCreator {
-	private final PathDataSet set;
+	private final PathDataProvider.PathDataSet set;
 	private final int stopCount;
 
 	InsertionWithPathDataCreator(PathDataProvider pathDataProvider, DrtRequest drtRequest, VehicleData.Entry vEntry) {
@@ -37,7 +35,7 @@ class InsertionWithPathDataCreator {
 		stopCount = vEntry.stops.size();
 	}
 
-	InsertionWithPathData create(Insertion insertion) {
+	InsertionWithPathData create(InsertionGenerator.Insertion insertion) {
 		int i = insertion.pickupIdx;
 		int j = insertion.dropoffIdx;
 		// i -> pickup

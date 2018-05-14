@@ -19,17 +19,20 @@
 
 package ParkingStrategy.ParkingInDepot.InsertionOptimizer;
 
-import org.matsim.contrib.drt.data.DrtRequest;
-import org.matsim.contrib.drt.optimizer.VehicleData;
-import org.matsim.contrib.drt.optimizer.VehicleData.Stop;
+
+import ParkingStrategy.VehicleData;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
-import org.matsim.contrib.drt.schedule.DrtDriveTask;
-import org.matsim.contrib.drt.schedule.DrtStayTask;
-import org.matsim.contrib.drt.schedule.DrtTask;
-import org.matsim.contrib.drt.schedule.DrtTask.DrtTaskType;
 import org.matsim.contrib.dvrp.schedule.Schedules;
 import org.matsim.contrib.dvrp.schedule.Task;
+import org.matsim.contrib.dvrp.vrpagent.VrpAgentSource;
 import org.matsim.core.mobsim.framework.MobsimTimer;
+import Schedule.DrtDriveTask;
+import Schedule.DrtRequest;
+import Schedule.DrtStayTask;
+import Schedule.DrtTask;
+import org.matsim.vehicles.VehicleType;
 
 /**
  * @author michalm
@@ -37,16 +40,14 @@ import org.matsim.core.mobsim.framework.MobsimTimer;
 public class InsertionCostCalculator {
 	public static final double INFEASIBLE_SOLUTION_COST = Double.MAX_VALUE;
 
-	private final double stopDuration;
 	private final MobsimTimer timer;
+	private final double accessTime;
+	private final double egressTime;
 
-	public InsertionCostCalculator(DrtConfigGroup drtConfig, MobsimTimer timer) {
-		this(drtConfig.getStopDuration(), timer);
-	}
-
-	public InsertionCostCalculator(double stopDuration, MobsimTimer timer) {
-		this.stopDuration = stopDuration;
+	public InsertionCostCalculator(MobsimTimer timer, double accessTime, double egressTime) {
 		this.timer = timer;
+		this.accessTime = accessTime;
+		this.egressTime = egressTime;
 	}
 
 	// the main goal - minimise bus operation time
@@ -70,8 +71,9 @@ public class InsertionCostCalculator {
 	private double calculatePickupDetourTimeLoss(DrtRequest drtRequest, VehicleData.Entry vEntry,
 			InsertionWithPathData insertion) {
 		// 'no detour' is also possible now for pickupIdx==0 if the currentTask is STOP
-		boolean ongoingStopTask = insertion.pickupIdx == 0
-				&& ((DrtTask)vEntry.vehicle.getSchedule().getCurrentTask()).getDrtTaskType() == DrtTaskType.STOP;
+        boolean ongoingStopTask = insertion.pickupIdx == 0
+				&& (((DrtTask)vEntry.vehicle.getSchedule().getCurrentTask()).getDrtTaskType() == DrtTask.DrtTaskType.STOP ||
+				((DrtTask)vEntry.vehicle.getSchedule().getCurrentTask()).getDrtTaskType() == DrtTask.DrtTaskType.QUEUE);
 
 		if ((ongoingStopTask && drtRequest.getFromLink() == vEntry.start.link) //
 				|| (insertion.pickupIdx > 0 //
@@ -92,7 +94,7 @@ public class InsertionCostCalculator {
 		double replacedDriveTT = insertion.pickupIdx == insertion.dropoffIdx // PICKUP->DROPOFF ?
 				? 0 // no drive following the pickup is replaced (only the one following the dropoff)
 				: calculateReplacedDriveDuration(vEntry, insertion.pickupIdx);
-		return toPickupTT + stopDuration + fromPickupTT - replacedDriveTT;
+		return toPickupTT + vEntry.vehicle.getCapacity() * (accessTime + egressTime) + fromPickupTT - replacedDriveTT;
 	}
 
 	private double calculateDropoffDetourTimeLoss(DrtRequest drtRequest, VehicleData.Entry vEntry,
@@ -111,7 +113,7 @@ public class InsertionCostCalculator {
 		double replacedDriveTT = insertion.dropoffIdx == insertion.pickupIdx // PICKUP->DROPOFF ?
 				? 0 // replacedDriveTT already taken into account in pickupDetourTimeLoss
 				: calculateReplacedDriveDuration(vEntry, insertion.dropoffIdx);
-		return toDropoffTT + stopDuration + fromDropoffTT - replacedDriveTT;
+		return toDropoffTT + vEntry.vehicle.getCapacity() * (accessTime + egressTime) + fromDropoffTT - replacedDriveTT;
 	}
 
 	private double calculateReplacedDriveDuration(VehicleData.Entry vEntry, int insertionIdx) {
@@ -129,7 +131,7 @@ public class InsertionCostCalculator {
 		// this is what we cannot violate
         // vehicle's time window cannot be violated
         DrtStayTask lastTask = (DrtStayTask)Schedules.getLastTask(vEntry.vehicle.getSchedule());
-        double timeSlack = vEntry.vehicle.getServiceEndTime() - 600
+        double timeSlack = vEntry.vehicle.getServiceEndTime() //-600
                 - Math.max(lastTask.getBeginTime(), timer.getTimeOfDay());
         if (timeSlack < totalTimeLoss) {
             return false;
@@ -144,7 +146,7 @@ public class InsertionCostCalculator {
 			return true; // vehicles coming back to depot always satisfy the contraints
 		}
 		for (int s = insertion.pickupIdx; s < insertion.dropoffIdx; s++) {
-			Stop stop = vEntry.stops.get(s);
+			VehicleData.Stop stop = vEntry.stops.get(s);
 			// all stops after pickup are delayed by pickupDetourTimeLoss
 			if (stop.task.getBeginTime() + pickupDetourTimeLoss > stop.maxArrivalTime //
 					|| stop.task.getEndTime() + pickupDetourTimeLoss > stop.maxDepartureTime) {
@@ -154,7 +156,7 @@ public class InsertionCostCalculator {
 
 		// this is what we cannot violate
 		for (int s = insertion.dropoffIdx; s < vEntry.stops.size(); s++) {
-			Stop stop = vEntry.stops.get(s);
+			VehicleData.Stop stop = vEntry.stops.get(s);
 			// all stops after dropoff are delayed by totalTimeLoss
 			if (stop.task.getBeginTime() + totalTimeLoss > stop.maxArrivalTime //
 					|| stop.task.getEndTime() + totalTimeLoss > stop.maxDepartureTime) {
@@ -164,7 +166,7 @@ public class InsertionCostCalculator {
 
 		// reject solutions when maxWaitTime for the new request is violated
 		double driveToPickupStartTime = getDriveToInsertionStartTime(vEntry, insertion.pickupIdx);
-		double pickupEndTime = driveToPickupStartTime + insertion.pathToPickup.getTravelTime() + stopDuration;
+		double pickupEndTime = driveToPickupStartTime + insertion.pathToPickup.getTravelTime() + vEntry.vehicle.getCapacity() * (accessTime + egressTime);
 
 		if (pickupEndTime > drtRequest.getLatestStartTime()) {
 			return false;

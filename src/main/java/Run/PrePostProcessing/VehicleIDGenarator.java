@@ -19,8 +19,8 @@ public class VehicleIDGenarator {
         Scenario scenario = ScenarioUtils.loadScenario(config);
         Network network = scenario.getNetwork();
         FleetImpl fleet = new FleetImpl();
-        (new VehicleReader(network,fleet)).parse(IOUtils.getUrlFromFileOrResource("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/drtvehicles_40.xml"));
-        BufferedWriter bw = IOUtils.getBufferedWriter("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/vehicleId_drtvehicles_40.txt");
+        (new VehicleReader(network,fleet)).parse(IOUtils.getUrlFromFileOrResource("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/drtvehicles_3500.xml"));
+        BufferedWriter bw = IOUtils.getBufferedWriter("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/vehicleId_drtvehicles_3500.txt");
         for (Vehicle vehicle: fleet.getVehicles().values()){
             bw.write(vehicle.getId().toString());
             bw.newLine();

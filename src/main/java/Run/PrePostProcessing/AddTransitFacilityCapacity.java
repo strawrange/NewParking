@@ -23,7 +23,7 @@ public class AddTransitFacilityCapacity {
             if (stop.getId().toString().startsWith("CC") || stop.getId().toString().startsWith("NS") || stop.getId().toString().startsWith("TE")) {
                 continue;
             }
-            stop.getAttributes().putAttribute("capacity",1.0);
+            stop.getAttributes().putAttribute("capacity",5.0);
         }
         new TransitScheduleWriterV2(transitSchedule).write(FOLDER + "mp_c_tp_bay.xml");
     }

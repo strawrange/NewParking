@@ -23,14 +23,15 @@
 package Run;
 
 
-import BayInfrastructure.QueueingForDropOrPick;
+
+import DynAgent.VrpAgentLogic;
+import ParkingStrategy.ParkingInDepot.InsertionOptimizer.*;
+import org.matsim.contrib.drt.optimizer.DrtOptimizer;
+import Schedule.DrtActionCreator;
 import ParkingAnalysis.DrtAnalysisModule;
 import ParkingStrategy.DefaultDrtOptimizer;
 
 import ParkingStrategy.AlwaysRoaming.ZoneBasedRoaming.DrtZonalModule;
-import ParkingStrategy.ParkingInDepot.InsertionOptimizer.DefaultUnplannedRequestInserter;
-import ParkingStrategy.ParkingInDepot.InsertionOptimizer.DrtScheduler;
-import ParkingStrategy.ParkingInDepot.InsertionOptimizer.EmptyVehicleRelocator;
 import ParkingStrategy.MixedParkingStrategy;
 import ParkingStrategy.ParkingInDepot.ParkingInDepot;
 import ParkingStrategy.ParkingOntheRoad.ParkingOntheRoad;
@@ -41,22 +42,13 @@ import com.google.inject.name.Named;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
-import org.matsim.contrib.drt.optimizer.DrtOptimizer;
-import org.matsim.contrib.drt.optimizer.insertion.ParallelPathDataProvider;
-import org.matsim.contrib.drt.optimizer.insertion.PrecalculatablePathDataProvider;
-import org.matsim.contrib.drt.optimizer.insertion.UnplannedRequestInserter;
-import org.matsim.contrib.drt.passenger.DrtRequestCreator;
 import org.matsim.contrib.drt.routing.DrtStageActivityType;
 import org.matsim.contrib.drt.run.DrtConfigConsistencyChecker;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
-import org.matsim.contrib.drt.vrpagent.DrtActionCreator;
 import org.matsim.contrib.dvrp.optimizer.VrpOptimizer;
 import org.matsim.contrib.dvrp.passenger.PassengerRequestCreator;
-import org.matsim.contrib.dvrp.run.DvrpModule;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
-import org.matsim.contrib.dvrp.vrpagent.VrpAgentLogic.DynActionCreator;
 import org.matsim.contrib.otfvis.OTFVisLiveModule;
-import org.matsim.core.api.experimental.events.handler.VehicleArrivesAtFacilityEventHandler;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ModeParams;
@@ -67,6 +59,7 @@ import org.matsim.core.router.costcalculators.TravelDisutilityFactory;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.ScenarioUtils;
+import Schedule.DrtRequestCreator;
 
 /**
  * @author jbischoff
@@ -135,22 +128,19 @@ public final class DrtControlerCreator {
 		return new com.google.inject.AbstractModule() {
 			@Override
 			protected void configure() {
-
 				bind(DrtOptimizer.class).to(DefaultDrtOptimizer.class).asEagerSingleton();
 				bind(VrpOptimizer.class).to(DrtOptimizer.class);
 				bind(DefaultUnplannedRequestInserter.class).asEagerSingleton();
 				bind(UnplannedRequestInserter.class).to(DefaultUnplannedRequestInserter.class);
 				bind(EmptyVehicleRelocator.class).asEagerSingleton();
 				bind(DrtScheduler.class).asEagerSingleton();
-				bind(DynActionCreator.class).to(DrtActionCreator.class).asEagerSingleton();
+				bind(VrpAgentLogic.DynActionCreator.class).to(DrtActionCreator.class).asEagerSingleton();
 				bind(PassengerRequestCreator.class).to(DrtRequestCreator.class).asEagerSingleton();
 				bind(ParallelPathDataProvider.class).asEagerSingleton();
 				bind(PrecalculatablePathDataProvider.class).to(ParallelPathDataProvider.class);
 				bind(ParkingOntheRoad.class).asEagerSingleton();
 				bind(ParkingInDepot.class).asEagerSingleton();
 				bind(ParkingStrategy.class).to(MixedParkingStrategy.class).asEagerSingleton();
-				bind(QueueingForDropOrPick.class).asEagerSingleton();
-
 			}
 
 			@Provides

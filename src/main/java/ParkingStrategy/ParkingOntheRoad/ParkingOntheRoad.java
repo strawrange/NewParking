@@ -1,40 +1,25 @@
 package ParkingStrategy.ParkingOntheRoad;
 
-import ParkingStrategy.AlwaysRoaming.ZoneBasedRoaming.DrtZonalSystem;
-import ParkingStrategy.AlwaysRoaming.ZoneBasedRoaming.ZonalDemandAggregator;
+import BayInfrastructure.BayManager;
+import ParkingStrategy.ParkingInDepot.Depot.DepotManager;
 import ParkingStrategy.ParkingStrategy;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.TransportMode;
-import org.matsim.api.core.v01.events.ActivityEndEvent;
-import org.matsim.api.core.v01.events.handler.ActivityEndEventHandler;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
-import org.matsim.contrib.drt.schedule.DrtStayTask;
-import org.matsim.contrib.drt.schedule.DrtTask;
-import org.matsim.contrib.dvrp.data.Fleet;
 import org.matsim.contrib.dvrp.data.Vehicle;
-import org.matsim.contrib.dvrp.optimizer.VrpOptimizer;
 import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
-import org.matsim.contrib.dvrp.vrpagent.VrpAgentLogic;
-import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.controler.events.IterationStartsEvent;
 import org.matsim.core.controler.listener.IterationStartsListener;
-import org.matsim.core.mobsim.framework.Mobsim;
-import org.matsim.core.mobsim.framework.MobsimTimer;
-import org.matsim.core.mobsim.framework.events.MobsimInitializedEvent;
-import org.matsim.core.mobsim.framework.listeners.MobsimInitializedListener;
 import org.matsim.core.mobsim.qsim.QSim;
 import org.matsim.core.network.NetworkChangeEvent;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.NetworkCleaner;
+import Schedule.DrtStayTask;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class ParkingOntheRoad implements ParkingStrategy, IterationStartsListener{
     private Map<Id<Link>, Integer> linkRecord = new HashMap<>(); // Interger counts the number of vehicles parks on the link
@@ -46,7 +31,7 @@ public class ParkingOntheRoad implements ParkingStrategy, IterationStartsListene
 
 
     @Inject
-    public ParkingOntheRoad(QSim qSim, @Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) Network network) {
+    public ParkingOntheRoad(QSim qSim, @Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) Network network, BayManager bayManager) {
         this.qsim = qSim;
         cleanNetwork = NetworkUtils.createNetwork();
         for (Node node : network.getNodes().values()) {
@@ -58,12 +43,17 @@ public class ParkingOntheRoad implements ParkingStrategy, IterationStartsListene
         }
         new NetworkCleaner().run(cleanNetwork);
         for (Link link : cleanNetwork.getLinks().values()){
-            if (link.getNumberOfLanes() > 1) {
+            if (link.getNumberOfLanes() > 1 && !isTransitStop(link, bayManager) ) {
                 supply.put(link.getId(), (int) Math.floor(link.getLength() / vehicleLength));
             } else {
                 supply.put(link.getId(), 0);
             }
         }
+    }
+
+
+    private boolean isTransitStop(Link link, BayManager bayManager) {
+        return !bayManager.getBayByLinkId(link.getId()).getTransitStop().getId().toString().endsWith("DRT");
     }
 
     @Override
@@ -85,11 +75,44 @@ public class ParkingOntheRoad implements ParkingStrategy, IterationStartsListene
 
     private Link nextLink(Link currentLink){
         Link cleanLink = cleanNetwork.getLinks().get(currentLink.getId());
-        Random random = new Random();
+        //Random random = new Random();
         Map<Id<Link>, ? extends Link> nextLinks = cleanLink.getToNode().getOutLinks();
-        ArrayList<Id<Link>> linksKey = new ArrayList<>(nextLinks.keySet());
-        Link link = nextLinks.get(linksKey.get(random.nextInt(nextLinks.size())));
+        //ArrayList<Id<Link>> linksKey = new ArrayList<>(nextLinks.keySet());
+        Link link = nextLinkWithProbability(nextLinks);
         return currentLink.getToNode().getOutLinks().get(link.getId());
+    }
+
+    private Link nextLinkWithProbability(Map<Id<Link>, ? extends Link> nextLinks) {
+        List<Integer> prob = new ArrayList<>();
+        List<Id<Link>> linkids = new ArrayList<>();
+        int addProb;
+        for (Link link: nextLinks.values()){
+            linkids.add(link.getId());
+            if (supply.get(link.getId()) == 0){
+                addProb = 1;
+            }else{
+                addProb = 3;
+            }
+            if (prob.size() != 0) {
+                prob.add(prob.get(prob.size() - 1) + addProb);
+            }else{
+                prob.add(addProb);
+            }
+        }
+        Random random = new Random();
+        int index = random.nextInt(prob.get(prob.size() - 1)) + 1;
+        int low = 0;
+        int high = prob.size() - 1;
+        int mid;
+        while (low < high ){
+            mid = (low + high) >>> 1;
+            if (prob.get(mid) < index || prob.get(mid) == 0){
+                low = mid + 1;
+            }else if (prob.get(mid) >= index){
+                high = mid;
+            }
+        }
+        return nextLinks.get(linkids.get(low));
     }
 
     @Override
@@ -108,9 +131,9 @@ public class ParkingOntheRoad implements ParkingStrategy, IterationStartsListene
 
     public void modifyLanes(Link currentLink, double time, double change){
         double numOfLanes = currentLink.getNumberOfLanes();
-        NetworkChangeEvent event = new NetworkChangeEvent(time);
+        NetworkChangeEvent event = new NetworkChangeEvent(time + Math.random());
         event.addLink(currentLink);
-        NetworkChangeEvent.ChangeValue capacityChange = new NetworkChangeEvent.ChangeValue(NetworkChangeEvent.ChangeType.ABSOLUTE_IN_SI_UNITS, (numOfLanes + change)/numOfLanes * currentLink.getCapacity());
+        NetworkChangeEvent.ChangeValue capacityChange = new NetworkChangeEvent.ChangeValue(NetworkChangeEvent.ChangeType.ABSOLUTE_IN_SI_UNITS, (numOfLanes + change)/numOfLanes * currentLink.getCapacity() / 3600.0);
         NetworkChangeEvent.ChangeValue lanesChange = new NetworkChangeEvent.ChangeValue(NetworkChangeEvent.ChangeType.ABSOLUTE_IN_SI_UNITS, numOfLanes + change);
         event.setLanesChange(lanesChange);
         event.setFlowCapacityChange(capacityChange);
