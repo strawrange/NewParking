@@ -26,6 +26,14 @@ package Run;
 
 import DynAgent.VrpAgentLogic;
 import ParkingStrategy.ParkingInDepot.InsertionOptimizer.*;
+import firstLastAVPTRouter.MainModeIdentifierFirstLastAVPT;
+import firstLastAVPTRouter.TransitRouterFirstLastAVPTFactory;
+import firstLastAVPTRouter.TransitRouterNetworkFirstLastAVPT;
+import firstLastAVPTRouter.linkLinkTimes.LinkLinkTimeCalculatorAV;
+import firstLastAVPTRouter.stopStopTimes.StopStopTimeCalculatorAV;
+import firstLastAVPTRouter.waitLinkTime.WaitLinkTimeCalculatorAV;
+import firstLastAVPTRouter.waitTimes.WaitTimeCalculatorAV;
+import org.matsim.api.core.v01.Id;
 import org.matsim.contrib.drt.optimizer.DrtOptimizer;
 import Schedule.DrtActionCreator;
 import ParkingAnalysis.DrtAnalysisModule;
@@ -48,18 +56,32 @@ import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.dvrp.optimizer.VrpOptimizer;
 import org.matsim.contrib.dvrp.passenger.PassengerRequestCreator;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
+import org.matsim.contrib.eventsBasedPTRouter.stopStopTimes.StopStopTimeCalculator;
+import org.matsim.contrib.eventsBasedPTRouter.waitTimes.WaitTimeStuckCalculator;
 import org.matsim.contrib.otfvis.OTFVisLiveModule;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ModeParams;
+import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
+import org.matsim.core.controler.listener.IterationStartsListener;
 import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.core.mobsim.qsim.QSim;
+import org.matsim.core.router.MainModeIdentifier;
 import org.matsim.core.router.costcalculators.TravelDisutilityFactory;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.ScenarioUtils;
 import Schedule.DrtRequestCreator;
+import org.matsim.pt.transitSchedule.api.TransitStopArea;
+import org.matsim.pt.transitSchedule.api.TransitStopFacility;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author jbischoff
@@ -67,22 +89,60 @@ import Schedule.DrtRequestCreator;
  */
 public final class DrtControlerCreator {
 
-	public static Controler createControler(Config config, boolean otfvis) {
+	public static Controler createControler(Config config, boolean otfvis) throws IOException {
 		adjustConfig(config);
 		Scenario scenario = ScenarioUtils.loadScenario(config);
 		return createControlerImpl(otfvis, scenario);
 	}
 
-	public static Controler createControler(Scenario scenario, boolean otfvis) {
+	public static Controler createControler(Scenario scenario, boolean otfvis) throws IOException {
 		// yy I know that this one breaks the sequential loading of the building blocks, but I would like to be able
 		// to modify the scenario before I pass it to the controler. kai, oct'17
 		adjustConfig(scenario.getConfig());
 		return createControlerImpl(otfvis, scenario);
 	}
 
-	private static Controler createControlerImpl(boolean otfvis, Scenario scenario) {
+	private static Controler createControlerImpl(boolean otfvis, Scenario scenario) throws IOException {
 		Controler controler = new Controler(scenario);
-		controler.addOverridingModule(new DvrpModule(DrtControlerCreator::createModuleForQSimPlugin, DrtOptimizer.class,
+		final WaitTimeStuckCalculator waitTimeCalculator = new WaitTimeStuckCalculator(scenario.getPopulation(), scenario.getTransitSchedule(), scenario.getConfig().travelTimeCalculator().getTraveltimeBinSize(), (int) (scenario.getConfig().qsim().getEndTime()-scenario.getConfig().qsim().getStartTime()));
+		controler.getEvents().addHandler(waitTimeCalculator);
+		final WaitTimeCalculatorAV waitTimeCalculatorAV = new WaitTimeCalculatorAV(scenario.getPopulation(), scenario.getTransitSchedule(), scenario.getConfig().travelTimeCalculator().getTraveltimeBinSize(), (int) (scenario.getConfig().qsim().getEndTime()-scenario.getConfig().qsim().getStartTime()));
+		controler.getEvents().addHandler(waitTimeCalculatorAV);
+		final WaitLinkTimeCalculatorAV waitLinkTimeCalculatorAV = new WaitLinkTimeCalculatorAV(scenario.getPopulation(), scenario.getNetwork(), scenario.getConfig().travelTimeCalculator().getTraveltimeBinSize(), (int) (scenario.getConfig().qsim().getEndTime()-scenario.getConfig().qsim().getStartTime()));
+		controler.getEvents().addHandler(waitLinkTimeCalculatorAV);
+		final StopStopTimeCalculator stopStopTimeCalculator = new StopStopTimeCalculator(scenario.getTransitSchedule(), scenario.getConfig().travelTimeCalculator().getTraveltimeBinSize(), (int) (scenario.getConfig().qsim().getEndTime()-scenario.getConfig().qsim().getStartTime()));
+		controler.getEvents().addHandler(stopStopTimeCalculator);
+		final StopStopTimeCalculatorAV stopStopTimeCalculatorAV = new StopStopTimeCalculatorAV(scenario.getTransitSchedule(), scenario.getConfig().travelTimeCalculator().getTraveltimeBinSize(), (int) (scenario.getConfig().qsim().getEndTime()-scenario.getConfig().qsim().getStartTime()));
+		controler.getEvents().addHandler(stopStopTimeCalculatorAV);
+		final LinkLinkTimeCalculatorAV linkLinkTimeCalculatorAV = new LinkLinkTimeCalculatorAV(scenario.getNetwork(), scenario.getConfig().travelTimeCalculator().getTraveltimeBinSize(), (int) (scenario.getConfig().qsim().getEndTime()-scenario.getConfig().qsim().getStartTime()));
+		controler.getEvents().addHandler(linkLinkTimeCalculatorAV);
+		controler.addOverridingModule(new AbstractModule() {
+			@Override
+			public void install() {
+				bind(MainModeIdentifier.class).toInstance(new MainModeIdentifierFirstLastAVPT(new HashSet<>(Arrays.asList("pvt","taxi","walk"))));
+				addRoutingModuleBinding("pt").toProvider(new TransitRouterFirstLastAVPTFactory(scenario, waitTimeCalculator.get(), waitTimeCalculatorAV.get(), waitLinkTimeCalculatorAV.get(), stopStopTimeCalculator.get(), stopStopTimeCalculatorAV.get(), linkLinkTimeCalculatorAV.get(), TransitRouterNetworkFirstLastAVPT.NetworkModes.PT_AV));
+			}
+
+		});
+		BufferedReader reader = new BufferedReader(new FileReader("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/stops_in_area.txt"));
+		String line = reader.readLine();
+		Set<Id<TransitStopFacility>> ids = new HashSet<>();
+		while(line!=null) {
+			ids.add(Id.create(line, TransitStopFacility.class));
+			line = reader.readLine();
+
+		}
+		reader.close();
+		for(TransitStopFacility stop:scenario.getTransitSchedule().getFacilities().values()) {
+			IDS:
+			for(Id<TransitStopFacility> id:ids)
+				if(stop.getId().equals(id)) {
+					stop.setStopAreaId(Id.create("mp", TransitStopArea.class));
+					break IDS;
+				}
+		}
+		controler.addOverridingModule(new DvrpModule(DrtControlerCreator::createModuleForQSimPlugin, ParkingOntheRoad.class,
+				DrtOptimizer.class,
 				DefaultUnplannedRequestInserter.class, ParallelPathDataProvider.class));
 		controler.addOverridingModule(new DrtZonalModule());
 		controler.addOverridingModule(new DrtModule());
@@ -142,6 +202,7 @@ public final class DrtControlerCreator {
 				bind(ParkingInDepot.class).asEagerSingleton();
 				bind(ParkingStrategy.class).to(MixedParkingStrategy.class).asEagerSingleton();
 			}
+
 
 			@Provides
 			@Singleton

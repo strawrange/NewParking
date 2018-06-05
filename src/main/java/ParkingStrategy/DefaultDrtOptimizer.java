@@ -191,7 +191,7 @@ public class DefaultDrtOptimizer implements DrtOptimizer {
 			parkingStrategy.departing(vehicle, mobsimTimer.getTimeOfDay());
 		}
 
-		if (depotManager != null && isCancelReservation(vehicle)){
+		if (parkingStrategy.getCurrentStrategy(vehicle.getId()) != null && parkingStrategy.getCurrentStrategy(vehicle.getId()).equals(ParkingStrategy.Strategies.ParkingInDepot) && isCancelReservation(vehicle)){
 			depotManager.vehicleLeavingDepot(vehicle);
 		}
 	}
@@ -272,11 +272,12 @@ public class DefaultDrtOptimizer implements DrtOptimizer {
 		if (schedule.getStatus() != Schedule.ScheduleStatus.STARTED){
 			return false;
 		}
-		if (! (vehicle.getSchedule().getCurrentTask() instanceof  DrtStopTask)){
+		if (! (schedule.getCurrentTask() instanceof  DrtStopTask)){
 			return false;
 		}
 
-		if ( !(vehicle.getSchedule().getTasks().get(vehicle.getSchedule().getCurrentTask().getTaskIdx() - 2) instanceof  DrtStayTask)){
+
+		if ( !(schedule.getTasks().get(vehicle.getSchedule().getCurrentTask().getTaskIdx() - 2) instanceof  DrtStayTask)){
 			return false;
 		}
 		return true;

@@ -24,21 +24,23 @@ import java.io.IOException;
 import java.util.*;
 
 public class QueueingAndDwellingTimeAnalysis {
-    private static String FOLDER = "/home/biyu/IdeaProjects/NewParking/output/drt_D2D_pt_av_MixedParking_capacity_3500_lessQ_5/";
-    private static String EVENTSFILE =  FOLDER +  "output_events.xml.gz";
+    private static String FOLDER = "/home/biyu/IdeaProjects/NewParking/output/drt_D2D_pt_av_MixedParking_capacity_3500_lessQ_router_1_clearNetChangeEvent_25prct/ITERS/";
+    private static String ITER = "40";
+    private static String EVENTSFILE =  FOLDER +  "it." + ITER + "/" + ITER + ".events.xml.gz";
     public static void main(String[] args) throws IOException {
         EventsManager manager = EventsUtils.createEventsManager();
         QueueingAndDwellingCounter queueingAndDwellingCounter = new QueueingAndDwellingCounter();
         manager.addHandler(queueingAndDwellingCounter);
         new MatsimEventsReader(manager).readFile(EVENTSFILE);
-        queueingAndDwellingCounter.output(FOLDER + "queueingAndDwellingTimeAnalysis.csv");
-        queueingAndDwellingCounter.outputSecond(FOLDER + "queueingCounter.csv");
+        queueingAndDwellingCounter.output(FOLDER + ITER + "queueingAndDwellingTimeAnalysis.csv");
+        queueingAndDwellingCounter.outputSecond(FOLDER + ITER  + "queueingCounter.csv");
     }
 }
 
 class QueueingAndDwellingCounter implements VehicleArrivesAtFacilityEventHandler, VehicleDepartsAtFacilityEventHandler, PersonEntersVehicleEventHandler, PersonLeavesVehicleEventHandler{
     private Map<Id<Vehicle>, ArrayList<QueueingAndDwellingRecorder>> counter = new HashMap<>();
-    private Map<Id<TransitStopFacility>, ArrayList<QCounter>> numOfQueue = new HashMap<>();
+    //private Map<Id<TransitStopFacility>, ArrayList<QCounter>> numOfQueue = new HashMap<>();
+    private Map<Id<TransitStopFacility>, ArrayList<Event>> events = new HashMap<>();
 
     @Override
     public void handleEvent(PersonEntersVehicleEvent event) {
@@ -62,15 +64,15 @@ class QueueingAndDwellingCounter implements VehicleArrivesAtFacilityEventHandler
         if (event.getTime() == 0){
             return;
         }
-        if (!numOfQueue.containsKey(event.getFacilityId())){
-            ArrayList<QCounter> recordQ = new ArrayList<>();
-            recordQ.add(new QCounter(0, 0));
-            numOfQueue.put(event.getFacilityId(), recordQ);
+        if (!events.containsKey(event.getFacilityId())){
+            ArrayList<Event> e = new ArrayList<>();
+            e.add(event);
+            events.put(event.getFacilityId(),e);
+        }else {
+            ArrayList<Event> e = events.get(event.getFacilityId());
+            e.add(event);
+            events.put(event.getFacilityId(), e);
         }
-        ArrayList<QCounter> recordQ = numOfQueue.get(event.getFacilityId());
-        int q = recordQ.get(recordQ.size() - 1).getQ() + 1;
-        recordQ.add(new QCounter(event.getTime(), q));
-        numOfQueue.put(event.getFacilityId(), recordQ);
         QueueingAndDwellingRecorder queueingAndDwellingRecorder = new QueueingAndDwellingRecorder(event.getTime());
         queueingAndDwellingRecorder.transitStopFacilityId = event.getFacilityId();
         if (!counter.containsKey(event.getVehicleId())) {
@@ -84,17 +86,9 @@ class QueueingAndDwellingCounter implements VehicleArrivesAtFacilityEventHandler
         if (event.getTime() == 0){
             return;
         }
-        ArrayList<QCounter> recordQ = numOfQueue.get(event.getFacilityId());
-        if (recordQ.get(recordQ.size() - 1).getTime() == event.getTime()){
-            recordQ.remove(recordQ.size() - 1);
-            if (recordQ.size() == 0){
-                numOfQueue.remove(event.getFacilityId());
-            }
-        }else {
-            int q = recordQ.get(recordQ.size() - 1).getQ() - 1;
-            recordQ.add(new QCounter(event.getTime(), q));
-            numOfQueue.put(event.getFacilityId(), recordQ);
-        }
+        ArrayList<Event> e = events.get(event.getFacilityId());
+        e.add(event);
+        events.put(event.getFacilityId(), e);
         QueueingAndDwellingRecorder queueingAndDwellingRecorder = counter.get(event.getVehicleId()).get(counter.get(event.getVehicleId()).size() - 1);
         queueingAndDwellingRecorder.departureTime = event.getTime();
     }
@@ -134,22 +128,30 @@ class QueueingAndDwellingCounter implements VehicleArrivesAtFacilityEventHandler
 
     public void outputSecond(String filename) throws IOException {
         BufferedWriter bw = IOUtils.getBufferedWriter(filename);
-        bw.write("time;facility;count");
-        for (Id<TransitStopFacility> sid: numOfQueue.keySet()){
-            ArrayList<QCounter> q = numOfQueue.get(sid);
+        bw.write("time;facility;count;duration");
+        for (Id<TransitStopFacility> sid: events.keySet()){
+            ArrayList<Event> q = events.get(sid);
             int i = 0;
-            for (int time = 0; time < 30 * 3600; time++){
+            int count = 0;
+            double last = 0;
+            for (int time = 0; time < 30 * 3600; ){
                 bw.newLine();
-                if (i < q.size() - 1 && time == q.get(i + 1).getTime()) {
+                if (i < q.size() && time == q.get(i).getTime()) {
+                    bw.write(time + ";" + sid + ";" + count + ";" + (time - last));
+                    if (q.get(i) instanceof VehicleArrivesAtFacilityEvent){
+                        count++;
+                    }
+                    if (q.get(i) instanceof VehicleDepartsAtFacilityEvent){
+                        count--;
+                    }
                     i++;
+                    last = time;
+                }else{
+                    time++;
                 }
-                if (i < q.size() - 1 && time == q.get(i + 1).getTime()) {
-                    bw.write(time + ";" + sid + ";" + q.get(i).getQ());
-                    i++;
-                    bw.newLine();
-                }
-                bw.write(time + ";" + sid + ";" + q.get(i).getQ());
             }
+            bw.newLine();
+            bw.write(30 * 3600 + ";" + sid + ";" + count + ";" + (30 * 3600 - last));
         }
     }
 }

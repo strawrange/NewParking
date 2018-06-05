@@ -22,9 +22,9 @@ public class VehicleEnlarge {
     static FleetImpl fleet = new FleetImpl();
     static FleetImpl newFleet = new FleetImpl();
     public static void main(String[] args) {
-        int numS = 800;
-        int numM = 500;
-        int numL = 200;
+        int numS = 1000;
+        int numM = 700;
+        int numL = 300;
         int num = numL + numM + numS;
         Config config = ConfigUtils.loadConfig("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/drtconfig.xml");
         Scenario scenario = ScenarioUtils.loadScenario(config);

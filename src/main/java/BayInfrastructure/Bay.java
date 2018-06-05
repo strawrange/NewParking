@@ -57,6 +57,7 @@ public class Bay {
             }
         }else{
             dwellingVehicles.add(vid);
+
         }
     }
 

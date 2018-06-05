@@ -5,6 +5,10 @@ import ParkingStrategy.ParkingOntheRoad.ParkingOntheRoad;
 import com.google.inject.Inject;
 import org.matsim.api.core.v01.Id;
 import org.matsim.contrib.dvrp.data.Vehicle;
+import org.matsim.core.controler.events.IterationStartsEvent;
+import org.matsim.core.controler.listener.IterationStartsListener;
+import org.matsim.core.mobsim.framework.events.MobsimBeforeCleanupEvent;
+import org.matsim.core.mobsim.framework.listeners.MobsimBeforeCleanupListener;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,6 +21,7 @@ public class MixedParkingStrategy implements ParkingStrategy {
     public static final double dayT0 = 7 * 3600;
     public static final double dayT1 = 20 * 3600;
     Map<Id<Vehicle>, ParkingStrategy.Strategies> parkingStrategiesPerVehicle = new HashMap<Id<Vehicle>, ParkingStrategy.Strategies>();
+
 
     @Override
     public ParkingStrategy.ParkingLocation parking(Vehicle vehicle, double time) {
@@ -44,10 +49,16 @@ public class MixedParkingStrategy implements ParkingStrategy {
         }
     }
 
+    @Override
+    public ParkingStrategy.Strategies getCurrentStrategy(Id<Vehicle> vehicleId) {
+        return parkingStrategiesPerVehicle.get(vehicleId);
+    }
+
     private boolean isDaytime(double time){
         if (time >= dayT0 && time < dayT1){
             return true;
         }
         return false;
     }
+
 }
