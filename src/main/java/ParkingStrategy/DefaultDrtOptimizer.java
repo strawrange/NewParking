@@ -153,7 +153,7 @@ public class DefaultDrtOptimizer implements DrtOptimizer {
 		if (parkingStrategy instanceof MixedParkingStrategy && isRelocateToDepotOrStreet(vehicle)){
 			schedule.addTask(new DrtStayTask(schedule.getCurrentTask().getEndTime(), vehicle.getServiceEndTime(), ((DrtStayTask)vehicle.getSchedule().getCurrentTask()).getLink()));
 		}
-		if (isCurrentStopTask(vehicle)){
+		if (isCurrentStopTask(vehicle)&& !isNextStopTask(vehicle)){
 			eventsManager.processEvent(new VehicleDepartsAtFacilityEvent(mobsimTimer.getTimeOfDay(),Id.createVehicleId(vehicle.getId().toString()),
 					bayManager.getBayByLinkId(((DrtStopTask) schedule.getCurrentTask()).getLink().getId()).getTransitStop().getId(), 1));
 			scheduler.modifyLanes(((DrtStopTask) schedule.getCurrentTask()).getLink(), mobsimTimer.getTimeOfDay(), 0.D);
@@ -191,7 +191,7 @@ public class DefaultDrtOptimizer implements DrtOptimizer {
 			parkingStrategy.departing(vehicle, mobsimTimer.getTimeOfDay());
 		}
 
-		if (depotManager != null && isCancelReservation(vehicle)){
+		if (parkingStrategy.getCurrentStrategy(vehicle.getId()) != null && parkingStrategy.getCurrentStrategy(vehicle.getId()).equals(ParkingStrategy.Strategies.ParkingInDepot) && isCancelReservation(vehicle)){
 			depotManager.vehicleLeavingDepot(vehicle);
 		}
 	}
@@ -272,11 +272,12 @@ public class DefaultDrtOptimizer implements DrtOptimizer {
 		if (schedule.getStatus() != Schedule.ScheduleStatus.STARTED){
 			return false;
 		}
-		if (! (vehicle.getSchedule().getCurrentTask() instanceof  DrtStopTask)){
+		if (! (schedule.getCurrentTask() instanceof  DrtStopTask)){
 			return false;
 		}
 
-		if ( !(vehicle.getSchedule().getTasks().get(vehicle.getSchedule().getCurrentTask().getTaskIdx() - 2) instanceof  DrtStayTask)){
+
+		if ( !(schedule.getTasks().get(vehicle.getSchedule().getCurrentTask().getTaskIdx() - 2) instanceof  DrtStayTask)){
 			return false;
 		}
 		return true;

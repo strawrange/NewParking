@@ -75,9 +75,9 @@ public class InsertionCostCalculator {
 				&& (((DrtTask)vEntry.vehicle.getSchedule().getCurrentTask()).getDrtTaskType() == DrtTask.DrtTaskType.STOP ||
 				((DrtTask)vEntry.vehicle.getSchedule().getCurrentTask()).getDrtTaskType() == DrtTask.DrtTaskType.QUEUE);
 
-		if ((ongoingStopTask && drtRequest.getFromLink() == vEntry.start.link) //
+		if ((ongoingStopTask && drtRequest.getFromLink().getId().equals(vEntry.start.link)) //
 				|| (insertion.pickupIdx > 0 //
-						&& drtRequest.getFromLink() == vEntry.stops.get(insertion.pickupIdx - 1).task.getLink())) {
+						&& drtRequest.getFromLink().getId().equals(vEntry.stops.get(insertion.pickupIdx - 1).task.getLink().getId()))) {
 			if (insertion.pickupIdx != insertion.dropoffIdx) {// not: PICKUP->DROPOFF
 				return 0;// no detour
 			}
@@ -100,7 +100,7 @@ public class InsertionCostCalculator {
 	private double calculateDropoffDetourTimeLoss(DrtRequest drtRequest, VehicleData.Entry vEntry,
 			InsertionWithPathData insertion) {
 		if (insertion.dropoffIdx > 0
-				&& drtRequest.getToLink() == vEntry.stops.get(insertion.dropoffIdx - 1).task.getLink()) {
+				&& drtRequest.getToLink().getId().equals(vEntry.stops.get(insertion.dropoffIdx - 1).task.getLink().getId())) {
 			return 0; // no detour
 		}
 

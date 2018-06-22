@@ -19,24 +19,82 @@
 
 package Schedule;
 
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
-
+import org.matsim.contrib.dvrp.data.Vehicle;
+import org.matsim.contrib.dvrp.schedule.Schedule;
 
 /**
  * @author michalm
  */
-public class DrtStayTask extends StayTaskImpl implements DrtTask {
-	public DrtStayTask(double beginTime, double endTime, Link link) {
-		super(beginTime, endTime, link);
+public class VehicleImpl implements Vehicle {
+	private final Id<Vehicle> id;
+	private Link startLink;
+	private final double capacity;
+
+	// time window
+	private final double serviceBeginTime;
+	private double serviceEndTime;
+
+	private Schedule schedule;
+
+	public VehicleImpl(Id<Vehicle> id, Link startLink, double capacity, double serviceBeginTime,
+                       double serviceEndTime) {
+		this.id = id;
+		this.startLink = startLink;
+		this.capacity = capacity;
+		this.serviceBeginTime = serviceBeginTime;
+		this.serviceEndTime = serviceEndTime;
+
+		schedule = new ScheduleImpl(this);
 	}
 
 	@Override
-	public DrtTaskType getDrtTaskType() {
-		return DrtTaskType.STAY;
+	public Id<Vehicle> getId() {
+		return id;
 	}
 
 	@Override
-	protected String commonToString() {
-		return "[" + getDrtTaskType().name() + "]" + super.commonToString();
+	public Link getStartLink() {
+		return startLink;
+	}
+
+	@Override
+	public void setStartLink(Link link) {
+		this.startLink = link;
+	}
+
+	@Override
+	public double getCapacity() {
+		return capacity;
+	}
+
+	@Override
+	public double getServiceBeginTime() {
+		return serviceBeginTime;
+	}
+
+	@Override
+	public double getServiceEndTime() {
+		return serviceEndTime;
+	}
+
+	@Override
+	public Schedule getSchedule() {
+		return schedule;
+	}
+
+	@Override
+	public String toString() {
+		return "Vehicle_" + id;
+	}
+
+	public void setServiceEndTime(double serviceEndTime) {
+		this.serviceEndTime = serviceEndTime;
+	}
+
+	@Override
+	public void resetSchedule() {
+		schedule = new ScheduleImpl(this);
 	}
 }

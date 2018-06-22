@@ -21,12 +21,17 @@ package org.matsim.example;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.vehicles.Vehicle;
+
+import java.util.LinkedList;
+import java.util.Queue;
 
 /**
  * @author nagel
@@ -36,23 +41,13 @@ public class HelloWorldTest {
 
 	@Test
 	public final void testMain() {
-		try {
-			Config config = ConfigUtils.createConfig() ;
-			config.controler().setLastIteration(1);
-			config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
-
-			Scenario scenario = ScenarioUtils.loadScenario(config) ;
-
-			Controler controler = new Controler( scenario ) ;
-
-			controler.run();
-		} catch ( Exception ee ) {
-			Logger.getLogger(this.getClass()).fatal("there was an exception: \n" + ee ) ;
-			
-			// if one catches an exception, then one needs to explicitly fail the test:
-			Assert.fail();
+		Queue<Id<Vehicle>> vehicles = new LinkedList<>();
+		if (vehicles.contains(Id.createVehicleId("123"))){
+			vehicles.add(null);
 		}
-
+		for (Id<Vehicle> vid:vehicles){
+			System.out.println("yes");
+		}
 
 	}
 

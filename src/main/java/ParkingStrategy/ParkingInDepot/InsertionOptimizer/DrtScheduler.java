@@ -29,7 +29,7 @@ import org.matsim.contrib.dvrp.data.Fleet;
 import org.matsim.contrib.dvrp.data.Vehicle;
 import org.matsim.contrib.dvrp.data.Vehicles;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
-import org.matsim.contrib.dvrp.path.VrpPaths;
+import Path.VrpPaths;
 import org.matsim.contrib.dvrp.schedule.*;
 import org.matsim.contrib.dvrp.schedule.Schedule.ScheduleStatus;
 import org.matsim.contrib.dvrp.tracker.OnlineDriveTaskTracker;
@@ -37,14 +37,23 @@ import org.matsim.contrib.dvrp.tracker.TaskTrackers;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
 import org.matsim.contrib.dvrp.util.LinkTimePair;
 import org.matsim.contrib.dvrp.vrpagent.VrpAgentSource;
+import org.matsim.core.controler.events.IterationStartsEvent;
+import org.matsim.core.controler.listener.IterationStartsListener;
 import org.matsim.core.mobsim.framework.MobsimTimer;
+import org.matsim.core.mobsim.framework.events.MobsimBeforeCleanupEvent;
+import org.matsim.core.mobsim.framework.events.MobsimInitializedEvent;
+import org.matsim.core.mobsim.framework.listeners.MobsimBeforeCleanupListener;
+import org.matsim.core.mobsim.framework.listeners.MobsimBeforeSimStepListener;
+import org.matsim.core.mobsim.framework.listeners.MobsimInitializedListener;
 import org.matsim.core.mobsim.qsim.QSim;
 import org.matsim.core.network.NetworkChangeEvent;
+import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.utils.misc.Time;
 import Schedule.*;
 import org.matsim.vehicles.VehicleType;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -68,7 +77,7 @@ public class DrtScheduler implements ScheduleInquiry {
 		this.travelTime = travelTime;
 		this.qSim = qSim;
 		initFleet(drtCfg);
-	}
+    }
 
 	private void initFleet(DrtConfigGroup drtCfg) {
 		if (drtCfg.isChangeStartLinkToLastLinkInSchedule()) {
@@ -217,7 +226,7 @@ public class DrtScheduler implements ScheduleInquiry {
                         vehicleEntry.start.time, insertion.pathToPickup, travelTime);
                 ((OnlineDriveTaskTracker)beforePickupTask.getTaskTracker()).divertPath(vrpPath);
             } else { // too late for diversion
-                if (request.getFromLink() != vehicleEntry.start.link) { // add a new drive task
+                if (!request.getFromLink().getId().equals(vehicleEntry.start.link.getId())) { // add a new drive task
                     VrpPathWithTravelData vrpPath = VrpPaths.createPath(vehicleEntry.start.link, request.getFromLink(),
                             vehicleEntry.start.time, insertion.pathToPickup, travelTime);
                     beforePickupTask = new DrtDriveTask(vrpPath);
@@ -243,7 +252,7 @@ public class DrtScheduler implements ScheduleInquiry {
                 stopTask = stops.get(insertion.pickupIdx - 1).task; // future stop task
             }
 
-            if (stopTask != null && request.getFromLink() == stopTask.getLink()) { // no detour; no new stop task
+            if (stopTask != null && request.getFromLink().getId().equals(stopTask.getLink().getId())) { // no detour; no new stop task
                 // add pickup request to stop task
                 stopTask.addPickupRequest(request);
                 request.setPickupTask(stopTask);
@@ -300,7 +309,7 @@ public class DrtScheduler implements ScheduleInquiry {
                     }
                 }
 
-                if (stayTask != null && request.getFromLink() == stayTask.getLink()) {
+                if (stayTask != null && request.getFromLink().getId().equals(stayTask.getLink().getId())) {
                     // the bus stays where it is
                     beforePickupTask = stayTask;
                 } else {// add drive task to pickup location
@@ -346,7 +355,7 @@ public class DrtScheduler implements ScheduleInquiry {
             driveToDropoffTask = schedule.getTasks().get(pickupTaskIdx + 1);
         } else {
             DrtStopTask stopTask = stops.get(insertion.dropoffIdx - 1).task;
-            if (request.getToLink() == stopTask.getLink()) { // no detour; no new stop task
+            if (request.getToLink().getId().equals(stopTask.getLink().getId())) { // no detour; no new stop task
                 // add dropoff request to stop task
                 stopTask.addDropoffRequest(request);
                 request.setDropoffTask(stopTask);
@@ -451,4 +460,5 @@ public class DrtScheduler implements ScheduleInquiry {
         event.setFlowCapacityChange(capacityChange);
         qSim.addNetworkChangeEvent(event);
     }
+
 }

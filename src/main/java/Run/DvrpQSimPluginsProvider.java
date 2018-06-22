@@ -20,7 +20,7 @@ package Run;
 
 import DynAgent.VrpAgentSourcePlugin;
 import com.google.inject.Module;
-import org.matsim.contrib.dvrp.passenger.PassengerEnginePlugin;
+import Passenger.PassengerEnginePlugin;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.core.config.Config;
 import org.matsim.core.mobsim.framework.listeners.MobsimListener;

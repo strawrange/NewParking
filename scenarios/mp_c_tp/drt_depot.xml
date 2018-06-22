@@ -1,12 +1,12 @@
 <!DOCTYPE depots SYSTEM "/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/depot.dtd">
 
 <depots>
-	<depot id="depot_1" link="mp_2-4"  capacity="200" type="depot"/>
-	<depot id="depot_2" link="1558-1553"  capacity="300" type = "depot"/>
+	<depot id="depot_1" link="mplb_44"  capacity="150" type="depot"/>
+	<depot id="depot_2" link="mplb_22"  capacity="150" type = "depot"/>
 
-    <depot id="HDB_1" link = "30898-1560" capacity="1250" type="HDB"/>
-    <depot id="HDB_2" link = "30906-1544" capacity="1250" type="HDB"/>
-    <depot id="HDB_4" link = "mp_10-5" capacity="500" type="HDB"/>
+    <depot id="HDB_1" link = "mplb_1" capacity="500" type="HDB"/>
+    <depot id="HDB_2" link = "mpla_45" capacity="500" type="HDB"/>
+    <depot id="HDB_4" link = "mpla_31" capacity="700" type="HDB"/>
 </depots>
                                          
                                          

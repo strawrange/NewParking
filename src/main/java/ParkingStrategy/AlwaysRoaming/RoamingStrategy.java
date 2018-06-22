@@ -5,6 +5,7 @@ import ParkingStrategy.AlwaysRoaming.ZoneBasedRoaming.ZonalDemandAggregator;
 import ParkingStrategy.ParkingStrategy;
 import com.google.inject.name.Named;
 import org.apache.commons.lang3.mutable.MutableInt;
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
@@ -67,6 +68,11 @@ public class RoamingStrategy implements ParkingStrategy, MobsimBeforeSimStepList
     @Override
     public void departing(Vehicle vehicle, double time) {
 
+    }
+
+    @Override
+    public ParkingStrategy.Strategies getCurrentStrategy(Id<Vehicle> vehicleId) {
+        return Strategies.AlwaysRoaming;
     }
 
     private void calculateProbability(double time) {

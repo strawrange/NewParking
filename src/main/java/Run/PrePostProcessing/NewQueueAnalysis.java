@@ -1,44 +1,47 @@
 package Run.PrePostProcessing;
 
 import Schedule.DrtActionCreator;
+import Schedule.DrtQuequeTask;
+import Schedule.DrtTask;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.events.*;
-import org.matsim.api.core.v01.events.handler.*;
-import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.events.handler.ActivityEndEventHandler;
+import org.matsim.api.core.v01.events.handler.ActivityStartEventHandler;
+import org.matsim.api.core.v01.events.handler.PersonEntersVehicleEventHandler;
+import org.matsim.api.core.v01.events.handler.PersonLeavesVehicleEventHandler;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.api.experimental.events.VehicleArrivesAtFacilityEvent;
 import org.matsim.core.api.experimental.events.VehicleDepartsAtFacilityEvent;
 import org.matsim.core.api.experimental.events.handler.VehicleArrivesAtFacilityEventHandler;
 import org.matsim.core.api.experimental.events.handler.VehicleDepartsAtFacilityEventHandler;
-import org.matsim.core.controler.events.IterationEndsEvent;
-import org.matsim.core.controler.listener.IterationEndsListener;
 import org.matsim.core.events.EventsUtils;
 import org.matsim.core.events.MatsimEventsReader;
-import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.matsim.vehicles.Vehicle;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
-public class QueueingAndDwellingTimeAnalysis {
+public class NewQueueAnalysis {
     private static String FOLDER = "/home/biyu/IdeaProjects/NewParking/output/tanjong_pagar_mixed_parking/ITERS/";
     private static String ITER = "0";
     private static String EVENTSFILE =  FOLDER +  "it." + ITER + "/" + ITER + ".events.xml.gz";
     public static void main(String[] args) throws IOException {
         EventsManager manager = EventsUtils.createEventsManager();
-        QueueingAndDwellingCounter queueingAndDwellingCounter = new QueueingAndDwellingCounter();
+        NewQueueingAndDwellingCounter queueingAndDwellingCounter = new NewQueueingAndDwellingCounter();
         manager.addHandler(queueingAndDwellingCounter);
         new MatsimEventsReader(manager).readFile(EVENTSFILE);
-        queueingAndDwellingCounter.output(FOLDER + ITER + "queueingAndDwellingTimeAnalysis.csv");
-        queueingAndDwellingCounter.outputSecond(FOLDER + ITER  + "queueingCounter.csv");
+        queueingAndDwellingCounter.output(FOLDER + ITER + "newQAnalysis.csv");
     }
-}
 
-class QueueingAndDwellingCounter implements VehicleArrivesAtFacilityEventHandler, VehicleDepartsAtFacilityEventHandler, PersonEntersVehicleEventHandler, PersonLeavesVehicleEventHandler{
-    private Map<Id<Vehicle>, ArrayList<QueueingAndDwellingRecorder>> counter = new HashMap<>();
+
+}
+class NewQueueingAndDwellingCounter implements VehicleArrivesAtFacilityEventHandler, VehicleDepartsAtFacilityEventHandler, PersonEntersVehicleEventHandler, PersonLeavesVehicleEventHandler {
+    private Map<Id<Vehicle>, ArrayList<NewQueueingAndDwellingRecorder>> counter = new HashMap<>();
     //private Map<Id<TransitStopFacility>, ArrayList<QCounter>> numOfQueue = new HashMap<>();
     private Map<Id<TransitStopFacility>, ArrayList<Event>> events = new HashMap<>();
 
@@ -53,7 +56,7 @@ class QueueingAndDwellingCounter implements VehicleArrivesAtFacilityEventHandler
         if (event.getPersonId().toString().equals(event.getVehicleId().toString())){
             return;
         }
-        QueueingAndDwellingRecorder queueingAndDwellingRecorder = counter.get(event.getVehicleId()).get(counter.get(event.getVehicleId()).size() - 1);
+        NewQueueingAndDwellingRecorder queueingAndDwellingRecorder = counter.get(event.getVehicleId()).get(counter.get(event.getVehicleId()).size() - 1);
         if (queueingAndDwellingRecorder.dwellingStartTime == queueingAndDwellingRecorder.arrivalTime){
             queueingAndDwellingRecorder.dwellingStartTime = event.getTime();
         }
@@ -73,7 +76,7 @@ class QueueingAndDwellingCounter implements VehicleArrivesAtFacilityEventHandler
             e.add(event);
             events.put(event.getFacilityId(), e);
         }
-        QueueingAndDwellingRecorder queueingAndDwellingRecorder = new QueueingAndDwellingRecorder(event.getTime());
+        NewQueueingAndDwellingRecorder queueingAndDwellingRecorder = new NewQueueingAndDwellingRecorder(event.getTime());
         queueingAndDwellingRecorder.transitStopFacilityId = event.getFacilityId();
         if (!counter.containsKey(event.getVehicleId())) {
             counter.put(event.getVehicleId(), new ArrayList<>());
@@ -89,7 +92,7 @@ class QueueingAndDwellingCounter implements VehicleArrivesAtFacilityEventHandler
         ArrayList<Event> e = events.get(event.getFacilityId());
         e.add(event);
         events.put(event.getFacilityId(), e);
-        QueueingAndDwellingRecorder queueingAndDwellingRecorder = counter.get(event.getVehicleId()).get(counter.get(event.getVehicleId()).size() - 1);
+        NewQueueingAndDwellingRecorder queueingAndDwellingRecorder = counter.get(event.getVehicleId()).get(counter.get(event.getVehicleId()).size() - 1);
         queueingAndDwellingRecorder.departureTime = event.getTime();
     }
 
@@ -106,7 +109,7 @@ class QueueingAndDwellingCounter implements VehicleArrivesAtFacilityEventHandler
         if (event.getPersonId().toString().equals(event.getVehicleId().toString())){
             return;
         }
-        QueueingAndDwellingRecorder queueingAndDwellingRecorder = counter.get(event.getVehicleId()).get(counter.get(event.getVehicleId()).size() - 1);
+        NewQueueingAndDwellingRecorder queueingAndDwellingRecorder = counter.get(event.getVehicleId()).get(counter.get(event.getVehicleId()).size() - 1);
         if (queueingAndDwellingRecorder.dwellingStartTime == queueingAndDwellingRecorder.arrivalTime){
             queueingAndDwellingRecorder.dwellingStartTime = event.getTime();
         }
@@ -115,12 +118,26 @@ class QueueingAndDwellingCounter implements VehicleArrivesAtFacilityEventHandler
 
 
     public void output(String filename) throws IOException {
+        Map<Id<TransitStopFacility>, int[]> queue = new HashMap<>();
         BufferedWriter bw = IOUtils.getBufferedWriter(filename);
-        bw.write("vehicleId;arrivalTime;dwellingStartTime;departureTime;transitStopFacilityId");
+        bw.write("time;facility;queue");
         for (Id<Vehicle> vid : counter.keySet()){
-            for (QueueingAndDwellingRecorder q : counter.get(vid)){
+            for (NewQueueingAndDwellingRecorder q : counter.get(vid)){
+                if (!queue.containsKey(q.transitStopFacilityId)){
+                    int[] temp = new int[3600*30];
+                    queue.put(q.transitStopFacilityId, temp);
+                }
+                int[] count = queue.get(q.transitStopFacilityId);
+                for (int i = ((int)q.arrivalTime); i < q.dwellingStartTime - 1; i++){
+                    count[i]++;
+                }
+                queue.put(q.transitStopFacilityId,count);
+            }
+        }
+        for (int i = 0; i < 30*3600; i++){
+            for (Id<TransitStopFacility> tid: queue.keySet()){
                 bw.newLine();
-                bw.write(vid.toString() + ";" + q.arrivalTime  + ";" + q.dwellingStartTime + ";" + q.departureTime + ";" + q.transitStopFacilityId.toString());
+                bw.write(i + ";" + tid + ";" + queue.get(tid)[i]);
             }
         }
         bw.close();
@@ -156,22 +173,22 @@ class QueueingAndDwellingCounter implements VehicleArrivesAtFacilityEventHandler
     }
 }
 
-class QueueingAndDwellingRecorder{
+class NewQueueingAndDwellingRecorder{
     public final double arrivalTime;
     public double dwellingStartTime;
     public double departureTime = 0;
     public Id<TransitStopFacility> transitStopFacilityId;
-    public QueueingAndDwellingRecorder(double arrivalTime){
+    public NewQueueingAndDwellingRecorder(double arrivalTime){
         this.arrivalTime = arrivalTime;
         this.dwellingStartTime = arrivalTime;
     }
 }
 
-class QCounter{
+class NewQCounter{
     private final double time;
 
     private final int q;
-    public QCounter(double time, int q){
+    public NewQCounter(double time, int q){
         this.time = time;
         this.q = q;
     }
@@ -184,5 +201,3 @@ class QCounter{
 
 
 }
-
-

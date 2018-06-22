@@ -11,8 +11,15 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.contrib.dvrp.data.Vehicle;
 import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
+import org.matsim.core.controler.ControlerListenerManager;
 import org.matsim.core.controler.events.IterationStartsEvent;
 import org.matsim.core.controler.listener.IterationStartsListener;
+import org.matsim.core.mobsim.framework.events.MobsimBeforeCleanupEvent;
+import org.matsim.core.mobsim.framework.events.MobsimBeforeSimStepEvent;
+import org.matsim.core.mobsim.framework.events.MobsimInitializedEvent;
+import org.matsim.core.mobsim.framework.listeners.MobsimBeforeCleanupListener;
+import org.matsim.core.mobsim.framework.listeners.MobsimBeforeSimStepListener;
+import org.matsim.core.mobsim.framework.listeners.MobsimInitializedListener;
 import org.matsim.core.mobsim.qsim.QSim;
 import org.matsim.core.network.NetworkChangeEvent;
 import org.matsim.core.network.NetworkUtils;
@@ -21,7 +28,7 @@ import Schedule.DrtStayTask;
 
 import java.util.*;
 
-public class ParkingOntheRoad implements ParkingStrategy, IterationStartsListener{
+public class ParkingOntheRoad implements ParkingStrategy, MobsimInitializedListener {
     private Map<Id<Link>, Integer> linkRecord = new HashMap<>(); // Interger counts the number of vehicles parks on the link
     @Inject
     private QSim qsim;
@@ -31,8 +38,8 @@ public class ParkingOntheRoad implements ParkingStrategy, IterationStartsListene
 
 
     @Inject
-    public ParkingOntheRoad(QSim qSim, @Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) Network network, BayManager bayManager) {
-        this.qsim = qSim;
+    public ParkingOntheRoad(@Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) Network network, BayManager bayManager) {
+        //controlerListenerManager.addControlerListener(this);
         cleanNetwork = NetworkUtils.createNetwork();
         for (Node node : network.getNodes().values()) {
             NetworkUtils.createAndAddNode(cleanNetwork,node.getId(),node.getCoord());
@@ -43,7 +50,7 @@ public class ParkingOntheRoad implements ParkingStrategy, IterationStartsListene
         }
         new NetworkCleaner().run(cleanNetwork);
         for (Link link : cleanNetwork.getLinks().values()){
-            if (link.getNumberOfLanes() > 1 && !isTransitStop(link, bayManager) ) {
+            if (link.getNumberOfLanes() == 1 && !isTransitStop(link, bayManager) ) {
                 supply.put(link.getId(), (int) Math.floor(link.getLength() / vehicleLength));
             } else {
                 supply.put(link.getId(), 0);
@@ -53,7 +60,7 @@ public class ParkingOntheRoad implements ParkingStrategy, IterationStartsListene
 
 
     private boolean isTransitStop(Link link, BayManager bayManager) {
-        return !bayManager.getBayByLinkId(link.getId()).getTransitStop().getId().toString().endsWith("DRT");
+        return bayManager.getStopIdByLinkId(link.getId()) != null;
     }
 
     @Override
@@ -62,7 +69,7 @@ public class ParkingOntheRoad implements ParkingStrategy, IterationStartsListene
         if (supply.get(currentLink.getId()) > 0){
             if (!linkRecord.containsKey(currentLink.getId())){
                 linkRecord.put(currentLink.getId(),0);
-                modifyLanes(currentLink, time, -1.D);
+                modifyLanes(currentLink, time, -0.5);
             }
             if (supply.get(currentLink.getId()) > linkRecord.get(currentLink.getId())) {
                 int num = linkRecord.get(currentLink.getId()) + 1;
@@ -129,6 +136,11 @@ public class ParkingOntheRoad implements ParkingStrategy, IterationStartsListene
         }
     }
 
+    @Override
+    public ParkingStrategy.Strategies getCurrentStrategy(Id<Vehicle> vehicleId) {
+        return Strategies.ParkingOntheRoad;
+    }
+
     public void modifyLanes(Link currentLink, double time, double change){
         double numOfLanes = currentLink.getNumberOfLanes();
         NetworkChangeEvent event = new NetworkChangeEvent(time + Math.random());
@@ -141,10 +153,10 @@ public class ParkingOntheRoad implements ParkingStrategy, IterationStartsListene
     }
 
 
+
     @Override
-    public void notifyIterationStarts(IterationStartsEvent event) {
+    public void notifyMobsimInitialized(MobsimInitializedEvent e) {
         linkRecord.clear();
     }
-
 }
 

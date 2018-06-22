@@ -31,7 +31,7 @@ import Schedule.DrtRequest;
 public class DefaultDrtRequestValidator implements DrtRequestValidator {
 	@Override
 	public boolean validateDrtRequest(DrtRequest request) {
-		if (request.getFromLink() == request.getToLink()) {
+		if (request.getFromLink().getId().equals(request.getToLink().getId())) {
 			// throw new IllegalArgumentException("fromLink and toLink must be different");
 			Logger.getLogger(getClass()).error("fromLink and toLink must be different. Request " + request.getId()
 					+ " will not be served. The agent will stay in limbo.");

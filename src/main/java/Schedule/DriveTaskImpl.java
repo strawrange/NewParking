@@ -3,7 +3,7 @@
  *                                                                         *
  * *********************************************************************** *
  *                                                                         *
- * copyright       : (C) 2015 by the members listed in the COPYING,        *
+ * copyright       : (C) 2013 by the members listed in the COPYING,        *
  *                   LICENSE and WARRANTY file.                            *
  * email           : info at matsim dot org                                *
  *                                                                         *
@@ -19,18 +19,37 @@
 
 package Schedule;
 
+import org.matsim.contrib.dvrp.path.DivertedVrpPath;
+import org.matsim.contrib.dvrp.path.VrpPath;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
+import org.matsim.contrib.dvrp.schedule.DriveTask;
 
-/**
- * @author michalm
- */
-public class DrtDriveTask extends DriveTaskImpl implements DrtTask {
-	public DrtDriveTask(VrpPathWithTravelData path) {
-		super(path);
+public class DriveTaskImpl extends AbstractTask implements DriveTask {
+	private VrpPath path;
+
+	public DriveTaskImpl(VrpPathWithTravelData path) {
+		super(path.getDepartureTime(), path.getArrivalTime());
+		this.path = path;
 	}
 
 	@Override
-	public DrtTaskType getDrtTaskType() {
-		return DrtTaskType.DRIVE;
+	public VrpPath getPath() {
+		return path;
+	}
+
+	@Override
+	public void pathDiverted(DivertedVrpPath divertedPath, double newEndTime) {
+		// can only divert an ongoing task
+		if (getStatus() != TaskStatus.STARTED) {
+			throw new IllegalStateException();
+		}
+
+		path = divertedPath;
+		setEndTime(newEndTime);
+	}
+
+	@Override
+	public String toString() {
+		return "D(@" + path.getFromLink().getId() + "->@" + path.getToLink().getId() + ")" + commonToString();
 	}
 }

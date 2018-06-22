@@ -4,6 +4,7 @@ import ParkingStrategy.ParkingInDepot.Depot.Depot;
 import ParkingStrategy.ParkingInDepot.Depot.DepotManager;
 import ParkingStrategy.ParkingStrategy;
 import com.google.inject.Inject;
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.data.Vehicle;
 import org.matsim.contrib.util.distance.DistanceUtils;
@@ -56,6 +57,11 @@ public class ParkingInDepot implements ParkingStrategy {
     @Override
     public void departing(Vehicle vehicle, double time) {
         depotManager.vehicleLeavingDepot(vehicle);
+    }
+
+    @Override
+    public ParkingStrategy.Strategies getCurrentStrategy(Id<Vehicle> vehicleId) {
+        return Strategies.ParkingInDepot;
     }
 
 }

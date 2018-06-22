@@ -19,12 +19,12 @@
 
 package Vehicle;
 
+import Schedule.VehicleImpl;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.data.FleetImpl;
 import org.matsim.contrib.dvrp.data.Vehicle;
-import org.matsim.contrib.dvrp.data.VehicleImpl;
 import org.matsim.contrib.dvrp.data.file.ReaderUtils;
 import org.matsim.core.utils.io.MatsimXmlParser;
 import org.matsim.vehicles.VehicleType;
@@ -74,6 +74,17 @@ public class VehicleReader extends MatsimXmlParser {
 		double t1 = ReaderUtils.getDouble(atts, "t_1", DEFAULT_T_1);
 		vehicleType.setAccessTime(ReaderUtils.getDouble(atts, "boarding_time_per_person_s",DEFAULT_BOARDING));
 		vehicleType.setEgressTime(ReaderUtils.getDouble(atts,"alighting_time_per_person_s", DEFAULT_ALIGHTING));
+		if (vehicleType instanceof DynVehicleType) {
+			if (capacity == 4.0){
+				vehicleType.setLength(3.0);
+			}
+			if (capacity == 10.0){
+				vehicleType.setLength(5.0);
+			}
+			if (capacity == 20.0){
+				vehicleType.setLength(8.0);
+			}
+		}
 		return createVehicle(id, startLink, capacity, t0, t1, atts);
 	}
 

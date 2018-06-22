@@ -22,14 +22,14 @@ public class VehicleEnlarge {
     static FleetImpl fleet = new FleetImpl();
     static FleetImpl newFleet = new FleetImpl();
     public static void main(String[] args) {
-        int numS = 800;
-        int numM = 500;
-        int numL = 200;
+        int numS = 1000;
+        int numM = 700;
+        int numL = 300;
         int num = numL + numM + numS;
         Config config = ConfigUtils.loadConfig("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/drtconfig.xml");
         Scenario scenario = ScenarioUtils.loadScenario(config);
         Network network = scenario.getNetwork();
-        (new VehicleReader(network,fleet)).parse(IOUtils.getUrlFromFileOrResource("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/drt_vehicles_mix.xml"));
+        (new VehicleReader(network,fleet)).parse(IOUtils.getUrlFromFileOrResource("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/drtvehicles_600.xml"));
         ArrayList<Vehicle> smallV = new ArrayList<>(filter(4).values());
         ArrayList<Vehicle> mediumV = new ArrayList<>(filter(10).values());
         ArrayList<Vehicle> largeV = new ArrayList<>(filter(20).values());

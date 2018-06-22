@@ -10,7 +10,9 @@ public class DynVehicleType extends VehicleTypeImpl {
     private double accessTime;
     private double egressTime;
 
+
     public DynVehicleType(Id<VehicleType> typeId){
         super(typeId);
     }
+
 }

@@ -20,7 +20,7 @@ package ParkingStrategy.ParkingInDepot.InsertionOptimizer;
 
 
 import ParkingStrategy.VehicleData;
-import org.matsim.contrib.dvrp.path.OneToManyPathSearch.PathData;
+import Path.OneToManyPathSearch.PathData;
 import Schedule.DrtRequest;
 
 /**

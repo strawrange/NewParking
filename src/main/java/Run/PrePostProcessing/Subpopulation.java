@@ -14,6 +14,7 @@ import org.matsim.contrib.dvrp.data.file.VehicleWriter;
 import org.matsim.contrib.util.PopulationUtils;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.population.io.PopulationReader;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.run.gui.PopulationSampler;
@@ -22,17 +23,24 @@ import java.util.*;
 
 public class Subpopulation {
     public static void main(String[] args) {
-        double prct = 0.5;
-        Config config = ConfigUtils.loadConfig("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/drtconfig.xml");
-        Scenario scenario = ScenarioUtils.loadScenario(config);
+        double prct = 0.30;
+        Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
+        new PopulationReader(scenario).readFile("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/mp_c_tp_plans_2018.xml.gz");
         Population population = scenario.getPopulation();
         int bound = (int) (prct * population.getPersons().size());
         List<Id<Person>> keyset =  new ArrayList<>(population.getPersons().keySet());
         for (int i = 0; i < bound; i++){
             Random random = new Random();
-            int idx = random.nextInt(population.getPersons().size());
-            scenario.getPopulation().removePerson(keyset.get(idx));
+            boolean inc = false;
+            do {
+                int idx = random.nextInt(population.getPersons().size());
+                if (!scenario.getPopulation().getPersons().containsKey(keyset.get(idx))){
+                    inc = true;
+                }
+                scenario.getPopulation().removePerson(keyset.get(idx));
+                keyset.remove(idx);
+            }while (inc);
         }
-        new PopulationWriter(scenario.getPopulation()).write("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/0.plans.xml");
+        new PopulationWriter(scenario.getPopulation()).write("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/plans_70prct_2018.xml.gz");
     }
 }

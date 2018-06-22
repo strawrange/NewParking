@@ -1,0 +1,13 @@
+<!DOCTYPE depots SYSTEM "/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/depot.dtd">
+
+<depots>
+	<depot id="depot_1" link="l164"  capacity="150" type="depot"/>
+	<depot id="depot_2" link="l30"  capacity="150" type = "depot"/>
+
+    <depot id="HDB_1" link = "l56" capacity="500" type="HDB"/>
+    <depot id="HDB_2" link = "l1657" capacity="500" type="HDB"/>
+    <depot id="HDB_4" link = "l898" capacity="700" type="HDB"/>
+</depots>
+                                         
+                                         
+                                         

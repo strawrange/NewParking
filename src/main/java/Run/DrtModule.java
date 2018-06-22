@@ -1,11 +1,15 @@
 package Run;
 
 import BayInfrastructure.BayManager;
+import Dwelling.ClearNetworkChangeEvents;
 import Dwelling.DrtAndTransitStopHandlerFactory;
 import Dwelling.DrtStopHandler;
 import ParkingStrategy.DefaultDrtOptimizer;
+import ParkingStrategy.MixedParkingStrategy;
 import ParkingStrategy.ParkingInDepot.Depot.DepotManager;
 import ParkingStrategy.ParkingInDepot.Depot.DepotManagerProvider;
+import ParkingStrategy.ParkingInDepot.InsertionOptimizer.DrtScheduler;
+import ParkingStrategy.ParkingOntheRoad.ParkingOntheRoad;
 import Vehicle.DynVehicleType;
 import Vehicle.FleetProvider;
 import com.google.inject.name.Names;
@@ -40,7 +44,7 @@ DrtModule extends AbstractModule {
 
 	@Override
 	public void install() {
-		bind(VehicleType.class).annotatedWith(Names.named(VrpAgentSource.DVRP_VEHICLE_TYPE)).toInstance(new VehicleTypeImpl(Id.create(DynVehicleType.DYNTYPE,VehicleType.class)));
+		bind(VehicleType.class).annotatedWith(Names.named(VrpAgentSource.DVRP_VEHICLE_TYPE)).toInstance(new DynVehicleType(Id.create(DynVehicleType.DYNTYPE,VehicleType.class)));
 		DrtConfigGroup drtCfg = DrtConfigGroup.get(getConfig());
 		bind(Fleet.class).toProvider(new FleetProvider(drtCfg.getVehiclesFileUrl(getConfig().getContext())))
 				.asEagerSingleton();
@@ -50,7 +54,9 @@ DrtModule extends AbstractModule {
 		bind(RebalancingStrategy.class).to(NoRebalancingStrategy.class);
 		bind(TravelDisutilityFactory.class).annotatedWith(Names.named(DefaultDrtOptimizer.DRT_OPTIMIZER))
 				.toInstance(timeCalculator -> new TimeAsTravelDisutility(timeCalculator));
-		bind(TransitStopHandlerFactory.class ).to( DrtAndTransitStopHandlerFactory.class ) ;
+		bind(TransitStopHandlerFactory.class ).to( DrtAndTransitStopHandlerFactory.class );
+		addControlerListenerBinding().to(ClearNetworkChangeEvents.class).asEagerSingleton();
+		addControlerListenerBinding().to(BayManager.class).asEagerSingleton();
 
 
 		switch (drtCfg.getOperationalScheme()) {

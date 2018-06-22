@@ -3,7 +3,7 @@
  *                                                                         *
  * *********************************************************************** *
  *                                                                         *
- * copyright       : (C) 2015 by the members listed in the COPYING,        *
+ * copyright       : (C) 2013 by the members listed in the COPYING,        *
  *                   LICENSE and WARRANTY file.                            *
  * email           : info at matsim dot org                                *
  *                                                                         *
@@ -19,18 +19,34 @@
 
 package Schedule;
 
-import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
+import org.matsim.api.core.v01.network.Link;
+import org.matsim.contrib.dvrp.schedule.StayTask;
 
-/**
- * @author michalm
- */
-public class DrtDriveTask extends DriveTaskImpl implements DrtTask {
-	public DrtDriveTask(VrpPathWithTravelData path) {
-		super(path);
+public class StayTaskImpl extends AbstractTask implements StayTask {
+	private final Link link;
+	private final String name;
+
+	public StayTaskImpl(double beginTime, double endTime, Link link) {
+		this(beginTime, endTime, link, null);
+	}
+
+	public StayTaskImpl(double beginTime, double endTime, Link link, String name) {
+		super(beginTime, endTime);
+		this.link = link;
+		this.name = name;
 	}
 
 	@Override
-	public DrtTaskType getDrtTaskType() {
-		return DrtTaskType.DRIVE;
+	public Link getLink() {
+		return link;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	@Override
+	public String toString() {
+		return "S(" + (name != null ? name : "") + "@" + link.getId() + ")" + commonToString();
 	}
 }

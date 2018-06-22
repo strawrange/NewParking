@@ -18,7 +18,7 @@
 
 package ParkingStrategy.ParkingInDepot.InsertionOptimizer;
 
-import org.matsim.contrib.dvrp.path.OneToManyPathSearch.PathData;
+import Path.OneToManyPathSearch.PathData;
 
 /**
  * @author michalm

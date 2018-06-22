@@ -10,29 +10,42 @@ import org.matsim.core.api.experimental.events.VehicleArrivesAtFacilityEvent;
 import org.matsim.core.api.experimental.events.VehicleDepartsAtFacilityEvent;
 import org.matsim.core.api.experimental.events.handler.VehicleArrivesAtFacilityEventHandler;
 import org.matsim.core.api.experimental.events.handler.VehicleDepartsAtFacilityEventHandler;
+import org.matsim.core.controler.events.IterationStartsEvent;
+import org.matsim.core.controler.events.StartupEvent;
+import org.matsim.core.controler.listener.IterationStartsListener;
+import org.matsim.core.controler.listener.StartupListener;
 import org.matsim.core.mobsim.qsim.QSim;
 import org.matsim.core.network.NetworkChangeEvent;
 import org.matsim.pt.transitSchedule.TransitScheduleFactoryImpl;
 import org.matsim.pt.transitSchedule.api.*;
+import org.matsim.vehicles.Vehicle;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BayManager implements VehicleDepartsAtFacilityEventHandler{
+public class BayManager implements VehicleDepartsAtFacilityEventHandler, IterationStartsListener {
     Map<Id<TransitStopFacility>, Bay> bays = new HashMap<>();
     Map<Id<Link>, Id<TransitStopFacility>> baysByStops = new HashMap<>();
+    Collection<TransitStopFacility> transitStopFacilities;
     Network network;
 
 
     @Inject
     public BayManager(Scenario scenario, EventsManager eventsManager){
-        for (TransitStopFacility stop: scenario.getTransitSchedule().getFacilities().values()){
+        transitStopFacilities = scenario.getTransitSchedule().getFacilities().values();
+        initate();
+        this.network = scenario.getNetwork();
+        eventsManager.addHandler(this);
+    }
+
+    private void initate(){
+        for (TransitStopFacility stop: transitStopFacilities){
             Bay bay = new Bay(stop);
             bays.put(stop.getId(), bay);
             baysByStops.put(stop.getLinkId(),stop.getId());
         }
-        this.network = scenario.getNetwork();
-        eventsManager.addHandler(this);
     }
 
     public Bay getBayByLinkId(Id<Link> linkId){
@@ -66,4 +79,10 @@ public class BayManager implements VehicleDepartsAtFacilityEventHandler{
     }
 
 
+    @Override
+    public void notifyIterationStarts(IterationStartsEvent event) {
+        bays.clear();
+        baysByStops.clear();
+        initate();
+    }
 }

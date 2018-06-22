@@ -12,7 +12,6 @@ import java.net.URL;
 public class DepotManagerProvider implements Provider<DepotManager> {
 
     @Inject
-    @Named(DvrpRoutingNetworkProvider.DVRP_ROUTING)
     Network network;
 
     URL url;

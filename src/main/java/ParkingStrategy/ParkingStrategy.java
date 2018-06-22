@@ -30,4 +30,6 @@ public interface ParkingStrategy {
 
     void departing(Vehicle vehicle, double time);
 
+    Strategies getCurrentStrategy(Id<Vehicle> vehicleId);
+
 }
