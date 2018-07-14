@@ -28,7 +28,7 @@ import Schedule.DrtStayTask;
 
 import java.util.*;
 
-public class ParkingOntheRoad implements ParkingStrategy, MobsimInitializedListener {
+public class ParkingOntheRoad implements ParkingStrategy, IterationStartsListener {
     private Map<Id<Link>, Integer> linkRecord = new HashMap<>(); // Interger counts the number of vehicles parks on the link
     @Inject
     private QSim qsim;
@@ -38,8 +38,9 @@ public class ParkingOntheRoad implements ParkingStrategy, MobsimInitializedListe
 
 
     @Inject
-    public ParkingOntheRoad(@Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) Network network, BayManager bayManager) {
+    public ParkingOntheRoad(@Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) Network network, BayManager bayManager, ControlerListenerManager manager) {
         //controlerListenerManager.addControlerListener(this);
+        manager.addControlerListener(this);
         cleanNetwork = NetworkUtils.createNetwork();
         for (Node node : network.getNodes().values()) {
             NetworkUtils.createAndAddNode(cleanNetwork,node.getId(),node.getCoord());
@@ -154,8 +155,13 @@ public class ParkingOntheRoad implements ParkingStrategy, MobsimInitializedListe
 
 
 
+//    @Override
+//    public void notifyMobsimInitialized(MobsimInitializedEvent e) {
+//        linkRecord.clear();
+//    }
+
     @Override
-    public void notifyMobsimInitialized(MobsimInitializedEvent e) {
+    public void notifyIterationStarts(IterationStartsEvent event) {
         linkRecord.clear();
     }
 }

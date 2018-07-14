@@ -9,7 +9,8 @@ public interface ParkingStrategy {
         AlwaysRoaming,
         NoParkingStrategy,
         ParkingInDepot,
-        ParkingOntheRoad;
+        ParkingOntheRoad,
+        MixedParking;
     }
 
     public class ParkingLocation {

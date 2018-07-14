@@ -4,7 +4,6 @@ import ParkingStrategy.ParkingInDepot.Depot.*;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.contrib.dvrp.data.FleetImpl;
 import org.matsim.contrib.dvrp.data.Vehicle;
 import org.matsim.contrib.dvrp.data.VehicleImpl;
 import org.matsim.contrib.dvrp.data.file.VehicleWriter;
@@ -13,7 +12,6 @@ import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.scenario.ScenarioUtils;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -25,7 +23,7 @@ public class CreateVehicleInDepot {
         Config config = ConfigUtils.loadConfig("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/drtconfig.xml");
         Scenario scenario = ScenarioUtils.loadScenario(config);
         Network network = scenario.getNetwork();
-        DepotManager depotManager = new DepotManager();
+        DepotManager depotManager = new DepotManagerDifferentDepots(config,network);
         new DepotReader(depotManager,network).readFile("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/drt_depot.xml");
         ArrayList<Vehicle> vehicles = new ArrayList<>();
         Map<Id<Depot>, Depot> HDBdepots = depotManager.getDepots(Depot.DepotType.HDB);

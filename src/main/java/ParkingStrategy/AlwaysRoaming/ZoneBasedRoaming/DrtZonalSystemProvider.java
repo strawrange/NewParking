@@ -5,7 +5,6 @@ import com.google.inject.Provider;
 import com.google.inject.name.Named;
 import com.vividsolutions.jts.geom.Geometry;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.contrib.drt.analysis.zonal.DrtGridUtils;
 
 import java.util.Map;
 

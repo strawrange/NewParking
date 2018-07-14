@@ -20,8 +20,8 @@ public class VehicleIDGenarator {
 //        Scenario scenario = ScenarioUtils.loadScenario(config);
 //        Network network = scenario.getNetwork();
         FleetImpl fleet = new FleetImpl();
-        (new VehicleReader(NetworkUtils.createNetwork(),fleet)).parse(IOUtils.getUrlFromFileOrResource("/home/biyu/IdeaProjects/NewParking/scenarios/tanjong_pagar/drt_vehicles_mix_320.xml"));
-        BufferedWriter bw = IOUtils.getBufferedWriter("/home/biyu/IdeaProjects/NewParking/scenarios/tanjong_pagar/drtid_vehicles_mix_320.xml");
+        (new VehicleReader(NetworkUtils.createNetwork(),fleet)).parse(IOUtils.getUrlFromFileOrResource("/home/biyu/IdeaProjects/NewParking/scenarios/tanjong_pagar/drtvehicles_550.xml"));
+        BufferedWriter bw = IOUtils.getBufferedWriter("/home/biyu/IdeaProjects/NewParking/scenarios/tanjong_pagar/drtid_vehicles_550.xml");
         for (Vehicle vehicle: fleet.getVehicles().values()){
             bw.write(vehicle.getId().toString());
             bw.newLine();

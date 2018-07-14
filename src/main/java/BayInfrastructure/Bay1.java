@@ -29,7 +29,7 @@ public class Bay1 {
         this.transitStop = transitStop;
         this.linkId = transitStop.getLinkId();
         if (transitStop.getAttributes().getAttribute("capacity") == null){
-            this.capacity = 1;
+            this.capacity = Double.MAX_VALUE;
         }else{
             this.capacity = (double) transitStop.getAttributes().getAttribute("capacity");
         }

@@ -26,7 +26,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.drt.passenger.events.DrtRequestSubmittedEvent;
-import org.matsim.contrib.drt.run.DrtConfigGroup;
+import Run.DrtConfigGroup;
 import org.matsim.contrib.dvrp.data.Request;
 import org.matsim.contrib.dvrp.passenger.PassengerRequestCreator;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;

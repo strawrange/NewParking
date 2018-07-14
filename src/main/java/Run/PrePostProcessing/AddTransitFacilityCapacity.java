@@ -12,19 +12,19 @@ import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 
 public class AddTransitFacilityCapacity {
 
-    private static String FOLDER = "/home/biyu/IdeaProjects/NewParking/scenarios/tanjong_pagar/";
+    private static String FOLDER = "/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/scenarios/tanjong_pagar/transit/";
 
     public static void main(String[] args) {
         Config config = ConfigUtils.createConfig();
         Scenario scenario = ScenarioUtils.loadScenario(config);
-        new TransitScheduleReaderV2(scenario).readFile(FOLDER + "tp_PT.xml");
+        new TransitScheduleReaderV2(scenario).readFile(FOLDER + "tp_PT_walkshed.xml");
         TransitSchedule transitSchedule = scenario.getTransitSchedule();
         for (TransitStopFacility stop : transitSchedule.getFacilities().values()){
-            if (stop.getId().toString().startsWith("CC") || stop.getId().toString().startsWith("NS") || stop.getId().toString().startsWith("TE")) {
+            if (stop.getId().toString().startsWith("CC") || stop.getId().toString().startsWith("NS") || stop.getId().toString().startsWith("TE") || stop.getId().toString().startsWith("CE")) {
                 continue;
             }
             stop.getAttributes().putAttribute("capacity",30.0);
         }
-        new TransitScheduleWriterV2(transitSchedule).write(FOLDER + "tp_PT_bay.xml");
+        new TransitScheduleWriterV2(transitSchedule).write(FOLDER + "tp_PT_bay_walkshed_30.xml");
     }
 }

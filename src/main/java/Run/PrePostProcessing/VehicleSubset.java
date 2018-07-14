@@ -4,8 +4,7 @@ import com.sun.org.apache.bcel.internal.generic.NEW;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.contrib.drt.run.DrtConfigGroup;
-import org.matsim.contrib.dvrp.data.Fleet;
+
 import org.matsim.contrib.dvrp.data.FleetImpl;
 import org.matsim.contrib.dvrp.data.Vehicle;
 import org.matsim.contrib.dvrp.data.file.VehicleReader;

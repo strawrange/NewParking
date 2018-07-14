@@ -1,8 +1,7 @@
 package Run.PrePostProcessing;
 
-import ParkingStrategy.ParkingInDepot.Depot.Depot;
-import ParkingStrategy.ParkingInDepot.Depot.DepotManager;
-import ParkingStrategy.ParkingInDepot.Depot.DepotReader;
+import ParkingStrategy.ParkingInDepot.Depot.*;
+import Run.DrtConfigGroup;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.data.FleetImpl;
@@ -20,19 +19,19 @@ import java.util.Random;
 
 public class VehicleInDepot {
     public static void main(String[] args) {
-        Config config = ConfigUtils.loadConfig("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/drtconfig.xml");
+        Config config = ConfigUtils.loadConfig("/home/biyu/IdeaProjects/NewParking/scenarios/tanjong_pagar/drtconfig.xml", new DrtConfigGroup());
         Scenario scenario = ScenarioUtils.loadScenario(config);
         Network network = scenario.getNetwork();
         FleetImpl fleet = new FleetImpl();
-        (new VehicleReader(network,fleet)).parse(IOUtils.getUrlFromFileOrResource("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/drt_vehicles_mix.xml"));
-        DepotManager depotManager = new DepotManager();
-        new DepotReader(depotManager,network).parse(IOUtils.getUrlFromFileOrResource("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/drt_depot.xml"));
+        (new VehicleReader(network,fleet)).parse(IOUtils.getUrlFromFileOrResource("/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/scenarios/tanjong_pagar/drtvehicles/drtvehicles_200.xml"));
+        DepotManager depotManager = new DepotManagerSameDepot(config,network);
+        //new DepotReader(depotManager,network).parse(IOUtils.getUrlFromFileOrResource("/home/biyu/IdeaProjects/NewParking/scenarios/tanjong_pagar/drt_depot.xml"));
         Random random = new Random();
         List depotIds = new ArrayList(depotManager.getDepots().keySet());
         for (Vehicle vehicle: fleet.getVehicles().values()){
             Depot depot = depotManager.getDepots().get(depotIds.get(random.nextInt(depotIds.size())));
             vehicle.setStartLink(depot.getLink());
         }
-        new VehicleWriter(fleet.getVehicles().values()).write("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/drtvehicles_depot.xml");
+        new VehicleWriter(fleet.getVehicles().values()).write("/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/scenarios/tanjong_pagar/drtvehicles/drtvehicles_200_depot.xml");
     }
 }

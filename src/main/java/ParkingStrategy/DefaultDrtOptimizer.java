@@ -31,7 +31,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.drt.optimizer.DrtOptimizer;
 import org.matsim.contrib.drt.passenger.events.DrtRequestRejectedEvent;
-import org.matsim.contrib.drt.run.DrtConfigGroup;
+import Run.DrtConfigGroup;
 import org.matsim.contrib.dvrp.data.Fleet;
 import org.matsim.contrib.dvrp.data.Request;
 import org.matsim.contrib.dvrp.data.Vehicle;
@@ -69,13 +69,14 @@ public class DefaultDrtOptimizer implements DrtOptimizer {
 	private final Collection<DrtRequest> unplannedRequests = new TreeSet<DrtRequest>(
 			PassengerRequests.ABSOLUTE_COMPARATOR);
 	private boolean requiresReoptimization = false;
-	private final DepotManager depotManager;
+	@Inject(optional = true)
+	private DepotManager depotManager;
 	private final BayManager bayManager;
 
 	@Inject
 	public DefaultDrtOptimizer(DrtConfigGroup drtCfg, Fleet fleet, MobsimTimer mobsimTimer, EventsManager eventsManager,
 							   DrtRequestValidator requestValidator, ParkingStrategy parkingStrategy,
-							   DrtScheduler scheduler, EmptyVehicleRelocator relocator, UnplannedRequestInserter requestInserter, DepotManager depotManager, BayManager bayManager) {
+							   DrtScheduler scheduler, EmptyVehicleRelocator relocator, UnplannedRequestInserter requestInserter, BayManager bayManager) {
 		this.drtCfg = drtCfg;
 		this.fleet = fleet;
 		this.mobsimTimer = mobsimTimer;
@@ -85,7 +86,6 @@ public class DefaultDrtOptimizer implements DrtOptimizer {
 		this.scheduler = scheduler;
 		this.relocator = relocator;
 		this.requestInserter = requestInserter;
-		this.depotManager = depotManager;
 		this.bayManager = bayManager;
 	}
 
@@ -275,8 +275,9 @@ public class DefaultDrtOptimizer implements DrtOptimizer {
 		if (! (schedule.getCurrentTask() instanceof  DrtStopTask)){
 			return false;
 		}
-
-
+		if (vehicle.getSchedule().getCurrentTask().getTaskIdx() - 2 < 0){
+			return false;
+		}
 		if ( !(schedule.getTasks().get(vehicle.getSchedule().getCurrentTask().getTaskIdx() - 2) instanceof  DrtStayTask)){
 			return false;
 		}

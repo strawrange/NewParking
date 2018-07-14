@@ -23,8 +23,8 @@
 package ParkingAnalysis;
 
 
-import org.matsim.contrib.drt.analysis.DrtAnalysisControlerListener;
-import org.matsim.contrib.drt.analysis.DrtRequestAnalyzer;
+import Analysis.DrtAnalysisControlerListener;
+import Analysis.DrtRequestAnalyzer;
 import org.matsim.contrib.drt.analysis.DrtVehicleOccupancyEvaluator;
 import org.matsim.contrib.drt.analysis.DynModePassengerStats;
 import org.matsim.core.controler.AbstractModule;

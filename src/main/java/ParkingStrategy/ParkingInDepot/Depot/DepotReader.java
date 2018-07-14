@@ -1,5 +1,6 @@
 package ParkingStrategy.ParkingInDepot.Depot;
 
+import com.google.inject.Inject;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
@@ -19,6 +20,7 @@ public class DepotReader extends MatsimXmlParser {
     private static final double DEFAULT_CAPACITY = 0;
     private final DepotManager depotManager;
     private final Network network;
+
 
     public DepotReader(DepotManager depotManager, Network network) {
         this.depotManager = depotManager;

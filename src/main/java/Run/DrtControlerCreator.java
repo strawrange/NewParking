@@ -26,6 +26,11 @@ package Run;
 
 import BayInfrastructure.VehicleLength;
 import DynAgent.VrpAgentLogic;
+import ParkingStrategy.AlwaysRoaming.RoamingStrategy;
+import ParkingStrategy.NoParkingStrategy.NoParkingStrategy;
+import ParkingStrategy.ParkingInDepot.Depot.DepotManager;
+import ParkingStrategy.ParkingInDepot.Depot.DepotManagerDifferentDepots;
+import ParkingStrategy.ParkingInDepot.Depot.DepotManagerSameDepot;
 import ParkingStrategy.ParkingInDepot.InsertionOptimizer.*;
 import firstLastAVPTRouter.MainModeIdentifierFirstLastAVPT;
 import firstLastAVPTRouter.TransitRouterFirstLastAVPTFactory;
@@ -52,8 +57,6 @@ import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.contrib.drt.routing.DrtStageActivityType;
-import org.matsim.contrib.drt.run.DrtConfigConsistencyChecker;
-import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.dvrp.optimizer.VrpOptimizer;
 import org.matsim.contrib.dvrp.passenger.PassengerRequestCreator;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
@@ -65,7 +68,6 @@ import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ModeParams;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
-import org.matsim.core.controler.listener.IterationStartsListener;
 import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.core.mobsim.qsim.QSim;
 import org.matsim.core.router.MainModeIdentifier;
@@ -125,7 +127,7 @@ public final class DrtControlerCreator {
 			}
 
 		});
-		BufferedReader reader = new BufferedReader(new FileReader("/home/biyu/IdeaProjects/NewParking/scenarios/tanjong_pagar/stops_in_area.txt"));
+		BufferedReader reader = new BufferedReader(new FileReader("/home/ec2-user/data/biyu/IdeaProjects/NewParking/scenarios/tanjong_pagar/stops_in_area_walkshed.txt"));
 		String line = reader.readLine();
 		Set<Id<TransitStopFacility>> ids = new HashSet<>();
 		while(line!=null) {
@@ -142,10 +144,10 @@ public final class DrtControlerCreator {
 					break IDS;
 				}
 		}
-		controler.addOverridingModule(new DvrpModule(DrtControlerCreator::createModuleForQSimPlugin, ParkingOntheRoad.class,
+		controler.addOverridingModule(new DvrpModule(DrtControlerCreator::createModuleForQSimPlugin,
 				DrtOptimizer.class,
 				DefaultUnplannedRequestInserter.class, ParallelPathDataProvider.class));
-		//controler.addOverridingModule(new DrtZonalModule());
+		controler.addOverridingModule(new DrtZonalModule());
 		controler.addOverridingModule(new DrtModule());
 		controler.addOverridingModule(new DrtAnalysisModule());
 		//rebalancing strategy: demand based rebalancing strategy
@@ -189,6 +191,7 @@ public final class DrtControlerCreator {
 		return new com.google.inject.AbstractModule() {
 			@Override
 			protected void configure() {
+				DrtConfigGroup drtCfg = DrtConfigGroup.get(config);
 				bind(DrtOptimizer.class).to(DefaultDrtOptimizer.class).asEagerSingleton();
 				bind(VrpOptimizer.class).to(DrtOptimizer.class);
 				bind(DefaultUnplannedRequestInserter.class).asEagerSingleton();
@@ -199,9 +202,23 @@ public final class DrtControlerCreator {
 				bind(PassengerRequestCreator.class).to(DrtRequestCreator.class).asEagerSingleton();
 				bind(ParallelPathDataProvider.class).asEagerSingleton();
 				bind(PrecalculatablePathDataProvider.class).to(ParallelPathDataProvider.class);
-				bind(ParkingOntheRoad.class).asEagerSingleton();
-				bind(ParkingInDepot.class).asEagerSingleton();
-				bind(ParkingStrategy.class).to(MixedParkingStrategy.class).asEagerSingleton();
+				if (drtCfg.getParkingStrategy().equals(ParkingStrategy.Strategies.AlwaysRoaming)){
+					bind(ParkingStrategy.class).to(RoamingStrategy.class).asEagerSingleton();
+				}else if (drtCfg.getParkingStrategy().equals(ParkingStrategy.Strategies.ParkingOntheRoad)){
+					bind(ParkingStrategy.class).to(ParkingOntheRoad.class).asEagerSingleton();
+				}else if (drtCfg.getParkingStrategy().equals(ParkingStrategy.Strategies.ParkingInDepot)){
+					bind(ParkingStrategy.class).to(ParkingInDepot.class).asEagerSingleton();
+					bind(DepotManager.class).to(DepotManagerSameDepot.class).asEagerSingleton();
+				}else if (drtCfg.getParkingStrategy().equals(ParkingStrategy.Strategies.MixedParking)){
+					bind(ParkingOntheRoad.class).asEagerSingleton();
+					bind(ParkingInDepot.class).asEagerSingleton();
+					bind(ParkingStrategy.class).to(MixedParkingStrategy.class).asEagerSingleton();
+					bind(DepotManager.class).to(DepotManagerDifferentDepots.class).asEagerSingleton();
+				}else if (drtCfg.getParkingStrategy().equals(ParkingStrategy.Strategies.NoParkingStrategy)){
+					bind(ParkingStrategy.class).to(NoParkingStrategy.class).asEagerSingleton();
+				}else{
+					throw new RuntimeException("Parking strategy: " + drtCfg.getParkingStrategy().toString() + " does not exist");
+				}
 				bind(VehicleLength.class).asEagerSingleton();
 			}
 

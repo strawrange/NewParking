@@ -21,9 +21,7 @@ package ParkingStrategy.ParkingInDepot.InsertionOptimizer;
 
 
 import ParkingStrategy.VehicleData;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
-import org.matsim.contrib.drt.run.DrtConfigGroup;
+
 import org.matsim.contrib.dvrp.schedule.Schedules;
 import org.matsim.contrib.dvrp.schedule.Task;
 import org.matsim.contrib.dvrp.vrpagent.VrpAgentSource;

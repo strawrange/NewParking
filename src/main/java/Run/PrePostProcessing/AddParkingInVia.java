@@ -18,8 +18,8 @@ import org.matsim.core.network.io.NetworkReaderMatsimV2;
 
 public class AddParkingInVia {
 
-    private static String FOLDER = "/home/biyu/IdeaProjects/NewParking/output/tanjong_pagar_mixed_parking/";
-    private static String ITER = "0";
+    private static String FOLDER = "/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/out/output/V550/tanjong_pagar_mix_10_v550/";
+    private static String ITER = "40";
     private static String EVENTSFILE =  FOLDER +  "ITERS/it." + ITER + "/" + ITER + ".events.xml.gz";
     private static String NETWORKSFILE = "/home/biyu/IdeaProjects/NewParking/scenarios/tanjong_pagar/tp_phase4.xml";
     public static void main(String[] args) {
@@ -45,9 +45,9 @@ class ParkingEventHandler implements ActivityStartEventHandler, ActivityEndEvent
     @Override
     public void handleEvent(ActivityStartEvent event) {
         if (event.getActType().equals("DrtStay") ){
-            if (event.getTime() > MixedParkingStrategy.dayT0 && event.getTime() < MixedParkingStrategy.dayT1){
-                return;
-            }
+//            if (event.getTime() > MixedParkingStrategy.dayT0 && event.getTime() < MixedParkingStrategy.dayT1){
+//                return;
+//            }
             eventsManager.processEvent(new VehicleEntersTrafficEvent(event.getTime(), event.getPersonId(), event.getLinkId(),  Id.createVehicleId(event.getPersonId()), TransportMode.drt, 1));
             eventsManager.processEvent(new LinkEnterEvent(event.getTime(), Id.createVehicleId(event.getPersonId()), event.getLinkId()));
         }
@@ -56,9 +56,9 @@ class ParkingEventHandler implements ActivityStartEventHandler, ActivityEndEvent
     @Override
     public void handleEvent(ActivityEndEvent event) {
         if (event.getActType().equals("DrtStay") ){
-            if (event.getTime() > MixedParkingStrategy.dayT0 && event.getTime() < MixedParkingStrategy.dayT1){
-                return;
-            }
+//            if (event.getTime() > MixedParkingStrategy.dayT0 && event.getTime() < MixedParkingStrategy.dayT1){
+//                return;
+//            }
             eventsManager.processEvent(new LinkLeaveEvent(event.getTime(), Id.createVehicleId(event.getPersonId()), event.getLinkId()));
             eventsManager.processEvent(new VehicleLeavesTrafficEvent(event.getTime(), event.getPersonId(), event.getLinkId(),  Id.createVehicleId(event.getPersonId()), TransportMode.drt, 1));
         }

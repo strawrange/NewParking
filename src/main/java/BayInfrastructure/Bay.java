@@ -7,6 +7,7 @@ import org.matsim.vehicles.Vehicle;
 
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Bay {
     private final TransitStopFacility transitStop;
@@ -14,15 +15,15 @@ public class Bay {
     private final double capacity;
 
 
-    private Queue<Id<Vehicle>> vehicles = new LinkedList<>();
-    private Queue<Id<Vehicle>> dwellingVehicles = new LinkedList<>();
+    private Queue<Id<Vehicle>> vehicles = new ConcurrentLinkedQueue<>();
+    private Queue<Id<Vehicle>> dwellingVehicles = new ConcurrentLinkedQueue<>();
     private double dwellLength = 0;
 
     public Bay(TransitStopFacility transitStop){
         this.transitStop = transitStop;
         this.linkId = transitStop.getLinkId();
         if (transitStop.getAttributes().getAttribute("capacity") == null){
-            this.capacity = 1;
+            this.capacity = Double.MAX_VALUE;
         }else{
             this.capacity = (double) transitStop.getAttributes().getAttribute("capacity");
         }
@@ -49,13 +50,13 @@ public class Bay {
             return;
         }
         double vehicleLength = VehicleLength.lengthByVehicle.get(vid).getVehicle().getType().getLength();
-        if (dwellLength +  vehicleLength > capacity){
+        if (dwellLength +  vehicleLength >= capacity){
             if (!vehicles.contains(vid)) {
                 vehicles.add(vid);
             }
         }else{
-            dwellingVehicles.add(vid);
             dwellLength = dwellLength + vehicleLength;
+            dwellingVehicles.add(vid);
         }
     }
 
@@ -81,9 +82,9 @@ public class Bay {
                 Id<Vehicle> vehicleId = vehicles.peek();
                 double vehLength = VehicleLength.lengthByVehicle.get(vehicleId).getVehicle().getType().getLength();
                 if (dwellLength + vehLength <= capacity) {
+                    dwellLength = dwellLength + vehLength;
                     dwellingVehicles.add(vehicleId);
                     vehicles.remove(vehicleId);
-                    dwellLength = dwellLength + vehLength;
                 }
             }
         }

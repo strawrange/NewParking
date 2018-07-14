@@ -1,12 +1,74 @@
 <!DOCTYPE depots SYSTEM "/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/depot.dtd">
 
 <depots>
-	<depot id="depot_1" link="l164"  capacity="150" type="depot"/>
+	<depot id="depot_1" link="l1450"  capacity="150" type="depot"/>
 	<depot id="depot_2" link="l30"  capacity="150" type = "depot"/>
+    <depot id="depot_3" link = "l1657" capacity="150" type="depot"/>
+    <depot id="depot_4" link = "l462" capacity="150" type="depot"/>
 
-    <depot id="HDB_1" link = "l56" capacity="500" type="HDB"/>
-    <depot id="HDB_2" link = "l1657" capacity="500" type="HDB"/>
-    <depot id="HDB_4" link = "l898" capacity="700" type="HDB"/>
+    <depot id="HDB_0" link="l1690" capacity="20" type="HDB"/>
+
+    <depot id="HDB_1" link="l1680" capacity="20" type="HDB"/>
+
+    <depot id="HDB_10" link="l1274" capacity="20" type="HDB"/>
+
+    <depot id="HDB_11" link="l1342" capacity="20" type="HDB"/>
+
+    <depot id="HDB_12" link="l1544" capacity="20" type="HDB"/>
+
+    <depot id="HDB_13" link="l962" capacity="20" type="HDB"/>
+
+    <depot id="HDB_14" link="l866" capacity="20" type="HDB"/>
+
+    <depot id="HDB_15" link="l884" capacity="20" type="HDB"/>
+
+    <depot id="HDB_16" link="l1280" capacity="20" type="HDB"/>
+
+    <depot id="HDB_17" link="l274" capacity="20" type="HDB"/>
+
+    <depot id="HDB_18" link="l336" capacity="20" type="HDB"/>
+
+    <depot id="HDB_19" link="l748" capacity="20" type="HDB"/>
+
+    <depot id="HDB_2" link="l1162" capacity="20" type="HDB"/>
+
+    <depot id="HDB_20" link="l1252" capacity="20" type="HDB"/>
+
+    <depot id="HDB_21" link="l978" capacity="20" type="HDB"/>
+
+    <depot id="HDB_22" link="l282" capacity="20" type="HDB"/>
+
+    <depot id="HDB_23" link="l826" capacity="20" type="HDB"/>
+
+    <depot id="HDB_24" link="l602" capacity="20" type="HDB"/>
+
+    <depot id="HDB_25" link="l54" capacity="20" type="HDB"/>
+
+    <depot id="HDB_26" link="l1264" capacity="20" type="HDB"/>
+
+    <depot id="HDB_27" link="l380" capacity="20" type="HDB"/>
+
+    <depot id="HDB_28" link="l290" capacity="20" type="HDB"/>
+
+    <depot id="HDB_29" link="l266" capacity="20" type="HDB"/>
+
+    <depot id="HDB_3" link="l1166" capacity="20" type="HDB"/>
+
+    <depot id="HDB_30" link="l714" capacity="20" type="HDB"/>
+
+    <depot id="HDB_31" link="l756" capacity="20" type="HDB"/>
+
+    <depot id="HDB_4" link="l1208" capacity="20" type="HDB"/>
+
+    <depot id="HDB_5" link="l1400" capacity="20" type="HDB"/>
+
+    <depot id="HDB_6" link="l1614" capacity="20" type="HDB"/>
+
+    <depot id="HDB_7" link="l1046" capacity="20" type="HDB"/>
+
+    <depot id="HDB_8" link="l1564" capacity="20" type="HDB"/>
+
+    <depot id="HDB_9" link="l1330" capacity="20" type="HDB"/>
 </depots>
                                          
                                          

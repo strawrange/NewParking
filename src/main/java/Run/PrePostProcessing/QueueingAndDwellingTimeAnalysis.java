@@ -24,8 +24,8 @@ import java.io.IOException;
 import java.util.*;
 
 public class QueueingAndDwellingTimeAnalysis {
-    private static String FOLDER = "/home/biyu/IdeaProjects/NewParking/output/tanjong_pagar_mixed_parking/ITERS/";
-    private static String ITER = "0";
+    private static String FOLDER = "/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/out/output/V550/tanjong_pagar_depot_10_v550/ITERS/";
+    private static String ITER = "40";
     private static String EVENTSFILE =  FOLDER +  "it." + ITER + "/" + ITER + ".events.xml.gz";
     public static void main(String[] args) throws IOException {
         EventsManager manager = EventsUtils.createEventsManager();

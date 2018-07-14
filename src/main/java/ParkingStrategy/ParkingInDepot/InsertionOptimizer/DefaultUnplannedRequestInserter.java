@@ -25,7 +25,7 @@ import com.google.inject.name.Named;
 import org.apache.log4j.Logger;
 import org.matsim.contrib.drt.passenger.events.DrtRequestRejectedEvent;
 import org.matsim.contrib.drt.passenger.events.DrtRequestScheduledEvent;
-import org.matsim.contrib.drt.run.DrtConfigGroup;
+import Run.DrtConfigGroup;
 import org.matsim.contrib.dvrp.data.Fleet;
 import org.matsim.contrib.dvrp.schedule.Schedule;
 import org.matsim.contrib.dvrp.vrpagent.VrpAgentSource;

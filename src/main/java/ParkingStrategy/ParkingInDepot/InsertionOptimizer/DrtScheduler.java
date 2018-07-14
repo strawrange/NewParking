@@ -23,7 +23,7 @@ import ParkingStrategy.VehicleData;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.contrib.drt.run.DrtConfigGroup;
+import Run.DrtConfigGroup;
 import org.matsim.contrib.dvrp.data.FleetImpl;
 import org.matsim.contrib.dvrp.data.Fleet;
 import org.matsim.contrib.dvrp.data.Vehicle;

@@ -62,6 +62,7 @@ public class RoamingStrategy implements ParkingStrategy, MobsimBeforeSimStepList
                 high = mid;
             }
         }
+
         return new ParkingLocation(vehicle.getId(), NetworkUtils.getNearestLink(network, zonalSystem.getZoneCentroid(zoneidlist.get(low))));
     }
 
