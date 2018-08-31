@@ -60,7 +60,6 @@ import org.matsim.api.core.v01.TransportMode;
 import org.matsim.contrib.drt.routing.DrtStageActivityType;
 import org.matsim.contrib.dvrp.optimizer.VrpOptimizer;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
-import org.matsim.contrib.dvrp.trafficmonitoring.QSimFreeSpeedTravelTime;
 import org.matsim.contrib.eventsBasedPTRouter.stopStopTimes.StopStopTimeCalculator;
 import org.matsim.contrib.eventsBasedPTRouter.waitTimes.WaitTimeStuckCalculator;
 import org.matsim.contrib.otfvis.OTFVisLiveModule;
@@ -82,7 +81,6 @@ import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.ScenarioUtils;
 import Schedule.DrtRequestCreator;
-import org.matsim.core.trafficmonitoring.TravelTimeCalculator;
 import org.matsim.pt.transitSchedule.api.TransitStopArea;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 
@@ -126,23 +124,24 @@ public final class DrtControlerCreator {
 		controler.getEvents().addHandler(stopStopTimeCalculatorAV);
 		final LinkLinkTimeCalculatorAV linkLinkTimeCalculatorAV = new LinkLinkTimeCalculatorAV(scenario.getNetwork(), scenario.getConfig().travelTimeCalculator().getTraveltimeBinSize(), (int) (scenario.getConfig().qsim().getEndTime()-scenario.getConfig().qsim().getStartTime()));
 		controler.getEvents().addHandler(linkLinkTimeCalculatorAV);
-		final TravelTimeCalculator travelTimeCalculator = new TravelTimeCalculator(scenario.getNetwork(), scenario.getConfig().travelTimeCalculator());
 
-		String EVENTSFILE = "/home/ubuntu/data/biyu/IdeaProjects/NewParking/out/artifacts/output/drt_mix_V450_T250_bay_optimal/ITERS/it.40/40.events.xml.gz";
-		//String EVENTSFILE = "/home/biyu/IdeaProjects/NewParking/output/drt_mix_V450_T250_bay_optimal/ITERS/it.40/40.events.xml.gz";
-		EventsManager manager = EventsUtils.createEventsManager();
+//		String EVENTSFILE = "/home/biyu/IdeaProjects/NewParking/scenarios/tanjong_pagar/40.events.xml.gz";
+//		EventsManager manager = EventsUtils.createEventsManager();
 //		manager.addHandler(waitTimeCalculator);
 //		manager.addHandler(waitLinkTimeCalculatorAV);
 //		manager.addHandler(waitTimeCalculatorAV);
 //		manager.addHandler(stopStopTimeCalculator);
 //		manager.addHandler(stopStopTimeCalculatorAV);
 //		manager.addHandler(linkLinkTimeCalculatorAV);
-		manager.addHandler(travelTimeCalculator);
-		new MatsimEventsReader(manager).readFile(EVENTSFILE);
+//		new MatsimEventsReader(manager).readFile(EVENTSFILE);
+		controler.addOverridingModule(new AbstractModule() {
+			@Override
+			public void install() {
+				bind(MainModeIdentifier.class).toInstance(new MainModeIdentifierFirstLastAVPT(new HashSet<>(Arrays.asList("pvt","taxi","walk"))));
+				addRoutingModuleBinding("pt").toProvider(new TransitRouterFirstLastAVPTFactory(scenario, waitTimeCalculator.get(), waitTimeCalculatorAV.get(), waitLinkTimeCalculatorAV.get(), stopStopTimeCalculator.get(), stopStopTimeCalculatorAV.get(), linkLinkTimeCalculatorAV.get(), TransitRouterNetworkFirstLastAVPT.NetworkModes.PT_AV));
+			}
 
-
-
-
+		});
 		BufferedReader reader = new BufferedReader(new FileReader(fileStops));
 		String line = reader.readLine();
 		Set<Id<TransitStopFacility>> ids = new HashSet<>();
@@ -166,15 +165,6 @@ public final class DrtControlerCreator {
 		controler.addOverridingModule(new DrtZonalModule());
 		controler.addOverridingModule(new DrtModule());
 		controler.addOverridingModule(new DrtAnalysisModule());
-		controler.addOverridingModule(new AbstractModule() {
-			@Override
-			public void install() {
-				addTravelTimeBinding(DvrpTravelTimeModule.DVRP_INITIAL).toInstance(travelTimeCalculator.getLinkTravelTimes());
-				bind(MainModeIdentifier.class).toInstance(new MainModeIdentifierFirstLastAVPT(new HashSet<>(Arrays.asList("pvt","taxi","walk"))));
-				addRoutingModuleBinding("pt").toProvider(new TransitRouterFirstLastAVPTFactory(scenario, waitTimeCalculator.get(), waitTimeCalculatorAV.get(), waitLinkTimeCalculatorAV.get(), stopStopTimeCalculator.get(), stopStopTimeCalculatorAV.get(), linkLinkTimeCalculatorAV.get(), TransitRouterNetworkFirstLastAVPT.NetworkModes.PT_AV));
-			}
-
-		});
 		//rebalancing strategy: demand based rebalancing strategy
 		if (otfvis) {
 			controler.addOverridingModule(new OTFVisLiveModule());
@@ -227,7 +217,6 @@ public final class DrtControlerCreator {
 				bind(PassengerRequestCreator.class).to(DrtRequestCreator.class).asEagerSingleton();
 				bind(ParallelPathDataProvider.class).asEagerSingleton();
 				bind(PrecalculatablePathDataProvider.class).to(ParallelPathDataProvider.class);
-				bind(VehicleLength.class).asEagerSingleton();
 				if (drtCfg.getParkingStrategy().equals(ParkingStrategy.Strategies.AlwaysRoaming)){
 					bind(ParkingStrategy.class).to(RoamingStrategy.class).asEagerSingleton();
 				}else if (drtCfg.getParkingStrategy().equals(ParkingStrategy.Strategies.ParkingOntheRoad)){
@@ -245,7 +234,7 @@ public final class DrtControlerCreator {
 				}else{
 					throw new RuntimeException("Parking strategy: " + drtCfg.getParkingStrategy().toString() + " does not exist");
 				}
-
+				bind(VehicleLength.class).asEagerSingleton();
 			}
 
 

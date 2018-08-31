@@ -160,7 +160,7 @@ public class PassengerEngine implements MobsimEngine, DepartureHandler {
 		Id<Link> linkId = driver.getCurrentLinkId();
 
 		if (passenger.getCurrentLinkId() != linkId || passenger.getState() != State.LEG
-				|| !passenger.getMode().startsWith(mode)) {
+				|| !passenger.getMode().equals(mode)) {
 			awaitingPickupStorage.storeAwaitingPickup(request, pickupActivity);
 			return false;// wait for the passenger
 		}

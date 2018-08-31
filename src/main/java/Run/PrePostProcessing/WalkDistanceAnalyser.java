@@ -25,17 +25,17 @@ public class WalkDistanceAnalyser {
 
     public static void main(String[] args) throws IOException {
         double[] bay = new double[]{1,1.5,2};
-        //BufferedWriter bw2 = org.matsim.core.utils.io.IOUtils.getBufferedWriter("/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/out/output/mp_c_tp/drt_mix_V1500_T1000_max/legstats.csv");
-        //bw2.write("bay;drt;pt;drtaxi");
+        BufferedWriter bw2 = org.matsim.core.utils.io.IOUtils.getBufferedWriter("/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/out/output/mp_c_tp/drt_mix_V1500_T1000_max/legstats.csv");
+        bw2.write("bay;drt;pt;drtaxi");
         double i=1;
         //for (double i:bay){
             //FOLDER = "/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/out/output/HKSTS/Roam/tanjong_pagar_roam_max_v600_plans_"+ i +"/ITERS/";
-        FOLDER = "/home/biyu/IdeaProjects/NewParking/output/drt_mix_V450_T250_bay_optimal/ITERS/";
+        FOLDER = "/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/out/output/mp_c_tp/drt_mix_V1500_T1000_max/ITERS/";
             PLANFILE =  FOLDER +  "it." + ITER + "/" + ITER + ".plans.xml.gz";
             Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
             new PopulationReader(scenario).readFile(PLANFILE);
             BufferedWriter bw = org.matsim.core.utils.io.IOUtils.getBufferedWriter(FOLDER + ITER + "walk.csv");
-            bw.write("personId;accessT;accessD;egressT;egressD;mode");
+            bw.write("personId;accessT;accessD;egressT;egressD");
             int drt = 0;
             int pt = 0;
             int drtaxi = 0;
@@ -65,7 +65,7 @@ public class WalkDistanceAnalyser {
                             }
                         }
                         bw.newLine();
-                        bw.write(person.getId().toString() + ";" + accessT + ";" + accessD + ";" + egressT + ";" + egressD + ";drt");
+                        bw.write(person.getId().toString() + ";" + accessT + ";" + accessD + ";" + egressT + ";" + egressD);
                     }
                     if (planElement instanceof Leg && ((Leg) planElement).getMode().equals("pt")){
                         if (((Leg) planElement).getDepartureTime() > 28*3600){
@@ -78,14 +78,13 @@ public class WalkDistanceAnalyser {
                             return;
                         }
                         drtaxi++;
-
                     }
                 }
             }
-            //bw2.newLine();
-            //bw2.write(i + ";" + drt + ";" + pt + ";" + drtaxi);
-            //bw.close();
+            bw2.newLine();
+            bw2.write(i + ";" + drt + ";" + pt + ";" + drtaxi);
+            bw.close();
         //}
-        //bw2.close();
+        bw2.close();
     }
 }

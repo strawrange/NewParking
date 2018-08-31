@@ -31,7 +31,6 @@ import org.matsim.vehicles.VehicleType;
 import org.xml.sax.Attributes;
 import org.matsim.contrib.dvrp.data.Vehicle;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
@@ -49,12 +48,12 @@ public class VehicleReader extends MatsimXmlParser {
 
 	private FleetImpl fleet;
 	private Map<Id<Link>, ? extends Link> links;
-	private Map<String, VehicleType> vehicleTypes = new HashMap<>();
+	private VehicleType vehicleType;
 
-	public VehicleReader(Network network, FleetImpl fleet) {
+	public VehicleReader(Network network, FleetImpl fleet, VehicleType vehicleType) {
 		this.fleet = fleet;
 		links = network.getLinks();
-
+		this.vehicleType = vehicleType;
 	}
 
 	@Override
@@ -68,41 +67,34 @@ public class VehicleReader extends MatsimXmlParser {
 	public void endTag(String name, String content, Stack<String> context) {
 	}
 
-	private VehicleImpl createVehicle(Attributes atts) {
+	private Vehicle createVehicle(Attributes atts) {
 		Id<Vehicle> id = Id.create(atts.getValue("id"), Vehicle.class);
 		Link startLink = links.get(Id.createLinkId(atts.getValue("start_link")));
 		double capacity = ReaderUtils.getDouble(atts, "capacity", DEFAULT_CAPACITY);
 		double t0 = ReaderUtils.getDouble(atts, "t_0", DEFAULT_T_0);
 		double t1 = ReaderUtils.getDouble(atts, "t_1", DEFAULT_T_1);
 		String mode = ReaderUtils.getString(atts, "mode",null);
-		String type = capacity + "V";
-		if (!vehicleTypes.containsKey(type)){
-			VehicleType vehicleType = new DynVehicleType();
-			VehicleCapacity cap = new VehicleCapacityImpl();
-			cap.setSeats((int)capacity);
-			vehicleType.setCapacity(cap);
-			if (vehicleType instanceof DynVehicleType) {
-				if (capacity == 1.0){
-					vehicleType.setLength(3.0);
-				}
-				if (capacity == 4.0){
-					vehicleType.setLength(5.0);
-				}
-				if (capacity == 10.0){
-					vehicleType.setLength(6.5);
-				}
-				if (capacity == 20.0){
-					vehicleType.setLength(9.0);
-				}
+		vehicleType.setAccessTime(ReaderUtils.getDouble(atts, "boarding_time_per_person_s",DEFAULT_BOARDING));
+		vehicleType.setEgressTime(ReaderUtils.getDouble(atts,"alighting_time_per_person_s", DEFAULT_ALIGHTING));
+		VehicleCapacity cap = new VehicleCapacityImpl();
+		cap.setSeats((int)capacity);
+		vehicleType.setCapacity(cap);
+		if (vehicleType instanceof DynVehicleType) {
+			if (capacity == 4.0){
+				vehicleType.setLength(5.0);
 			}
-			vehicleTypes.put(type, vehicleType);
+			if (capacity == 10.0){
+				vehicleType.setLength(6.5);
+			}
+			if (capacity == 20.0){
+				vehicleType.setLength(9.0);
+			}
 		}
-		VehicleType vehicleType = vehicleTypes.get(type);
-		return createVehicle(id, startLink, capacity, t0, t1, mode, vehicleType);
+		return createVehicle(id, startLink, capacity, t0, t1, mode);
 	}
 
-	protected VehicleImpl createVehicle(Id<Vehicle> id, Link startLink, double capacity, double t0, double t1,
-			String mode, VehicleType vehicleType) {
-		return new VehicleImpl(id, startLink, capacity, t0, t1, mode, vehicleType);
+	protected Vehicle createVehicle(Id<Vehicle> id, Link startLink, double capacity, double t0, double t1,
+			String mode) {
+		return new VehicleImpl(id, startLink, capacity, t0, t1, mode);
 	}
 }

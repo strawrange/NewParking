@@ -45,7 +45,7 @@ public class BayManager implements VehicleDepartsAtFacilityEventHandler, Iterati
 
     private void initate(){
         for (TransitStopFacility stop: transitStopFacilities){
-            Bay bay = new Bay(stop, network.getLinks().get(stop.getLinkId()).getLength(),drtConfigGroup.getMinBaySize());
+            Bay bay = new Bay(stop, network.getLinks().get(stop.getLinkId()).getLength());
             bays.put(stop.getId(), bay);
             baysByStops.put(stop.getLinkId(),stop.getId());
         }
@@ -56,7 +56,7 @@ public class BayManager implements VehicleDepartsAtFacilityEventHandler, Iterati
             TransitStopFacility transitStopFacility = (new TransitScheduleFactoryImpl()).createTransitStopFacility(Id.create(linkId.toString() + "_DRT", TransitStopFacility.class),
                     network.getLinks().get(linkId).getCoord(),false);
             transitStopFacility.setLinkId(linkId);
-            bays.put(transitStopFacility.getId(), new Bay(transitStopFacility, network.getLinks().get(linkId).getLength(),drtConfigGroup));
+            bays.put(transitStopFacility.getId(), new Bay(transitStopFacility, network.getLinks().get(linkId).getLength(),drtConfigGroup.getDoor2DoorStop()));
             baysByStops.put(linkId,transitStopFacility.getId());
         }
         return bays.get(baysByStops.get(linkId));
@@ -80,9 +80,6 @@ public class BayManager implements VehicleDepartsAtFacilityEventHandler, Iterati
     public void handleEvent(VehicleDepartsAtFacilityEvent event) {
         Bay bay = bays.get(event.getFacilityId());
         bay.removeVehicle(event.getVehicleId());
-        if (bay.getDwellingVehicles().contains(event.getVehicleId())){
-            throw new RuntimeException(event.getVehicleId().toString() + " is still in the bay " + event.getFacilityId());
-        }
     }
 
 

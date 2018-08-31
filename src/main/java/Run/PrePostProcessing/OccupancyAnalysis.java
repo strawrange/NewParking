@@ -34,7 +34,7 @@ public class OccupancyAnalysis {
         //double[] bay = new double[]{1,1.5,2};
         //for (double i:bay) {
             //FOLDER = "/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/out/output/HKSTS/Mix/tanjong_pagar_mix_max_v600_plans_" + i + "/ITERS/";
-        FOLDER ="/home/biyu/IdeaProjects/NewParking/output/drt_mix_V1500_T1000_linkLength_pricing/ITERS/";
+        FOLDER ="/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/out/output/mp_c_tp/drt_mix_V1500_max/ITERS/";
         EVENTSFILE = FOLDER + "it." + ITER + "/" + ITER + ".events.xml.gz";
             EventsManager manager = EventsUtils.createEventsManager();
             Network network = NetworkUtils.createNetwork();
@@ -69,17 +69,18 @@ class OccupancyHandler implements PersonEntersVehicleEventHandler, PersonLeavesV
             return;
         }
         if (!occupancy.containsKey(event.getVehicleId())){
-            Occ initialO = new Occ(0,0);
+            Occ o = new Occ(event.getTime(), 1);
             ArrayList<Occ> os = new ArrayList<>();
-            os.add(initialO);
+            os.add(o);
             occupancy.put(event.getVehicleId(),os);
+        }else{
+            ArrayList<Occ> os = occupancy.get(event.getVehicleId());
+            Occ lastO = os.get(os.size() - 1);
+            lastO.endT = event.getTime();
+            double newOcc = lastO.occ + 1;
+            Occ newO = new Occ(event.getTime(),newOcc);
+            os.add(newO);
         }
-        ArrayList<Occ> os = occupancy.get(event.getVehicleId());
-        Occ lastO = os.get(os.size() - 1);
-        lastO.endT = event.getTime();
-        double newOcc = lastO.occ + 1;
-        Occ newO = new Occ(event.getTime(),newOcc);
-        os.add(newO);
     }
 
     @Override
