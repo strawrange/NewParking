@@ -21,11 +21,11 @@ package Schedule;
 
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.contrib.dvrp.data.Vehicle;
 import org.matsim.contrib.dvrp.schedule.Schedule;
 import org.matsim.contrib.dvrp.schedule.Task;
 import org.matsim.contrib.dvrp.schedule.Task.TaskStatus;
 import org.matsim.contrib.dvrp.schedule.Tasks;
+import org.matsim.contrib.dvrp.data.Vehicle;
 
 import java.util.ArrayList;
 import java.util.Collections;

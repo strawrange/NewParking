@@ -21,8 +21,8 @@ package Dwelling;
 
 
 import ParkingStrategy.ParkingInDepot.InsertionOptimizer.DrtScheduler;
+import Passenger.PassengerEngine;
 import Schedule.DrtRequest;
-import org.matsim.contrib.dvrp.passenger.PassengerEngine;
 import org.matsim.contrib.dvrp.passenger.PassengerPickupActivity;
 import org.matsim.contrib.dvrp.passenger.PassengerRequest;
 import org.matsim.contrib.dvrp.schedule.StayTask;

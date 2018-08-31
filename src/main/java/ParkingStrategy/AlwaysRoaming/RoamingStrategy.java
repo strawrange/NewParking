@@ -3,17 +3,20 @@ package ParkingStrategy.AlwaysRoaming;
 import ParkingStrategy.AlwaysRoaming.ZoneBasedRoaming.DrtZonalSystem;
 import ParkingStrategy.AlwaysRoaming.ZoneBasedRoaming.ZonalDemandAggregator;
 import ParkingStrategy.ParkingStrategy;
+import Schedule.DrtStayTask;
 import com.google.inject.name.Named;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.network.Node;
 import org.matsim.contrib.dvrp.data.Vehicle;
 import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
 import org.matsim.core.mobsim.framework.events.MobsimBeforeSimStepEvent;
 import org.matsim.core.mobsim.framework.listeners.MobsimBeforeSimStepListener;
 import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.network.algorithms.NetworkCleaner;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -22,6 +25,7 @@ import java.util.Random;
 
 public class RoamingStrategy implements ParkingStrategy, MobsimBeforeSimStepListener {
     private DrtZonalSystem zonalSystem;
+    private Network cleanNetwork;
     private Network network;
     private ArrayList<Link> selectableLinks = new ArrayList();
     private ZonalDemandAggregator demandAggregator;
@@ -31,10 +35,19 @@ public class RoamingStrategy implements ParkingStrategy, MobsimBeforeSimStepList
     @Inject
     public RoamingStrategy( ZonalDemandAggregator demandAggregator, DrtZonalSystem zonalSystem,
                            @Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) Network network) {
+        this.network = network;
+        cleanNetwork = NetworkUtils.createNetwork();
+        for (Node node : network.getNodes().values()) {
+            NetworkUtils.createAndAddNode(cleanNetwork,node.getId(),node.getCoord());
+        }
+        for (Link link : network.getLinks().values()){
+            NetworkUtils.createAndAddLink(cleanNetwork, link.getId(), cleanNetwork.getNodes().get(link.getFromNode().getId()), cleanNetwork.getNodes().get(link.getToNode().getId()),
+                    link.getLength(),link.getFreespeed(),link.getCapacity(), link.getNumberOfLanes());
+        }
+        new NetworkCleaner().run(cleanNetwork);
         this.demandAggregator = demandAggregator;
         this.zonalSystem = zonalSystem;
-        this.network = network;
-        for (Link link : network.getLinks().values()){
+        for (Link link : cleanNetwork.getLinks().values()){
             if (link.getAllowedModes().contains(TransportMode.car)){
                 selectableLinks.add(link);
             }
@@ -43,6 +56,9 @@ public class RoamingStrategy implements ParkingStrategy, MobsimBeforeSimStepList
 
     @Override
     public ParkingLocation parking(Vehicle vehicle, double time) {
+        if (zoneidlist == null || zoneidlist.size() == 0) {
+            calculateProbability(time);
+        }
         if (zoneidlist == null || zoneidlist.size() == 0) {
             Random random = new Random();
             Link randomLink = selectableLinks.get(random.nextInt(selectableLinks.size()));
@@ -62,8 +78,11 @@ public class RoamingStrategy implements ParkingStrategy, MobsimBeforeSimStepList
                 high = mid;
             }
         }
-
-        return new ParkingLocation(vehicle.getId(), NetworkUtils.getNearestLink(network, zonalSystem.getZoneCentroid(zoneidlist.get(low))));
+        Link relocateL;
+        do{
+            relocateL = network.getLinks().get(Id.createLinkId(NetworkUtils.getNearestLink(cleanNetwork, zonalSystem.getRandomZoneCoord(zoneidlist.get(low))).getId().toString()));
+        }while(relocateL == ((DrtStayTask)vehicle.getSchedule().getCurrentTask()).getLink());
+        return new ParkingLocation(vehicle.getId(), relocateL);
     }
 
     @Override

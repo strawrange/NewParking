@@ -20,14 +20,15 @@
 package ParkingStrategy.ParkingInDepot.InsertionOptimizer;
 
 import ParkingStrategy.VehicleData;
+import Passenger.Event.DrtRequestScheduledEvent;
+import Vehicle.Fleet;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.apache.log4j.Logger;
 import org.matsim.contrib.drt.passenger.events.DrtRequestRejectedEvent;
-import org.matsim.contrib.drt.passenger.events.DrtRequestScheduledEvent;
+
 import Run.DrtConfigGroup;
-import org.matsim.contrib.dvrp.data.Fleet;
-import org.matsim.contrib.dvrp.schedule.Schedule;
+
 import org.matsim.contrib.dvrp.vrpagent.VrpAgentSource;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.mobsim.framework.MobsimTimer;
@@ -80,11 +81,12 @@ public class DefaultUnplannedRequestInserter implements UnplannedRequestInserter
 			return;
 		}
 
-		VehicleData vData = new VehicleData(mobsimTimer.getTimeOfDay(), fleet.getVehicles().values().stream());
+
 
 		Iterator<DrtRequest> reqIter = unplannedRequests.iterator();
 		while (reqIter.hasNext()) {
 			DrtRequest req = reqIter.next();
+			VehicleData vData = new VehicleData(mobsimTimer.getTimeOfDay(), fleet.getVehicles(req.getMode()).values().stream());
 			Optional<SingleVehicleInsertionProblem.BestInsertion> best = insertionProblem.findBestInsertion(req, vData.getEntries());
 			if (!best.isPresent()) {
 				req.setRejected(true);

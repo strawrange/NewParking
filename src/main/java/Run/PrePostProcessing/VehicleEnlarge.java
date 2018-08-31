@@ -22,11 +22,11 @@ public class VehicleEnlarge {
     static FleetImpl fleet = new FleetImpl();
     static FleetImpl newFleet = new FleetImpl();
     public static void main(String[] args) {
-        int numS = 100;
-        int numM = 80;
-        int numL = 20;
+        int numS = 800;
+        int numM = 500;
+        int numL = 200;
         int num = numL + numM + numS;
-        Config config = ConfigUtils.loadConfig("/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/scenarios/tanjong_pagar/drtconfig_depot_30_300_0.125.xml");
+        Config config = ConfigUtils.loadConfig("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/mp_c_tp_bay_2018.xml");
         Scenario scenario = ScenarioUtils.loadScenario(config);
         Network network = scenario.getNetwork();
         (new VehicleReader(network,fleet)).parse(IOUtils.getUrlFromFileOrResource("/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/scenarios/tanjong_pagar/drtvehicles/drt_vehicles_mix_320.xml"));

@@ -23,9 +23,9 @@ import java.util.*;
 
 public class Subpopulation {
     public static void main(String[] args) {
-        double prct = 0.99;
+        double prct = 0.30;
         Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
-        new PopulationReader(scenario).readFile("/home/biyu/IdeaProjects/NewParking/scenarios/tanjong_pagar/tp_plans.xml.gz");
+        new PopulationReader(scenario).readFile("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/mp_c_tp_plans.xml.gz");
         Population population = scenario.getPopulation();
         int bound = (int) (prct * population.getPersons().size());
         List<Id<Person>> keyset =  new ArrayList<>(population.getPersons().keySet());
@@ -41,6 +41,6 @@ public class Subpopulation {
                 keyset.remove(idx);
             }while (inc);
         }
-        new PopulationWriter(scenario.getPopulation()).write("/home/biyu/IdeaProjects/NewParking/scenarios/tanjong_pagar/tp_plans_1prct.xml.gz");
+        new PopulationWriter(scenario.getPopulation()).write("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/plans_70prct_2018.xml.gz");
     }
 }

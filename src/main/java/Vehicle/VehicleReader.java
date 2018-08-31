@@ -23,14 +23,13 @@ import Schedule.VehicleImpl;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.contrib.dvrp.data.FleetImpl;
-import org.matsim.contrib.dvrp.data.Vehicle;
 import org.matsim.contrib.dvrp.data.file.ReaderUtils;
 import org.matsim.core.utils.io.MatsimXmlParser;
 import org.matsim.vehicles.VehicleCapacity;
 import org.matsim.vehicles.VehicleCapacityImpl;
 import org.matsim.vehicles.VehicleType;
 import org.xml.sax.Attributes;
+import org.matsim.contrib.dvrp.data.Vehicle;
 
 import java.util.Map;
 import java.util.Stack;
@@ -74,6 +73,7 @@ public class VehicleReader extends MatsimXmlParser {
 		double capacity = ReaderUtils.getDouble(atts, "capacity", DEFAULT_CAPACITY);
 		double t0 = ReaderUtils.getDouble(atts, "t_0", DEFAULT_T_0);
 		double t1 = ReaderUtils.getDouble(atts, "t_1", DEFAULT_T_1);
+		String mode = ReaderUtils.getString(atts, "mode",null);
 		vehicleType.setAccessTime(ReaderUtils.getDouble(atts, "boarding_time_per_person_s",DEFAULT_BOARDING));
 		vehicleType.setEgressTime(ReaderUtils.getDouble(atts,"alighting_time_per_person_s", DEFAULT_ALIGHTING));
 		VehicleCapacity cap = new VehicleCapacityImpl();
@@ -90,11 +90,11 @@ public class VehicleReader extends MatsimXmlParser {
 				vehicleType.setLength(9.0);
 			}
 		}
-		return createVehicle(id, startLink, capacity, t0, t1, atts);
+		return createVehicle(id, startLink, capacity, t0, t1, mode);
 	}
 
 	protected Vehicle createVehicle(Id<Vehicle> id, Link startLink, double capacity, double t0, double t1,
-			Attributes atts) {
-		return new VehicleImpl(id, startLink, capacity, t0, t1);
+			String mode) {
+		return new VehicleImpl(id, startLink, capacity, t0, t1, mode);
 	}
 }

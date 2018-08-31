@@ -1,5 +1,6 @@
 package BayInfrastructure;
 
+import Run.DrtConfigGroup;
 import com.google.inject.Inject;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
@@ -30,19 +31,21 @@ public class BayManager implements VehicleDepartsAtFacilityEventHandler, Iterati
     Map<Id<Link>, Id<TransitStopFacility>> baysByStops = new HashMap<>();
     Collection<TransitStopFacility> transitStopFacilities;
     Network network;
+    DrtConfigGroup drtConfigGroup;
 
 
     @Inject
     public BayManager(Scenario scenario, EventsManager eventsManager){
         transitStopFacilities = scenario.getTransitSchedule().getFacilities().values();
-        initate();
         this.network = scenario.getNetwork();
+        this.drtConfigGroup = DrtConfigGroup.get(scenario.getConfig());
+        initate();
         eventsManager.addHandler(this);
     }
 
     private void initate(){
         for (TransitStopFacility stop: transitStopFacilities){
-            Bay bay = new Bay(stop);
+            Bay bay = new Bay(stop, network.getLinks().get(stop.getLinkId()).getLength());
             bays.put(stop.getId(), bay);
             baysByStops.put(stop.getLinkId(),stop.getId());
         }
@@ -52,7 +55,8 @@ public class BayManager implements VehicleDepartsAtFacilityEventHandler, Iterati
         if (!baysByStops.containsKey(linkId)){
             TransitStopFacility transitStopFacility = (new TransitScheduleFactoryImpl()).createTransitStopFacility(Id.create(linkId.toString() + "_DRT", TransitStopFacility.class),
                     network.getLinks().get(linkId).getCoord(),false);
-            bays.put(transitStopFacility.getId(), new Bay(transitStopFacility));
+            transitStopFacility.setLinkId(linkId);
+            bays.put(transitStopFacility.getId(), new Bay(transitStopFacility, network.getLinks().get(linkId).getLength(),drtConfigGroup.getDoor2DoorStop()));
             baysByStops.put(linkId,transitStopFacility.getId());
         }
         return bays.get(baysByStops.get(linkId));

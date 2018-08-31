@@ -24,26 +24,36 @@ import java.io.IOException;
 import java.util.*;
 
 public class QueueingAndDwellingTimeAnalysis {
-    private static String FOLDER = "/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/out/output/V550/tanjong_pagar_depot_10_v550/ITERS/";
+    private static String FOLDER;
     private static String ITER = "40";
-    private static String EVENTSFILE =  FOLDER +  "it." + ITER + "/" + ITER + ".events.xml.gz";
+    private static String EVENTSFILE;
     public static void main(String[] args) throws IOException {
-        EventsManager manager = EventsUtils.createEventsManager();
-        QueueingAndDwellingCounter queueingAndDwellingCounter = new QueueingAndDwellingCounter();
-        manager.addHandler(queueingAndDwellingCounter);
-        new MatsimEventsReader(manager).readFile(EVENTSFILE);
-        queueingAndDwellingCounter.output(FOLDER + ITER + "queueingAndDwellingTimeAnalysis.csv");
-        queueingAndDwellingCounter.outputSecond(FOLDER + ITER  + "queueingCounter.csv");
+        //double[] bay = new double[]{1,1.5,2,2.5};
+        //for (double i:bay){
+            //FOLDER = "/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/out/output/HKSTS/Roam/tanjong_pagar_roam_max_v600_plans_"+ i +"/ITERS/";
+            FOLDER = "/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/out/output/mp_c_tp/drt_mix_V1500_max/ITERS/";
+            EVENTSFILE =  FOLDER +  "it." + ITER + "/" + ITER + ".events.xml.gz";
+            EventsManager manager = EventsUtils.createEventsManager();
+            QueueingAndDwellingCounter queueingAndDwellingCounter = new QueueingAndDwellingCounter();
+            manager.addHandler(queueingAndDwellingCounter);
+            new MatsimEventsReader(manager).readFile(EVENTSFILE);
+            queueingAndDwellingCounter.output(FOLDER + ITER + "queueingAndDwellingTimeAnalysis_28.csv");
+            queueingAndDwellingCounter.outputSecond(FOLDER + ITER  + "queueingCounter.csv");
+        //}
+
     }
 }
 
 class QueueingAndDwellingCounter implements VehicleArrivesAtFacilityEventHandler, VehicleDepartsAtFacilityEventHandler, PersonEntersVehicleEventHandler, PersonLeavesVehicleEventHandler{
     private Map<Id<Vehicle>, ArrayList<QueueingAndDwellingRecorder>> counter = new HashMap<>();
-    //private Map<Id<TransitStopFacility>, ArrayList<QCounter>> numOfQueue = new HashMap<>();
+    private Map<Id<TransitStopFacility>, ArrayList<QCounter>> numOfQueue = new HashMap<>();
     private Map<Id<TransitStopFacility>, ArrayList<Event>> events = new HashMap<>();
 
     @Override
     public void handleEvent(PersonEntersVehicleEvent event) {
+        if (event.getTime() > 28 * 3600){
+            return;
+        }
         if (event.getTime() == 0){
             return;
         }
@@ -61,6 +71,9 @@ class QueueingAndDwellingCounter implements VehicleArrivesAtFacilityEventHandler
 
     @Override
     public void handleEvent(VehicleArrivesAtFacilityEvent event) {
+        if (event.getTime() > 28 * 3600){
+            return;
+        }
         if (event.getTime() == 0){
             return;
         }
@@ -83,6 +96,9 @@ class QueueingAndDwellingCounter implements VehicleArrivesAtFacilityEventHandler
 
     @Override
     public void handleEvent(VehicleDepartsAtFacilityEvent event) {
+        if (event.getTime() > 28 * 3600){
+            return;
+        }
         if (event.getTime() == 0){
             return;
         }
@@ -97,6 +113,9 @@ class QueueingAndDwellingCounter implements VehicleArrivesAtFacilityEventHandler
 
     @Override
     public void handleEvent(PersonLeavesVehicleEvent event) {
+        if (event.getTime() > 28 * 3600){
+            return;
+        }
         if ( event.getTime() == 0){
             return;
         }
@@ -134,7 +153,7 @@ class QueueingAndDwellingCounter implements VehicleArrivesAtFacilityEventHandler
             int i = 0;
             int count = 0;
             double last = 0;
-            for (int time = 0; time < 30 * 3600; ){
+            for (int time = 0; time <= 28 * 3600; ){
                 bw.newLine();
                 if (i < q.size() && time == q.get(i).getTime()) {
                     bw.write(time + ";" + sid + ";" + count + ";" + (time - last));

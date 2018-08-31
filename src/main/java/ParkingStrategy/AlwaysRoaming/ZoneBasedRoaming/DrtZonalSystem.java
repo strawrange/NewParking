@@ -24,16 +24,19 @@ package ParkingStrategy.AlwaysRoaming.ZoneBasedRoaming;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.contrib.zone.Zone;
 import org.matsim.core.utils.geometry.geotools.MGC;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 
 /**
  * @author jbischoff
@@ -42,6 +45,7 @@ import java.util.Map.Entry;
 public class DrtZonalSystem {
 
 	private final Map<Id<Link>, String> link2zone = new HashMap<>();
+	private final Map<Zone, Id<Link>> zone2link = new HashMap<>();
 	private final Network network;
 	private final Map<String, Geometry> zones;
 
@@ -97,6 +101,24 @@ public class DrtZonalSystem {
 			return null;
 		}
 		Coord c = MGC.point2Coord(zone.getCentroid());
+		return c;
+	}
+
+	public Coord getRandomZoneCoord(String zoneId) {
+
+		Geometry zone = zones.get(zoneId);
+		if (zone == null) {
+			Logger.getLogger(getClass()).error("Zone " + zoneId + " not found.");
+			return null;
+		}
+		double maxX = zone.getEnvelopeInternal().getMaxX();
+		double minX = zone.getEnvelopeInternal().getMinX();
+		double maxY = zone.getEnvelopeInternal().getMaxY();
+		double minY = zone.getEnvelopeInternal().getMinY();
+		Random random = new Random();
+		double randomX = minX + (maxX - minX) * random.nextDouble();
+		double randomY = minY + (maxY - minY) * random.nextDouble();
+		Coord c = new Coord(randomX, randomY);
 		return c;
 	}
 

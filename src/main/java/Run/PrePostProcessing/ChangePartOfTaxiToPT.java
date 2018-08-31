@@ -7,9 +7,10 @@ import org.matsim.core.population.io.PopulationReader;
 import org.matsim.core.scenario.ScenarioUtils;
 
 public class ChangePartOfTaxiToPT {
+
     public static void main(String[] args) {
         Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
-        new PopulationReader(scenario).readFile("/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/scenarios/tanjong_pagar/plans/tp_plans_with_taxi_part_to_PT.xml.gz");
+        new PopulationReader(scenario).readFile("/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/scenarios/tanjong_pagar/plans/tp_plans_2.0.xml.gz");
         Population population = scenario.getPopulation();
         for (Person person : population.getPersons().values()) {
             if (person.getAttributes().getAttribute("type").equals("place_place")){
@@ -25,6 +26,6 @@ public class ChangePartOfTaxiToPT {
             }
 
         }
-        new PopulationWriter(population).write("/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/scenarios/tanjong_pagar/plans/tp_plans_with_taxi_part_to_PT_0.25.xml.gz");
+        new PopulationWriter(population).write("/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/scenarios/tanjong_pagar/plans/tp_plans_2.xml.gz");
     }
 }

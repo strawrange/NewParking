@@ -62,6 +62,9 @@ public class VrpPaths {
 		if (fromLink.getId().equals(toLink.getId())) {
 			return createZeroLengthPath(fromLink, departureTime);
 		}
+		if (path == null){
+			throw new RuntimeException("from link: " + fromLink.getId() + " to link: " + toLink.getId());
+		}
 
 		int count = path.links.size();
 		if (count > 0) {

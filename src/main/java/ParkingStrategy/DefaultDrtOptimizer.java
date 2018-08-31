@@ -32,7 +32,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.drt.optimizer.DrtOptimizer;
 import org.matsim.contrib.drt.passenger.events.DrtRequestRejectedEvent;
 import Run.DrtConfigGroup;
-import org.matsim.contrib.dvrp.data.Fleet;
+import Vehicle.Fleet;
 import org.matsim.contrib.dvrp.data.Request;
 import org.matsim.contrib.dvrp.data.Vehicle;
 import org.matsim.contrib.dvrp.passenger.PassengerRequests;
@@ -162,15 +162,15 @@ public class DefaultDrtOptimizer implements DrtOptimizer {
 		if (isNextStopTask(vehicle)){
 			int currentTaskIdx = schedule.getCurrentTask().getTaskIdx();
 			DrtStopTask nextTask = (DrtStopTask) schedule.getTasks().get(currentTaskIdx + 1);
-			if (isCurrentDriveOrStayTask(vehicle)){
-				eventsManager.processEvent(new VehicleArrivesAtFacilityEvent(mobsimTimer.getTimeOfDay(),Id.createVehicleId(vehicle.getId().toString()),
-					bayManager.getStopIdByLinkId(nextTask.getLink().getId()), 1));
-			}
 			Bay bay = bayManager.getBayByLinkId(nextTask.getLink().getId());
-            bay.addVehicle(Id.createVehicleId(vehicle.getId()));
+			bay.addVehicle(Id.createVehicleId(vehicle.getId()));
 			if (bay.isFull() && bay.getVehicles().contains(vehicle.getId())) {
 				scheduler.insertQuequingTask(vehicle);
 				return;
+			}
+			if (isCurrentDriveOrStayTask(vehicle)){
+				eventsManager.processEvent(new VehicleArrivesAtFacilityEvent(mobsimTimer.getTimeOfDay(),Id.createVehicleId(vehicle.getId().toString()),
+					bayManager.getStopIdByLinkId(nextTask.getLink().getId()), 1));
 			}
 			if (isCurrentQueueTask(vehicle)){
 				scheduler.updateQueue(vehicle);
