@@ -58,9 +58,10 @@ import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.contrib.drt.routing.DrtStageActivityType;
+import org.matsim.contrib.drt.run.DrtConfigConsistencyChecker;
+import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.dvrp.optimizer.VrpOptimizer;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
-import org.matsim.contrib.dvrp.trafficmonitoring.QSimFreeSpeedTravelTime;
 import org.matsim.contrib.eventsBasedPTRouter.stopStopTimes.StopStopTimeCalculator;
 import org.matsim.contrib.eventsBasedPTRouter.waitTimes.WaitTimeStuckCalculator;
 import org.matsim.contrib.otfvis.OTFVisLiveModule;
@@ -74,8 +75,6 @@ import org.matsim.core.events.EventsUtils;
 import org.matsim.core.events.MatsimEventsReader;
 import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.core.mobsim.qsim.QSim;
-import org.matsim.core.network.NetworkUtils;
-import org.matsim.core.network.io.NetworkReaderMatsimV2;
 import org.matsim.core.router.MainModeIdentifier;
 import org.matsim.core.router.costcalculators.TravelDisutilityFactory;
 import org.matsim.core.router.util.TravelDisutility;
@@ -128,8 +127,8 @@ public final class DrtControlerCreator {
 		controler.getEvents().addHandler(linkLinkTimeCalculatorAV);
 		final TravelTimeCalculator travelTimeCalculator = new TravelTimeCalculator(scenario.getNetwork(), scenario.getConfig().travelTimeCalculator());
 
-		String EVENTSFILE = "/home/ubuntu/data/biyu/IdeaProjects/NewParking/out/artifacts/output/drt_mix_V450_T250_bay_optimal/ITERS/it.40/40.events.xml.gz";
-		//String EVENTSFILE = "/home/biyu/IdeaProjects/NewParking/output/drt_mix_V450_T250_bay_optimal/ITERS/it.40/40.events.xml.gz";
+		//String EVENTSFILE = "/home/ubuntu/data/biyu/IdeaProjects/NewParking/out/artifacts/output/drt_mix_V450_T250_bay_optimal/ITERS/it.40/40.events.xml.gz";
+		String EVENTSFILE = "/home/biyu/IdeaProjects/NewParking/output/drt_mix_V450_T250_bay_optimal/ITERS/it.40/40.events.xml.gz";
 		EventsManager manager = EventsUtils.createEventsManager();
 //		manager.addHandler(waitTimeCalculator);
 //		manager.addHandler(waitLinkTimeCalculatorAV);
@@ -184,7 +183,7 @@ public final class DrtControlerCreator {
 	}
 
 	private static void adjustConfig(Config config) {
-		DrtConfigGroup drtCfg = DrtConfigGroup.get(config);
+		DrtConfigGroup drtCfg =(DrtConfigGroup)config.getModule(DrtConfigGroup.GROUP_NAME);
 		if (drtCfg.getOperationalScheme().equals(DrtConfigGroup.OperationalScheme.stopbased)) {
 			ActivityParams params = config.planCalcScore().getActivityParams(DrtStageActivityType.DRT_STAGE_ACTIVITY);
 			if (params == null) {
@@ -216,7 +215,7 @@ public final class DrtControlerCreator {
 		return new com.google.inject.AbstractModule() {
 			@Override
 			protected void configure() {
-				DrtConfigGroup drtCfg = DrtConfigGroup.get(config);
+				AtodConfigGroup drtCfg = AtodConfigGroup.get(config);
 				bind(DrtOptimizer.class).to(DefaultDrtOptimizer.class).asEagerSingleton();
 				bind(VrpOptimizer.class).to(DrtOptimizer.class);
 				bind(DefaultUnplannedRequestInserter.class).asEagerSingleton();

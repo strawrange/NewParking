@@ -1,6 +1,6 @@
 package BayInfrastructure;
 
-import Run.DrtConfigGroup;
+import Run.AtodConfigGroup;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
@@ -31,7 +31,7 @@ public class Bay {
         }
     }
 
-    public Bay(TransitStopFacility transitStop, double linkLength, DrtConfigGroup drtconfig){
+    public Bay(TransitStopFacility transitStop, double linkLength, AtodConfigGroup drtconfig){
         this.transitStop =transitStop;
         this.linkId = transitStop.getLinkId();
         switch (drtconfig.getDoor2DoorStop()){

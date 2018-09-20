@@ -27,7 +27,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.drt.passenger.events.DrtRequestSubmittedEvent;
-import Run.DrtConfigGroup;
+import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.dvrp.data.Request;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
 import Path.VrpPaths;
@@ -54,8 +54,8 @@ public class DrtRequestCreator implements PassengerRequestCreator {
 
 	@Inject
 	public DrtRequestCreator(DrtConfigGroup drtCfg, @Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) Network network, Network networkT,
-                             @Named(DvrpTravelTimeModule.DVRP_ESTIMATED) TravelTime travelTime, QSim qSim,
-                             @Named(DefaultDrtOptimizer.DRT_OPTIMIZER) TravelDisutility travelDisutility) {
+							 @Named(DvrpTravelTimeModule.DVRP_ESTIMATED) TravelTime travelTime, QSim qSim,
+							 @Named(DefaultDrtOptimizer.DRT_OPTIMIZER) TravelDisutility travelDisutility) {
 		this.drtCfg = drtCfg;
 		this.travelTime = travelTime;
 		this.eventsManager = qSim.getEventsManager();

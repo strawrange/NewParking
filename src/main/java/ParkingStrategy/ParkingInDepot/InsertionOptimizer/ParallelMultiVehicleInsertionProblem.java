@@ -21,7 +21,8 @@ package ParkingStrategy.ParkingInDepot.InsertionOptimizer;
 
 
 import ParkingStrategy.VehicleData;
-import Run.DrtConfigGroup;
+
+import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.core.mobsim.framework.MobsimTimer;
 import Schedule.DrtRequest;
 

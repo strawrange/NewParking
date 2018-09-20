@@ -25,6 +25,8 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import org.matsim.contrib.dvrp.data.Fleet;
 import org.matsim.contrib.dvrp.data.Vehicle;
 import Schedule.VehicleImpl;
 
@@ -39,7 +41,7 @@ public class FleetImpl implements Fleet {
 		return Collections.unmodifiableMap(vehicles);
 	}
 
-	@Override
+
 	public Map<Id<Vehicle>, ? extends Vehicle> getVehicles(String mode) {
 		return vehicles.entrySet().stream().filter(vehicle -> ((VehicleImpl)vehicle.getValue()).getMode().equals(mode)).collect(Collectors.toMap(map -> map.getKey(), map -> map.getValue()));
 	}

@@ -21,24 +21,20 @@ package ParkingStrategy.ParkingInDepot.InsertionOptimizer;
 
 import ParkingStrategy.VehicleData;
 import Passenger.Event.DrtRequestScheduledEvent;
-import Vehicle.Fleet;
+import Vehicle.FleetImpl;
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.events.PersonStuckEvent;
 import org.matsim.contrib.drt.passenger.events.DrtRequestRejectedEvent;
 
-import Run.DrtConfigGroup;
 
-import org.matsim.contrib.dvrp.vrpagent.VrpAgentSource;
+import org.matsim.contrib.drt.run.DrtConfigGroup;
+import org.matsim.contrib.dvrp.data.Fleet;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.core.mobsim.framework.events.MobsimBeforeCleanupEvent;
 import org.matsim.core.mobsim.framework.listeners.MobsimBeforeCleanupListener;
-import Schedule.DrtDriveTask;
 import Schedule.DrtRequest;
-import Schedule.DrtStayTask;
-import org.matsim.vehicles.VehicleType;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -60,7 +56,7 @@ public class DefaultUnplannedRequestInserter implements UnplannedRequestInserter
 
 	@Inject
 	public DefaultUnplannedRequestInserter(DrtConfigGroup drtCfg, Fleet fleet, MobsimTimer mobsimTimer,
-										   EventsManager eventsManager, DrtScheduler scheduler, PrecalculatablePathDataProvider pathDataProvider) {
+                                           EventsManager eventsManager, DrtScheduler scheduler, PrecalculatablePathDataProvider pathDataProvider) {
 		this.drtCfg = drtCfg;
 		this.fleet = fleet;
 		this.mobsimTimer = mobsimTimer;
@@ -86,7 +82,7 @@ public class DefaultUnplannedRequestInserter implements UnplannedRequestInserter
 		Iterator<DrtRequest> reqIter = unplannedRequests.iterator();
 		while (reqIter.hasNext()) {
 			DrtRequest req = reqIter.next();
-			VehicleData vData = new VehicleData(mobsimTimer.getTimeOfDay(), fleet.getVehicles(req.getMode()).values().stream());
+			VehicleData vData = new VehicleData(mobsimTimer.getTimeOfDay(), ((FleetImpl)fleet).getVehicles(req.getMode()).values().stream());
 			Optional<SingleVehicleInsertionProblem.BestInsertion> best = insertionProblem.findBestInsertion(req, vData.getEntries());
 			if (!best.isPresent()) {
 				req.setRejected(true);

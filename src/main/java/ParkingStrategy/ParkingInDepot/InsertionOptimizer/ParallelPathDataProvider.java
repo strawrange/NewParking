@@ -25,7 +25,7 @@ import com.google.common.collect.ImmutableList;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
-import Run.DrtConfigGroup;
+import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
 import org.matsim.core.mobsim.framework.events.MobsimBeforeCleanupEvent;
