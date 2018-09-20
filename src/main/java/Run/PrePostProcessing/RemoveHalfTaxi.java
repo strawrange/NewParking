@@ -14,10 +14,10 @@ import java.util.Random;
 
 public class RemoveHalfTaxi {
     public static void main(String[] args) {
-        double ratio = 0.5;
+        double ratio = 0.875;
         Random random = new Random();
         Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
-        new PopulationReader(scenario).readFile("/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/scenarios/tanjong_pagar/plans/tp_plans_with_taxi_part_to_PT_0.25_taxi.xml.gz");
+        new PopulationReader(scenario).readFile("/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/scenarios/tanjong_pagar/plans/tp_plans_2.xml.gz");
         Population population = scenario.getPopulation();
         Iterator<? extends Person> pIter = population.getPersons().values().iterator();
         while (pIter.hasNext()) {
@@ -33,6 +33,6 @@ public class RemoveHalfTaxi {
             }
 
         }
-        new PopulationWriter(population).write("/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/scenarios/tanjong_pagar/plans/tp_plans_with_taxi_part_to_PT_0.125_taxi.xml.gz");
+        new PopulationWriter(population).write("/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/scenarios/tanjong_pagar/plans/tp_plans_2_0.125_taxi.xml.gz");
     }
 }

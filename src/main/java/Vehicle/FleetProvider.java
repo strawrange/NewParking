@@ -23,8 +23,6 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.name.Named;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.contrib.dvrp.data.Fleet;
-import org.matsim.contrib.dvrp.data.FleetImpl;
 import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
 import org.matsim.contrib.dvrp.vrpagent.VrpAgentSource;
 import org.matsim.core.controler.AbstractModule;
@@ -51,7 +49,7 @@ public class FleetProvider implements Provider<Fleet> {
 	@Override
 	public Fleet get() {
 		FleetImpl fleet = new FleetImpl();
-		new VehicleReader(network, fleet, vehicleType).parse(url);
+		new VehicleReader(network, fleet).parse(url);
 		return fleet;
 	}
 

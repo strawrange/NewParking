@@ -24,10 +24,8 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.matsim.api.core.v01.network.Link;
 import Run.DrtConfigGroup;
-import org.matsim.contrib.dvrp.data.FleetImpl;
-import org.matsim.contrib.dvrp.data.Fleet;
-import org.matsim.contrib.dvrp.data.Vehicle;
 import org.matsim.contrib.dvrp.data.Vehicles;
+import org.matsim.contrib.dvrp.data.Vehicle;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
 import Path.VrpPaths;
 import org.matsim.contrib.dvrp.schedule.*;
@@ -37,23 +35,16 @@ import org.matsim.contrib.dvrp.tracker.TaskTrackers;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
 import org.matsim.contrib.dvrp.util.LinkTimePair;
 import org.matsim.contrib.dvrp.vrpagent.VrpAgentSource;
-import org.matsim.core.controler.events.IterationStartsEvent;
-import org.matsim.core.controler.listener.IterationStartsListener;
 import org.matsim.core.mobsim.framework.MobsimTimer;
-import org.matsim.core.mobsim.framework.events.MobsimBeforeCleanupEvent;
-import org.matsim.core.mobsim.framework.events.MobsimInitializedEvent;
-import org.matsim.core.mobsim.framework.listeners.MobsimBeforeCleanupListener;
-import org.matsim.core.mobsim.framework.listeners.MobsimBeforeSimStepListener;
-import org.matsim.core.mobsim.framework.listeners.MobsimInitializedListener;
 import org.matsim.core.mobsim.qsim.QSim;
 import org.matsim.core.network.NetworkChangeEvent;
-import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.utils.misc.Time;
 import Schedule.*;
 import org.matsim.vehicles.VehicleType;
+import Vehicle.Fleet;
+import Vehicle.FleetImpl;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -61,18 +52,14 @@ import java.util.List;
  */
 public class DrtScheduler implements ScheduleInquiry {
 	private final Fleet fleet;
-	private final double accessTime;
-	private final double egressTime;
 	private final MobsimTimer timer;
 	private final TravelTime travelTime;
 	private final QSim qSim;
 
 	@Inject
 	public DrtScheduler(DrtConfigGroup drtCfg, Fleet fleet, MobsimTimer timer,
-                        @Named(DvrpTravelTimeModule.DVRP_ESTIMATED) TravelTime travelTime, @Named(VrpAgentSource.DVRP_VEHICLE_TYPE)VehicleType vehicleType, QSim qSim) {
+                        @Named(DvrpTravelTimeModule.DVRP_ESTIMATED) TravelTime travelTime, QSim qSim) {
 		this.fleet = fleet;
-		this.accessTime = vehicleType.getAccessTime();
-		this.egressTime = vehicleType.getEgressTime();
 		this.timer = timer;
 		this.travelTime = travelTime;
 		this.qSim = qSim;
@@ -190,7 +177,7 @@ public class DrtScheduler implements ScheduleInquiry {
 
 			case STOP: {
 				// TODO does not consider prebooking!!!
-				double duration = vehicle.getCapacity() * (accessTime + egressTime);
+				double duration = vehicle.getCapacity() * (((VehicleImpl)vehicle).getVehicleType().getAccessTime() + ((VehicleImpl)vehicle).getVehicleType().getEgressTime());
 				return newBeginTime + duration;
 			}
 
@@ -207,7 +194,7 @@ public class DrtScheduler implements ScheduleInquiry {
 	}
 
 	public void insertPickup(VehicleData.Entry vehicleEntry, DrtRequest request, InsertionWithPathData insertion) {
-		double stopDuration = vehicleEntry.vehicle.getCapacity() * (accessTime + egressTime);
+		double stopDuration = vehicleEntry.vehicle.getCapacity() * (((VehicleImpl)vehicleEntry.vehicle).getVehicleType().getAccessTime() + ((VehicleImpl)vehicleEntry.vehicle).getVehicleType().getEgressTime());
 
         Schedule schedule = vehicleEntry.vehicle.getSchedule();
         List<VehicleData.Stop> stops = vehicleEntry.stops;
@@ -345,7 +332,7 @@ public class DrtScheduler implements ScheduleInquiry {
     }
 
 	public void insertDropoff(VehicleData.Entry vehicleEntry, DrtRequest request, InsertionWithPathData insertion) {
-        double stopDuration = vehicleEntry.vehicle.getCapacity() * (accessTime + egressTime);
+        double stopDuration = vehicleEntry.vehicle.getCapacity() * (((VehicleImpl)vehicleEntry.vehicle).getVehicleType().getAccessTime() + ((VehicleImpl)vehicleEntry.vehicle).getVehicleType().getEgressTime());
         Schedule schedule = vehicleEntry.vehicle.getSchedule();
         List<VehicleData.Stop> stops = vehicleEntry.stops;
 

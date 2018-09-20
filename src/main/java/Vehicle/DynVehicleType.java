@@ -7,12 +7,22 @@ import org.matsim.vehicles.VehicleTypeImpl;
 
 public class DynVehicleType extends VehicleTypeImpl {
     public static String DYNTYPE = "dynType";
-    private double accessTime;
-    private double egressTime;
+    private double accessTime = 1.5;
+    private double egressTime = 1.5;
 
 
-    public DynVehicleType(Id<VehicleType> typeId){
-        super(typeId);
+    public DynVehicleType(){
+        super(Id.create(DYNTYPE, VehicleType.class));
+    }
+
+    @Override
+    public double getAccessTime() {
+        return this.accessTime;
+    }
+
+    @Override
+    public double getEgressTime() {
+        return this.egressTime;
     }
 
 }

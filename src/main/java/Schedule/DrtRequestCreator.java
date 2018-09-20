@@ -20,6 +20,7 @@
 package Schedule;
 
 import ParkingStrategy.DefaultDrtOptimizer;
+import Passenger.PassengerRequestCreator;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.matsim.api.core.v01.Id;
@@ -28,7 +29,6 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.drt.passenger.events.DrtRequestSubmittedEvent;
 import Run.DrtConfigGroup;
 import org.matsim.contrib.dvrp.data.Request;
-import org.matsim.contrib.dvrp.passenger.PassengerRequestCreator;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
 import Path.VrpPaths;
 import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
@@ -53,7 +53,7 @@ public class DrtRequestCreator implements PassengerRequestCreator {
 	private final MobsimTimer timer;
 
 	@Inject
-	public DrtRequestCreator(DrtConfigGroup drtCfg, @Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) Network network,
+	public DrtRequestCreator(DrtConfigGroup drtCfg, @Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) Network network, Network networkT,
                              @Named(DvrpTravelTimeModule.DVRP_ESTIMATED) TravelTime travelTime, QSim qSim,
                              @Named(DefaultDrtOptimizer.DRT_OPTIMIZER) TravelDisutility travelDisutility) {
 		this.drtCfg = drtCfg;
@@ -62,15 +62,16 @@ public class DrtRequestCreator implements PassengerRequestCreator {
 		this.timer = qSim.getSimTimer();
 
 		router = new FastAStarEuclideanFactory().createPathCalculator(network, travelDisutility, travelTime);
+		//routerT = new FastAStarEuclideanFactory().createPathCalculator(networkT, travelDisutility, travelTime);
 	}
 
 	@Override
 	public DrtRequest createRequest(Id<Request> id, MobsimPassengerAgent passenger, Link fromLink, Link toLink,
-			double departureTime, double submissionTime) {
+									double departureTime, double submissionTime, String mode) {
 		double latestDepartureTime = departureTime + drtCfg.getMaxWaitTime();
-
-		VrpPathWithTravelData unsharedRidePath = VrpPaths.calcAndCreatePath(fromLink, toLink, departureTime, router,
-				travelTime);
+		VrpPathWithTravelData unsharedRidePath;
+		unsharedRidePath = VrpPaths.calcAndCreatePath(fromLink, toLink, departureTime, router,
+					travelTime);
 
 		double optimisticTravelTime = unsharedRidePath.getTravelTime();
 		double maxTravelTime = drtCfg.getMaxTravelTimeAlpha() * optimisticTravelTime + drtCfg.getMaxTravelTimeBeta();
@@ -82,6 +83,6 @@ public class DrtRequestCreator implements PassengerRequestCreator {
 				fromLink.getId(), toLink.getId(), unsharedRidePath.getTravelTime(), unsharedDistance));
 
 		return new DrtRequest(id, passenger, fromLink, toLink, departureTime, latestDepartureTime, latestArrivalTime,
-				submissionTime);
+				submissionTime, mode);
 	}
 }

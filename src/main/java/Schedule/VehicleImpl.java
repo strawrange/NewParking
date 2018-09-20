@@ -21,8 +21,10 @@ package Schedule;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.contrib.dvrp.data.Vehicle;
 import org.matsim.contrib.dvrp.schedule.Schedule;
+import org.matsim.contrib.dvrp.data.Vehicle;
+import org.matsim.vehicles.VehicleType;
+import org.matsim.vehicles.VehicleUtils;
 
 /**
  * @author michalm
@@ -38,16 +40,35 @@ public class VehicleImpl implements Vehicle {
 
 	private Schedule schedule;
 
+	private String mode;
+
+	private VehicleType vehicleType;
+
 	public VehicleImpl(Id<Vehicle> id, Link startLink, double capacity, double serviceBeginTime,
-                       double serviceEndTime) {
+					   double serviceEndTime, String mode, VehicleType vehicleType) {
 		this.id = id;
 		this.startLink = startLink;
 		this.capacity = capacity;
 		this.serviceBeginTime = serviceBeginTime;
 		this.serviceEndTime = serviceEndTime;
+		this.mode = mode;
+		this.vehicleType = vehicleType;
 
 		schedule = new ScheduleImpl(this);
 	}
+	public VehicleImpl(Id<Vehicle> id, Link startLink, double capacity, double serviceBeginTime,
+					   double serviceEndTime, String mode) {
+		this.id = id;
+		this.startLink = startLink;
+		this.capacity = capacity;
+		this.serviceBeginTime = serviceBeginTime;
+		this.serviceEndTime = serviceEndTime;
+		this.mode = mode;
+		this.vehicleType = VehicleUtils.getDefaultVehicleType();;
+
+		schedule = new ScheduleImpl(this);
+	}
+
 
 	@Override
 	public Id<Vehicle> getId() {
@@ -96,5 +117,17 @@ public class VehicleImpl implements Vehicle {
 	@Override
 	public void resetSchedule() {
 		schedule = new ScheduleImpl(this);
+	}
+
+	public String getMode() {
+		return mode;
+	}
+
+	public void setMode(String mode) {
+		this.mode = mode;
+	}
+
+	public VehicleType getVehicleType() {
+		return vehicleType;
 	}
 }

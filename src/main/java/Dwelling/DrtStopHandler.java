@@ -24,8 +24,8 @@ public class DrtStopHandler {
     private final double personLeavesTime;
 
     // TODO make it dynamic
-    private static final double openDoorsDuration = 1.0;
-    private static final double closeDoorsDuration = 1.0;
+    private static final double openDoorsDuration = 3.0;
+    private static final double closeDoorsDuration = 3.0;
 
 
     public DrtStopHandler(double accessTime, double egressTime){

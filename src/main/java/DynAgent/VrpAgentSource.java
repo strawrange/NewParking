@@ -20,11 +20,12 @@
 package DynAgent;
 
 import BayInfrastructure.BayManager;
+import Schedule.VehicleImpl;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.contrib.dvrp.data.Fleet;
+import Vehicle.Fleet;
 import org.matsim.contrib.dvrp.data.Vehicle;
 import org.matsim.contrib.dvrp.optimizer.VrpOptimizer;
 import org.matsim.core.mobsim.framework.AgentSource;
@@ -42,8 +43,6 @@ public class VrpAgentSource implements AgentSource {
 	private final VrpOptimizer optimizer;
 	private final QSim qSim;
 
-	@Inject(optional = true)
-	private @Named(DVRP_VEHICLE_TYPE) VehicleType vehicleType;
 
 	@Inject
 	public VrpAgentSource(VrpAgentLogic.DynActionCreator nextActionCreator, Fleet fleet, VrpOptimizer optimizer, QSim qSim) {
@@ -53,18 +52,10 @@ public class VrpAgentSource implements AgentSource {
 		this.qSim = qSim;
 	}
 
-	public VrpAgentSource(VrpAgentLogic.DynActionCreator nextActionCreator, Fleet fleet, VrpOptimizer optimizer, QSim qSim,
-			VehicleType vehicleType) {
-		this(nextActionCreator, fleet, optimizer, qSim);
-		this.vehicleType = vehicleType;
-	}
 
 	@Override
 	public void insertAgentsIntoMobsim() {
 		VehiclesFactory vehicleFactory = VehicleUtils.getFactory();
-		if (vehicleType == null) {
-			vehicleType = VehicleUtils.getDefaultVehicleType();
-		}
 
 		for (Vehicle vrpVeh : fleet.getVehicles().values()) {
 			Id<Vehicle> id = vrpVeh.getId();
@@ -74,7 +65,7 @@ public class VrpAgentSource implements AgentSource {
 			DynAgent vrpAgent = new DynAgent(Id.createPersonId(id), startLinkId, qSim.getEventsManager(),
 					vrpAgentLogic);
 			QVehicle mobsimVehicle = new QVehicle(
-					vehicleFactory.createVehicle(Id.create(id, org.matsim.vehicles.Vehicle.class), vehicleType));
+					vehicleFactory.createVehicle(Id.create(id, org.matsim.vehicles.Vehicle.class), ((VehicleImpl)vrpVeh).getVehicleType()));
 			vrpAgent.setVehicle(mobsimVehicle);
 			mobsimVehicle.setDriver(vrpAgent);
 

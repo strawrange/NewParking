@@ -24,8 +24,10 @@ package Analysis;
 
 import com.google.inject.Inject;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.contrib.drt.analysis.*;
+
 import Run.DrtConfigGroup;
+import org.matsim.contrib.drt.analysis.DynModePassengerStats;
+import org.matsim.contrib.drt.analysis.DynModeTrip;
 import org.matsim.core.config.Config;
 import org.matsim.core.controler.MatsimServices;
 import org.matsim.core.controler.events.IterationEndsEvent;

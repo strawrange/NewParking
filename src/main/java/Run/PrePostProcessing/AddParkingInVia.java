@@ -18,10 +18,10 @@ import org.matsim.core.network.io.NetworkReaderMatsimV2;
 
 public class AddParkingInVia {
 
-    private static String FOLDER = "/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/out/output/V550/tanjong_pagar_mix_10_v550/";
-    private static String ITER = "40";
+    private static String FOLDER = "/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/out/output/mp_c_tp/drt_road_V1500_max/";
+    private static String ITER = "30";
     private static String EVENTSFILE =  FOLDER +  "ITERS/it." + ITER + "/" + ITER + ".events.xml.gz";
-    private static String NETWORKSFILE = "/home/biyu/IdeaProjects/NewParking/scenarios/tanjong_pagar/tp_phase4.xml";
+    private static String NETWORKSFILE = "/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/mp_c_tp_2018.xml";
     public static void main(String[] args) {
         EventsManager manager = EventsUtils.createEventsManager();
         Network network = NetworkUtils.createNetwork();

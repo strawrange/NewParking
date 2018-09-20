@@ -20,22 +20,19 @@
 package Schedule;
 
 import Dwelling.BusStopActivity;
-import Dwelling.DrtAndTransitStopHandler;
-import Dwelling.DrtStopHandler;
 import ParkingStrategy.ParkingInDepot.InsertionOptimizer.DrtScheduler;
+import Passenger.PassengerEngine;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.matsim.contrib.dvrp.data.Vehicle;
 import org.matsim.contrib.dvrp.optimizer.VrpOptimizer;
 import org.matsim.contrib.dvrp.optimizer.VrpOptimizerWithOnlineTracking;
-import org.matsim.contrib.dvrp.passenger.PassengerEngine;
 import org.matsim.contrib.dvrp.schedule.StayTask;
 import org.matsim.contrib.dvrp.vrpagent.VrpActivity;
 import org.matsim.contrib.dvrp.vrpagent.VrpLegs;
 import org.matsim.contrib.dynagent.DynAction;
 import org.matsim.core.mobsim.qsim.QSim;
 import DynAgent.*;
-import org.matsim.core.mobsim.qsim.pt.TransitStopHandlerFactory;
 import org.matsim.vehicles.VehicleType;
 
 /**
@@ -48,16 +45,12 @@ public class DrtActionCreator implements VrpAgentLogic.DynActionCreator {
 	private final PassengerEngine passengerEngine;
 	private final VrpLegs.LegCreator legCreator;
 	private final DrtScheduler drtScheduler;
-	private final double accessTime;
-	private final double egressTime;
 
 	@Inject
-	public DrtActionCreator(PassengerEngine passengerEngine, VrpOptimizer optimizer, QSim qSim, @Named(VrpAgentSource.DVRP_VEHICLE_TYPE) VehicleType vehicleType, DrtScheduler drtScheduler) {
+	public DrtActionCreator(PassengerEngine passengerEngine, VrpOptimizer optimizer, QSim qSim, DrtScheduler drtScheduler) {
 		this.passengerEngine = passengerEngine;
 		legCreator = VrpLegs.createLegWithOnlineTrackerCreator((VrpOptimizerWithOnlineTracking)optimizer,
 				qSim.getSimTimer());
-		this.accessTime = vehicleType.getAccessTime();
-		this.egressTime = vehicleType.getEgressTime();
 		this.drtScheduler = drtScheduler;
 	}
 
@@ -71,7 +64,7 @@ public class DrtActionCreator implements VrpAgentLogic.DynActionCreator {
 			case STOP:
 				DrtStopTask t = (DrtStopTask)task;
 				return new BusStopActivity(passengerEngine, dynAgent, t, t.getDropoffRequests(), t.getPickupRequests(),
-						DRT_STOP_NAME, drtScheduler, vehicle, accessTime, egressTime, now);
+						DRT_STOP_NAME, drtScheduler, vehicle, ((VehicleImpl)vehicle).getVehicleType().getAccessTime(), ((VehicleImpl)vehicle).getVehicleType().getEgressTime(), now);
 
 			case STAY:
 				return new VrpActivity(DRT_STAY_NAME, (StayTask)task);

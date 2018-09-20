@@ -14,8 +14,7 @@
         <!ATTLIST vehicle
                 id          CDATA   #REQUIRED
                 start_link  CDATA   #REQUIRED
-                boarding_time_per_person_s CDATA #REQUIRED
-                alighting_time_per_person_s CDATA #REQUIRED
                 capacity    CDATA   #IMPLIED
                 t_0         CDATA   #IMPLIED
-                t_1         CDATA   #IMPLIED>
+                t_1         CDATA   #IMPLIED
+                mode        CDATA   #IMPLIED>

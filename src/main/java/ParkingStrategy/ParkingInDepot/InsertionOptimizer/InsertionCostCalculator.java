@@ -22,14 +22,11 @@ package ParkingStrategy.ParkingInDepot.InsertionOptimizer;
 
 import ParkingStrategy.VehicleData;
 
+import Schedule.*;
 import org.matsim.contrib.dvrp.schedule.Schedules;
 import org.matsim.contrib.dvrp.schedule.Task;
 import org.matsim.contrib.dvrp.vrpagent.VrpAgentSource;
 import org.matsim.core.mobsim.framework.MobsimTimer;
-import Schedule.DrtDriveTask;
-import Schedule.DrtRequest;
-import Schedule.DrtStayTask;
-import Schedule.DrtTask;
 import org.matsim.vehicles.VehicleType;
 
 /**
@@ -39,13 +36,10 @@ public class InsertionCostCalculator {
 	public static final double INFEASIBLE_SOLUTION_COST = Double.MAX_VALUE;
 
 	private final MobsimTimer timer;
-	private final double accessTime;
-	private final double egressTime;
 
-	public InsertionCostCalculator(MobsimTimer timer, double accessTime, double egressTime) {
+
+	public InsertionCostCalculator(MobsimTimer timer) {
 		this.timer = timer;
-		this.accessTime = accessTime;
-		this.egressTime = egressTime;
 	}
 
 	// the main goal - minimise bus operation time
@@ -92,7 +86,7 @@ public class InsertionCostCalculator {
 		double replacedDriveTT = insertion.pickupIdx == insertion.dropoffIdx // PICKUP->DROPOFF ?
 				? 0 // no drive following the pickup is replaced (only the one following the dropoff)
 				: calculateReplacedDriveDuration(vEntry, insertion.pickupIdx);
-		return toPickupTT + vEntry.vehicle.getCapacity() * (accessTime + egressTime) + fromPickupTT - replacedDriveTT;
+		return toPickupTT + vEntry.vehicle.getCapacity() * (((VehicleImpl)vEntry.vehicle).getVehicleType().getAccessTime() + ((VehicleImpl)vEntry.vehicle).getVehicleType().getEgressTime()) + fromPickupTT - replacedDriveTT;
 	}
 
 	private double calculateDropoffDetourTimeLoss(DrtRequest drtRequest, VehicleData.Entry vEntry,
@@ -111,7 +105,7 @@ public class InsertionCostCalculator {
 		double replacedDriveTT = insertion.dropoffIdx == insertion.pickupIdx // PICKUP->DROPOFF ?
 				? 0 // replacedDriveTT already taken into account in pickupDetourTimeLoss
 				: calculateReplacedDriveDuration(vEntry, insertion.dropoffIdx);
-		return toDropoffTT + vEntry.vehicle.getCapacity() * (accessTime + egressTime) + fromDropoffTT - replacedDriveTT;
+		return toDropoffTT + vEntry.vehicle.getCapacity() * (((VehicleImpl)vEntry.vehicle).getVehicleType().getAccessTime() + ((VehicleImpl)vEntry.vehicle).getVehicleType().getEgressTime()) + fromDropoffTT - replacedDriveTT;
 	}
 
 	private double calculateReplacedDriveDuration(VehicleData.Entry vEntry, int insertionIdx) {
@@ -164,7 +158,7 @@ public class InsertionCostCalculator {
 
 		// reject solutions when maxWaitTime for the new request is violated
 		double driveToPickupStartTime = getDriveToInsertionStartTime(vEntry, insertion.pickupIdx);
-		double pickupEndTime = driveToPickupStartTime + insertion.pathToPickup.getTravelTime() + vEntry.vehicle.getCapacity() * (accessTime + egressTime);
+		double pickupEndTime = driveToPickupStartTime + insertion.pathToPickup.getTravelTime() + vEntry.vehicle.getCapacity() * (((VehicleImpl)vEntry.vehicle).getVehicleType().getAccessTime() + ((VehicleImpl)vEntry.vehicle).getVehicleType().getEgressTime());
 
 		if (pickupEndTime > drtRequest.getLatestStartTime()) {
 			return false;

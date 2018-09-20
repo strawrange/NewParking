@@ -55,8 +55,10 @@ public class DrtRequest implements PassengerRequest {
 	private DrtStopTask pickupTask = null;
 	private DrtStopTask dropoffTask = null;
 
+	private String mode;
+
 	public DrtRequest(Id<Request> id, MobsimPassengerAgent passenger, Link fromLink, Link toLink,
-                      double earliestStartTime, double latestStartTime, double latestArrivalTime, double submissionTime) {
+                      double earliestStartTime, double latestStartTime, double latestArrivalTime, double submissionTime,/*, String mode*/String mode) {
 		this.id = id;
 		this.submissionTime = submissionTime;
 		this.earliestStartTime = earliestStartTime;
@@ -66,6 +68,7 @@ public class DrtRequest implements PassengerRequest {
 		this.passenger = passenger;
 		this.fromLink = fromLink;
 		this.toLink = toLink;
+		this.mode = mode;
 	}
 
 	@Override
@@ -130,6 +133,14 @@ public class DrtRequest implements PassengerRequest {
 
 	public void setDropoffTask(DrtStopTask dropoffTask) {
 		this.dropoffTask = dropoffTask;
+	}
+
+	public String getMode() {
+		return mode;
+	}
+
+	public void setMode(String mode) {
+		this.mode = mode;
 	}
 
 	public DrtRequestStatus getStatus() {

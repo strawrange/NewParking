@@ -39,22 +39,22 @@ import java.util.Enumeration;
  * @author michalm
  */
 public class RunDrtScenario {
-	public static void run(String configFile, boolean otfvis) throws IOException {
+	public static void run(String configFile, boolean otfvis, String fileStops) throws IOException {
 		Config config = ConfigUtils.loadConfig(configFile, new DrtConfigGroup(), new DvrpConfigGroup(),
 				new OTFVisConfigGroup());
         Logger.getLogger("org.matsim.core.mobsim.qsim.changeeventsengine.NewNetworkChangeEventsEngine").setLevel(Level.ERROR);
         Logger.getLogger(DefaultUnplannedRequestInserter.class).setLevel(Level.ERROR);
-		createControler(config, otfvis).run();
+		createControler(config, otfvis, fileStops).run();
 	}
 
-	public static Controler createControler(Config config, boolean otfvis) throws IOException {
-		return DrtControlerCreator.createControler(config, otfvis);
+	public static Controler createControler(Config config, boolean otfvis, String fileStops) throws IOException {
+		return DrtControlerCreator.createControler(config, otfvis, fileStops);
 	}
 
 	public static void main(String[] args) throws IOException {
-		if (args.length != 1) {
-			throw new IllegalArgumentException("RunDrtScenario needs one argument: path to the configuration file");
+		if (args.length != 2) {
+			throw new IllegalArgumentException("RunDrtScenario needs two arguments: path to the configuration file, path to the stops in area");
 		}
-		RunDrtScenario.run(args[0], false);
+		RunDrtScenario.run(args[0], false, args[1]);
 	}
 }

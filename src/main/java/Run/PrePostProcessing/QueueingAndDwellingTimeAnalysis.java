@@ -4,42 +4,47 @@ import Schedule.DrtActionCreator;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.events.*;
 import org.matsim.api.core.v01.events.handler.*;
-import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.api.experimental.events.VehicleArrivesAtFacilityEvent;
 import org.matsim.core.api.experimental.events.VehicleDepartsAtFacilityEvent;
 import org.matsim.core.api.experimental.events.handler.VehicleArrivesAtFacilityEventHandler;
 import org.matsim.core.api.experimental.events.handler.VehicleDepartsAtFacilityEventHandler;
-import org.matsim.core.controler.events.IterationEndsEvent;
-import org.matsim.core.controler.listener.IterationEndsListener;
 import org.matsim.core.events.EventsUtils;
 import org.matsim.core.events.MatsimEventsReader;
-import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.matsim.vehicles.Vehicle;
+import org.matsim.api.core.v01.network.Link;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.*;
 
 public class QueueingAndDwellingTimeAnalysis {
-    private static String FOLDER = "/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/out/output/V550/tanjong_pagar_depot_10_v550/ITERS/";
-    private static String ITER = "40";
-    private static String EVENTSFILE =  FOLDER +  "it." + ITER + "/" + ITER + ".events.xml.gz";
+    private static String FOLDER;
+    private static String ITER = "0";
+    private static String EVENTSFILE;
     public static void main(String[] args) throws IOException {
-        EventsManager manager = EventsUtils.createEventsManager();
-        QueueingAndDwellingCounter queueingAndDwellingCounter = new QueueingAndDwellingCounter();
-        manager.addHandler(queueingAndDwellingCounter);
-        new MatsimEventsReader(manager).readFile(EVENTSFILE);
-        queueingAndDwellingCounter.output(FOLDER + ITER + "queueingAndDwellingTimeAnalysis.csv");
-        queueingAndDwellingCounter.outputSecond(FOLDER + ITER  + "queueingCounter.csv");
+        //double[] bay = new double[]{1,1.5,2,2.5};
+        //for (double i:bay){
+            //FOLDER = "/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/out/output/HKSTS/Roam/tanjong_pagar_roam_max_v600_plans_"+ i +"/ITERS/";
+            FOLDER = "/home/biyu/IdeaProjects/NewParking/output/drt_mix_V450_T250_bay_optimal_2/ITERS/";
+            EVENTSFILE =  FOLDER +  "it." + ITER + "/" + ITER + ".events.xml.gz";
+            EventsManager manager = EventsUtils.createEventsManager();
+            QueueingAndDwellingCounter queueingAndDwellingCounter = new QueueingAndDwellingCounter();
+            manager.addHandler(queueingAndDwellingCounter);
+            new MatsimEventsReader(manager).readFile(EVENTSFILE);
+            queueingAndDwellingCounter.output(FOLDER + ITER + "queueingAndDwellingTimeAnalysis_28.csv");
+            queueingAndDwellingCounter.outputSecond(FOLDER + ITER  + "queueingCounter.csv");
+            queueingAndDwellingCounter.outputThird(FOLDER + ITER  + "DRTQ.csv");
+        //}
+
     }
 }
 
-class QueueingAndDwellingCounter implements VehicleArrivesAtFacilityEventHandler, VehicleDepartsAtFacilityEventHandler, PersonEntersVehicleEventHandler, PersonLeavesVehicleEventHandler{
+class QueueingAndDwellingCounter implements VehicleArrivesAtFacilityEventHandler, VehicleDepartsAtFacilityEventHandler, PersonEntersVehicleEventHandler, PersonLeavesVehicleEventHandler, ActivityStartEventHandler, ActivityEndEventHandler{
     private Map<Id<Vehicle>, ArrayList<QueueingAndDwellingRecorder>> counter = new HashMap<>();
-    //private Map<Id<TransitStopFacility>, ArrayList<QCounter>> numOfQueue = new HashMap<>();
+    private Map<Id<Link>, ArrayList<Event>> numOfQueue = new HashMap<>();
     private Map<Id<TransitStopFacility>, ArrayList<Event>> events = new HashMap<>();
 
     @Override
@@ -134,7 +139,7 @@ class QueueingAndDwellingCounter implements VehicleArrivesAtFacilityEventHandler
             int i = 0;
             int count = 0;
             double last = 0;
-            for (int time = 0; time < 30 * 3600; ){
+            for (int time = 0; time <= 28 * 3600; ){
                 bw.newLine();
                 if (i < q.size() && time == q.get(i).getTime()) {
                     bw.write(time + ";" + sid + ";" + count + ";" + (time - last));
@@ -152,6 +157,46 @@ class QueueingAndDwellingCounter implements VehicleArrivesAtFacilityEventHandler
             }
             bw.newLine();
             bw.write(30 * 3600 + ";" + sid + ";" + count + ";" + (30 * 3600 - last));
+        }
+    }
+
+    public void outputThird(String filename) throws IOException{
+        BufferedWriter bw = IOUtils.getBufferedWriter(filename);
+        bw.write("time;linkId;queue");
+        for (Id<Link> lid: numOfQueue.keySet()){
+            int count = 0;
+            for (Event event: numOfQueue.get(lid)){
+                bw.newLine();
+                if (event instanceof ActivityStartEvent){
+                    count++;
+                }else if (event instanceof  ActivityEndEvent){
+                    count--;
+                }
+                bw.write(event.getTime() + ";" + lid + ";" + count);
+            }
+            bw.newLine();
+            bw.write(3600*30 + ";" + lid + ";" + count);
+        }
+        bw.close();
+    }
+
+    @Override
+    public void handleEvent(ActivityEndEvent event) {
+        if (event.getActType().equals("DrtQueue")){
+            numOfQueue.get(event.getLinkId()).add(event);
+        }
+
+    }
+
+    @Override
+    public void handleEvent(ActivityStartEvent event) {
+        if (event.getActType().equals("DrtQueue")){
+            if (!numOfQueue.containsKey(event.getLinkId())){
+                ArrayList<Event> events = new ArrayList<>();
+                events.add(event);
+                numOfQueue.put(event.getLinkId(),events);
+            }
+            numOfQueue.get(event.getLinkId()).add(event);
         }
     }
 }

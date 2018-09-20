@@ -20,14 +20,16 @@
 package ParkingStrategy.ParkingInDepot.InsertionOptimizer;
 
 import ParkingStrategy.VehicleData;
+import Passenger.Event.DrtRequestScheduledEvent;
+import Vehicle.Fleet;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.events.PersonStuckEvent;
 import org.matsim.contrib.drt.passenger.events.DrtRequestRejectedEvent;
-import org.matsim.contrib.drt.passenger.events.DrtRequestScheduledEvent;
+
 import Run.DrtConfigGroup;
-import org.matsim.contrib.dvrp.data.Fleet;
-import org.matsim.contrib.dvrp.schedule.Schedule;
+
 import org.matsim.contrib.dvrp.vrpagent.VrpAgentSource;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.mobsim.framework.MobsimTimer;
@@ -58,15 +60,14 @@ public class DefaultUnplannedRequestInserter implements UnplannedRequestInserter
 
 	@Inject
 	public DefaultUnplannedRequestInserter(DrtConfigGroup drtCfg, Fleet fleet, MobsimTimer mobsimTimer,
-										   EventsManager eventsManager, DrtScheduler scheduler, PrecalculatablePathDataProvider pathDataProvider,
-										   @Named(VrpAgentSource.DVRP_VEHICLE_TYPE) VehicleType vehicleType) {
+										   EventsManager eventsManager, DrtScheduler scheduler, PrecalculatablePathDataProvider pathDataProvider) {
 		this.drtCfg = drtCfg;
 		this.fleet = fleet;
 		this.mobsimTimer = mobsimTimer;
 		this.eventsManager = eventsManager;
 		this.scheduler = scheduler;
 
-		insertionProblem = new ParallelMultiVehicleInsertionProblem(pathDataProvider, drtCfg, mobsimTimer, vehicleType.getAccessTime(), vehicleType.getEgressTime());
+		insertionProblem = new ParallelMultiVehicleInsertionProblem(pathDataProvider, drtCfg, mobsimTimer);
 	}
 
 	@Override
@@ -80,15 +81,17 @@ public class DefaultUnplannedRequestInserter implements UnplannedRequestInserter
 			return;
 		}
 
-		VehicleData vData = new VehicleData(mobsimTimer.getTimeOfDay(), fleet.getVehicles().values().stream());
+
 
 		Iterator<DrtRequest> reqIter = unplannedRequests.iterator();
 		while (reqIter.hasNext()) {
 			DrtRequest req = reqIter.next();
+			VehicleData vData = new VehicleData(mobsimTimer.getTimeOfDay(), fleet.getVehicles(req.getMode()).values().stream());
 			Optional<SingleVehicleInsertionProblem.BestInsertion> best = insertionProblem.findBestInsertion(req, vData.getEntries());
 			if (!best.isPresent()) {
 				req.setRejected(true);
 				eventsManager.processEvent(new DrtRequestRejectedEvent(mobsimTimer.getTimeOfDay(), req.getId()));
+				eventsManager.processEvent(new PersonStuckEvent(mobsimTimer.getTimeOfDay(), req.getPassenger().getId(), req.getFromLink().getId(),req.getMode()));
 				if (drtCfg.isPrintDetailedWarnings()) {
 					log.warn("No vehicle found for drt request " + req + " from passenger id="
 							+ req.getPassenger().getId() + " fromLinkId=" + req.getFromLink().getId());
