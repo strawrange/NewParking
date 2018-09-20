@@ -23,7 +23,8 @@ import ParkingStrategy.VehicleData;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.matsim.api.core.v01.network.Link;
-import Run.DrtConfigGroup;
+import org.matsim.contrib.drt.run.DrtConfigGroup;
+import org.matsim.contrib.dvrp.data.Fleet;
 import org.matsim.contrib.dvrp.data.Vehicles;
 import org.matsim.contrib.dvrp.data.Vehicle;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
@@ -34,16 +35,12 @@ import org.matsim.contrib.dvrp.tracker.OnlineDriveTaskTracker;
 import org.matsim.contrib.dvrp.tracker.TaskTrackers;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
 import org.matsim.contrib.dvrp.util.LinkTimePair;
-import org.matsim.contrib.dvrp.vrpagent.VrpAgentSource;
 import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.core.mobsim.qsim.QSim;
 import org.matsim.core.network.NetworkChangeEvent;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.utils.misc.Time;
 import Schedule.*;
-import org.matsim.vehicles.VehicleType;
-import Vehicle.Fleet;
-import Vehicle.FleetImpl;
 
 import java.util.List;
 
@@ -63,17 +60,17 @@ public class DrtScheduler implements ScheduleInquiry {
 		this.timer = timer;
 		this.travelTime = travelTime;
 		this.qSim = qSim;
-		initFleet(drtCfg);
+		initMultiOperatorFleet(drtCfg);
     }
 
-	private void initFleet(DrtConfigGroup drtCfg) {
+	private void initMultiOperatorFleet(DrtConfigGroup drtCfg) {
 		if (drtCfg.isChangeStartLinkToLastLinkInSchedule()) {
 			for (Vehicle veh : fleet.getVehicles().values()) {
 				Vehicles.changeStartLinkToLastLinkInSchedule(veh);
 			}
 		}
 
-		((FleetImpl)fleet).resetSchedules();
+		fleet.resetSchedules();
 		for (Vehicle veh : fleet.getVehicles().values()) {
 			veh.getSchedule()
 					.addTask(new DrtStayTask(veh.getServiceBeginTime(), veh.getServiceEndTime(), veh.getStartLink()));

@@ -25,7 +25,8 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
-import Vehicle.Fleet;
+
+import org.matsim.contrib.dvrp.data.Fleet;
 import org.matsim.contrib.dvrp.data.Vehicle;
 import org.matsim.contrib.dvrp.optimizer.VrpOptimizer;
 import org.matsim.core.mobsim.framework.AgentSource;

@@ -33,7 +33,7 @@ import java.net.URL;
 /**
  * @author michalm
  */
-public class FleetProvider implements Provider<Fleet> {
+public class FleetProvider implements Provider<MultiOperatorFleet> {
 	@Inject
 	Network network;
 	@Inject(optional = true)
@@ -47,7 +47,7 @@ public class FleetProvider implements Provider<Fleet> {
 	}
 
 	@Override
-	public Fleet get() {
+	public MultiOperatorFleet get() {
 		FleetImpl fleet = new FleetImpl();
 		new VehicleReader(network, fleet).parse(url);
 		return fleet;
@@ -57,7 +57,7 @@ public class FleetProvider implements Provider<Fleet> {
 		return new AbstractModule() {
 			@Override
 			public void install() {
-				bind(Fleet.class).toProvider(new FleetProvider(url)).asEagerSingleton();
+				bind(MultiOperatorFleet.class).toProvider(new FleetProvider(url)).asEagerSingleton();
 			}
 		};
 	}

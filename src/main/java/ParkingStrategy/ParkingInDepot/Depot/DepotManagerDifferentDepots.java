@@ -1,6 +1,6 @@
 package ParkingStrategy.ParkingInDepot.Depot;
 
-import Run.DrtConfigGroup;
+import Run.AtodConfigGroup;
 import com.google.inject.Inject;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Network;
@@ -18,7 +18,7 @@ public class DepotManagerDifferentDepots implements DepotManager{
 
     @Inject
     public DepotManagerDifferentDepots(Config config, Network network){
-        DrtConfigGroup drtConfig = DrtConfigGroup.get(config);
+        AtodConfigGroup drtConfig = AtodConfigGroup.get(config);
         new DepotReader(this,network).parse(drtConfig.getDepotFileUrl(config.getContext()));
     }
 

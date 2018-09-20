@@ -1,7 +1,7 @@
 package Run.PrePostProcessing;
 
 import ParkingStrategy.ParkingInDepot.Depot.*;
-import Run.DrtConfigGroup;
+import Run.AtodConfigGroup;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.data.FleetImpl;
@@ -19,7 +19,7 @@ import java.util.Random;
 
 public class VehicleInDepot {
     public static void main(String[] args) {
-        Config config = ConfigUtils.loadConfig("/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/scenarios/mp_c_tp/drtconfig_depot_V1500_max.xml", new DrtConfigGroup());
+        Config config = ConfigUtils.loadConfig("/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/scenarios/mp_c_tp/drtconfig_depot_V1500_max.xml", new AtodConfigGroup());
         Scenario scenario = ScenarioUtils.loadScenario(config);
         Network network = scenario.getNetwork();
         FleetImpl fleet = new FleetImpl();

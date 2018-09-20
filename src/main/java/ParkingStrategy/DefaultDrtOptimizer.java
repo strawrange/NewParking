@@ -31,8 +31,8 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.drt.optimizer.DrtOptimizer;
 import org.matsim.contrib.drt.passenger.events.DrtRequestRejectedEvent;
-import Run.DrtConfigGroup;
-import Vehicle.Fleet;
+import Run.AtodConfigGroup;
+import org.matsim.contrib.dvrp.data.Fleet;
 import org.matsim.contrib.dvrp.data.Request;
 import org.matsim.contrib.dvrp.data.Vehicle;
 import org.matsim.contrib.dvrp.passenger.PassengerRequests;
@@ -56,7 +56,7 @@ import java.util.TreeSet;
 public class DefaultDrtOptimizer implements DrtOptimizer {
 	public static final String DRT_OPTIMIZER = "drt_optimizer";
 
-	private final DrtConfigGroup drtCfg;
+	private final AtodConfigGroup drtCfg;
 	private final Fleet fleet;
 	private final DrtScheduler scheduler;
 	private final ParkingStrategy parkingStrategy;
@@ -74,9 +74,9 @@ public class DefaultDrtOptimizer implements DrtOptimizer {
 	private final BayManager bayManager;
 
 	@Inject
-	public DefaultDrtOptimizer(DrtConfigGroup drtCfg, Fleet fleet, MobsimTimer mobsimTimer, EventsManager eventsManager,
-							   DrtRequestValidator requestValidator, ParkingStrategy parkingStrategy,
-							   DrtScheduler scheduler, EmptyVehicleRelocator relocator, UnplannedRequestInserter requestInserter, BayManager bayManager) {
+	public DefaultDrtOptimizer(AtodConfigGroup drtCfg, Fleet fleet, MobsimTimer mobsimTimer, EventsManager eventsManager,
+                               DrtRequestValidator requestValidator, ParkingStrategy parkingStrategy,
+                               DrtScheduler scheduler, EmptyVehicleRelocator relocator, UnplannedRequestInserter requestInserter, BayManager bayManager) {
 		this.drtCfg = drtCfg;
 		this.fleet = fleet;
 		this.mobsimTimer = mobsimTimer;
@@ -103,11 +103,11 @@ public class DefaultDrtOptimizer implements DrtOptimizer {
 			System.out.println();
 		}
 //		if (parkingStrategy != null && e.getSimulationTime() % drtCfg.getRebalancingInterval() == 0) {
-//			rebalanceFleet();
+//			rebalanceMultiOperatorFleet();
 //		}
 	}
 
-//	private void rebalanceFleet() {
+//	private void rebalanceMultiOperatorFleet() {
 //		Stream<? extends Vehicle> rebalancableVehicles = fleet.getVehicles().values().stream()
 //				.filter(scheduler::isIdle);
 //		// right now we relocate only idle vehicles (vehicles that are being relocated cannot be relocated)
