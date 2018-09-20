@@ -1,7 +1,9 @@
 package Run;
 
 import BayInfrastructure.BayManager;
+import BayInfrastructure.VehicleLength;
 import Dwelling.ClearNetworkChangeEvents;
+import Dwelling.DebugHandler;
 import Dwelling.DrtAndTransitStopHandlerFactory;
 import ParkingStrategy.DefaultDrtOptimizer;
 import Schedule.validator.DefaultDrtRequestValidator;
@@ -35,7 +37,7 @@ DrtModule extends AbstractModule {
 
 	@Override
 	public void install() {
-		bind(VehicleType.class).annotatedWith(Names.named(VrpAgentSource.DVRP_VEHICLE_TYPE)).toInstance(new DynVehicleType(Id.create(DynVehicleType.DYNTYPE,VehicleType.class)));
+		//bind(VehicleType.class).annotatedWith(Names.named(VrpAgentSource.DVRP_VEHICLE_TYPE)).to(DynVehicleType.class);
 		DrtConfigGroup drtCfg = DrtConfigGroup.get(getConfig());
 		bind(Fleet.class).toProvider(new FleetProvider(drtCfg.getVehiclesFileUrl(getConfig().getContext())))
 				.asEagerSingleton();
@@ -48,6 +50,8 @@ DrtModule extends AbstractModule {
 		bind(TransitStopHandlerFactory.class ).to( DrtAndTransitStopHandlerFactory.class );
 		addControlerListenerBinding().to(ClearNetworkChangeEvents.class).asEagerSingleton();
 		addControlerListenerBinding().to(BayManager.class).asEagerSingleton();
+
+		//bind(DebugHandler.class).asEagerSingleton();
 
 
 		switch (drtCfg.getOperationalScheme()) {

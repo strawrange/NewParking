@@ -12,6 +12,7 @@ import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.NetworkCleaner;
 import org.matsim.core.network.algorithms.TransportModeNetworkFilter;
+import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.collections.Tuple;
 
@@ -23,14 +24,13 @@ import java.util.*;
 public class VehicleGenerator {
     static FleetImpl newFleet = new FleetImpl();
     public static void main(String[] args) {
-        int numT = 1000;
-        int numS = 800;
-        int numM = 500;
-        int numL = 200;
+        int numT = 250;
+        int numS = 200;
+        int numM = 150;
+        int numL = 100;
         int num = numL + numM + numS + numT;
-        Config config = ConfigUtils.loadConfig("/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/scenarios/mp_c_tp/drtconfig_roam_V1500_max.xml");
-        Scenario scenario = ScenarioUtils.loadScenario(config);
-        Network network = scenario.getNetwork();
+        Network network = NetworkUtils.createNetwork();
+        new MatsimNetworkReader(network).readFile("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/mp_c_tp_2018.xml");
         Network drtNetwork = NetworkUtils.createNetwork();
         new TransportModeNetworkFilter(network).filter(drtNetwork, Collections.singleton("car"));
         new NetworkCleaner().run(drtNetwork);
@@ -38,7 +38,7 @@ public class VehicleGenerator {
         ArrayList<Id<Link>> links = new ArrayList<>(drtNetwork.getLinks().keySet());
         for (int i =0;i<numT;i++){
             Id<Link> lid = links.get(random.nextInt(links.size()));
-            Vehicle veh = new VehicleImpl(Id.create("drt_2s_" + i, Vehicle.class),drtNetwork.getLinks().get(lid), 2.0,0,30*3600,"drtaxi");
+            Vehicle veh = new VehicleImpl(Id.create("drt_1s_" + i, Vehicle.class),drtNetwork.getLinks().get(lid), 1.0,0,30*3600,"drtaxi");
             newFleet.addVehicle(veh);
         }
         for (int i =0;i<numS;i++){
@@ -56,7 +56,7 @@ public class VehicleGenerator {
             Vehicle veh = new VehicleImpl(Id.create("drt_20s_" + i, Vehicle.class),drtNetwork.getLinks().get(lid), 20.0,0,30*3600,"drt");
             newFleet.addVehicle(veh);
         }
-        new VehicleWriter(newFleet.getVehicles().values()).write("/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/scenarios/mp_c_tp/drtvehicles_" + num + ".xml");
+        new VehicleWriter(newFleet.getVehicles().values()).write("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/drtvehicles_" + num + ".xml");
     }
 
 }

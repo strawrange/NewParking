@@ -52,18 +52,14 @@ import java.util.List;
  */
 public class DrtScheduler implements ScheduleInquiry {
 	private final Fleet fleet;
-	private final double accessTime;
-	private final double egressTime;
 	private final MobsimTimer timer;
 	private final TravelTime travelTime;
 	private final QSim qSim;
 
 	@Inject
 	public DrtScheduler(DrtConfigGroup drtCfg, Fleet fleet, MobsimTimer timer,
-                        @Named(DvrpTravelTimeModule.DVRP_ESTIMATED) TravelTime travelTime, @Named(VrpAgentSource.DVRP_VEHICLE_TYPE)VehicleType vehicleType, QSim qSim) {
+                        @Named(DvrpTravelTimeModule.DVRP_ESTIMATED) TravelTime travelTime, QSim qSim) {
 		this.fleet = fleet;
-		this.accessTime = vehicleType.getAccessTime();
-		this.egressTime = vehicleType.getEgressTime();
 		this.timer = timer;
 		this.travelTime = travelTime;
 		this.qSim = qSim;
@@ -181,7 +177,7 @@ public class DrtScheduler implements ScheduleInquiry {
 
 			case STOP: {
 				// TODO does not consider prebooking!!!
-				double duration = vehicle.getCapacity() * (accessTime + egressTime);
+				double duration = vehicle.getCapacity() * (((VehicleImpl)vehicle).getVehicleType().getAccessTime() + ((VehicleImpl)vehicle).getVehicleType().getEgressTime());
 				return newBeginTime + duration;
 			}
 
@@ -198,7 +194,7 @@ public class DrtScheduler implements ScheduleInquiry {
 	}
 
 	public void insertPickup(VehicleData.Entry vehicleEntry, DrtRequest request, InsertionWithPathData insertion) {
-		double stopDuration = vehicleEntry.vehicle.getCapacity() * (accessTime + egressTime);
+		double stopDuration = vehicleEntry.vehicle.getCapacity() * (((VehicleImpl)vehicleEntry.vehicle).getVehicleType().getAccessTime() + ((VehicleImpl)vehicleEntry.vehicle).getVehicleType().getEgressTime());
 
         Schedule schedule = vehicleEntry.vehicle.getSchedule();
         List<VehicleData.Stop> stops = vehicleEntry.stops;
@@ -336,7 +332,7 @@ public class DrtScheduler implements ScheduleInquiry {
     }
 
 	public void insertDropoff(VehicleData.Entry vehicleEntry, DrtRequest request, InsertionWithPathData insertion) {
-        double stopDuration = vehicleEntry.vehicle.getCapacity() * (accessTime + egressTime);
+        double stopDuration = vehicleEntry.vehicle.getCapacity() * (((VehicleImpl)vehicleEntry.vehicle).getVehicleType().getAccessTime() + ((VehicleImpl)vehicleEntry.vehicle).getVehicleType().getEgressTime());
         Schedule schedule = vehicleEntry.vehicle.getSchedule();
         List<VehicleData.Stop> stops = vehicleEntry.stops;
 

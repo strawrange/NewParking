@@ -27,8 +27,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class NewQueueAnalysis {
-    private static String FOLDER = "/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/out/output/mp_c_tp/drt_mix_V1500_max/ITERS/";
-    private static String ITER = "40";
+    private static String FOLDER = "/home/biyu/IdeaProjects/NewParking/output/drt_mix_V1500_T1000_linkLength_pricing/ITERS/";
+    private static String ITER = "10";
     private static String EVENTSFILE =  FOLDER +  "it." + ITER + "/" + ITER + ".events.xml.gz";
     public static void main(String[] args) throws IOException {
         EventsManager manager = EventsUtils.createEventsManager();

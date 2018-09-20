@@ -116,9 +116,12 @@ public class DrtConfigGroup extends ReflectiveConfigGroup {
 	static final String NUMBER_OF_THREADS_EXP = "Number of threads used for parallel evaluation of request insertion into existing schedules."
 			+ " Scales well up to 4, due to path data provision, the most computationally intensive part,"
 			+ " using up to 4 threads. Default value is 'min(4, no. of cores available to JVM)'";
-	public static final String DOOR_2_DOOR_STOP = "door2doorstop";
+	public static final String DOOR_2_DOOR_STOP = "door2DoorStop";
 	static final String DOOR_2_DOOR_STOP_EXP = "The bay length of the door-to-door AV, infinity means no bay length restriction, linkLength means length equals to the link length";
-		
+
+	public static final String MIN_BAY_SIZE = "minBaySize";
+	static final String MIN_BAY_SIZE_EXP = "The minimum bay size for transit stop, 0.0 by default.";
+
 	@PositiveOrZero
 	private double stopDuration = Double.NaN;// seconds
 
@@ -176,6 +179,8 @@ public class DrtConfigGroup extends ReflectiveConfigGroup {
 	@NotNull
 	private Door2DoorStop door2DoorStop= Door2DoorStop.infinity;
 
+	private double minBaySize = 0.0;
+
 	@Positive
 	private int numberOfThreads = Math.min(Runtime.getRuntime().availableProcessors(),
 			ParallelPathDataProvider.MAX_THREADS);
@@ -227,6 +232,7 @@ public class DrtConfigGroup extends ReflectiveConfigGroup {
 		map.put(PRINT_WARNINGS,
 				PRINT_WARNINGS_EXP);
 		map.put(DOOR_2_DOOR_STOP, DOOR_2_DOOR_STOP_EXP);
+		map.put(MIN_BAY_SIZE, MIN_BAY_SIZE_EXP);
 		return map;
 	}
 
@@ -587,5 +593,12 @@ public class DrtConfigGroup extends ReflectiveConfigGroup {
 		this.door2DoorStop = Door2DoorStop.valueOf(door2doorStop);
 	}
 
-
+	@StringGetter(MIN_BAY_SIZE)
+	public double getMinBaySize(){
+		return minBaySize;
+	}
+	@StringSetter(MIN_BAY_SIZE)
+	public void setMinBaySize(double minBaySize){
+		this.minBaySize = minBaySize;
+	}
 }

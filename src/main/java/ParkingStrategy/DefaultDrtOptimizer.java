@@ -28,6 +28,7 @@ import ParkingStrategy.ParkingInDepot.InsertionOptimizer.EmptyVehicleRelocator;
 import ParkingStrategy.ParkingInDepot.InsertionOptimizer.UnplannedRequestInserter;
 import com.google.inject.Inject;
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.events.PersonStuckEvent;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.drt.optimizer.DrtOptimizer;
 import org.matsim.contrib.drt.passenger.events.DrtRequestRejectedEvent;
@@ -42,9 +43,11 @@ import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.api.experimental.events.VehicleArrivesAtFacilityEvent;
 import org.matsim.core.api.experimental.events.VehicleDepartsAtFacilityEvent;
 import org.matsim.core.mobsim.framework.MobsimTimer;
+import org.matsim.core.mobsim.framework.events.MobsimBeforeCleanupEvent;
 import org.matsim.core.mobsim.framework.events.MobsimBeforeSimStepEvent;
 import Schedule.*;
 import Schedule.validator.DrtRequestValidator;
+import org.matsim.core.mobsim.framework.listeners.MobsimBeforeCleanupListener;
 
 
 import java.util.Collection;
@@ -53,7 +56,7 @@ import java.util.TreeSet;
 /**
  * @author michalm
  */
-public class DefaultDrtOptimizer implements DrtOptimizer {
+public class DefaultDrtOptimizer implements DrtOptimizer, MobsimBeforeCleanupListener {
 	public static final String DRT_OPTIMIZER = "drt_optimizer";
 
 	private final DrtConfigGroup drtCfg;
@@ -99,9 +102,9 @@ public class DefaultDrtOptimizer implements DrtOptimizer {
 			requestInserter.scheduleUnplannedRequests(unplannedRequests);
 			requiresReoptimization = false;
 		}
-		if (mobsimTimer.getTimeOfDay() == 30 * 3600 - 300){
-			System.out.println();
-		}
+//		if (mobsimTimer.getTimeOfDay() == 30 * 3600 - 300){
+//			System.out.println();
+//		}
 //		if (parkingStrategy != null && e.getSimulationTime() % drtCfg.getRebalancingInterval() == 0) {
 //			rebalanceFleet();
 //		}
@@ -138,6 +141,7 @@ public class DefaultDrtOptimizer implements DrtOptimizer {
 		if (!requestValidator.validateDrtRequest(drtRequest)) {
 			drtRequest.setRejected(true);
 			eventsManager.processEvent(new DrtRequestRejectedEvent(mobsimTimer.getTimeOfDay(), drtRequest.getId()));
+			eventsManager.processEvent(new PersonStuckEvent(mobsimTimer.getTimeOfDay(),((DrtRequest) request).getPassenger().getId(),((DrtRequest) request).getFromLink().getId(),((DrtRequest) request).getMode()));
 			return;
 		}
 
@@ -153,24 +157,25 @@ public class DefaultDrtOptimizer implements DrtOptimizer {
 		if (parkingStrategy instanceof MixedParkingStrategy && isRelocateToDepotOrStreet(vehicle)){
 			schedule.addTask(new DrtStayTask(schedule.getCurrentTask().getEndTime(), vehicle.getServiceEndTime(), ((DrtStayTask)vehicle.getSchedule().getCurrentTask()).getLink()));
 		}
-		if (isCurrentStopTask(vehicle)&& !isNextStopTask(vehicle)){
+		if (isCurrentStopTask(vehicle)){
 			eventsManager.processEvent(new VehicleDepartsAtFacilityEvent(mobsimTimer.getTimeOfDay(),Id.createVehicleId(vehicle.getId().toString()),
 					bayManager.getBayByLinkId(((DrtStopTask) schedule.getCurrentTask()).getLink().getId()).getTransitStop().getId(), 1));
 			scheduler.modifyLanes(((DrtStopTask) schedule.getCurrentTask()).getLink(), mobsimTimer.getTimeOfDay(), 0.D);
 		}
 
 		if (isNextStopTask(vehicle)){
+
 			int currentTaskIdx = schedule.getCurrentTask().getTaskIdx();
 			DrtStopTask nextTask = (DrtStopTask) schedule.getTasks().get(currentTaskIdx + 1);
 			Bay bay = bayManager.getBayByLinkId(nextTask.getLink().getId());
 			bay.addVehicle(Id.createVehicleId(vehicle.getId()));
+			if  (isCurrentDriveOrStayTask(vehicle)){
+				eventsManager.processEvent(new VehicleArrivesAtFacilityEvent(mobsimTimer.getTimeOfDay(),Id.createVehicleId(vehicle.getId().toString()),
+						bayManager.getStopIdByLinkId(nextTask.getLink().getId()), 1));
+			}
 			if (bay.isFull() && bay.getVehicles().contains(vehicle.getId())) {
 				scheduler.insertQuequingTask(vehicle);
 				return;
-			}
-			if (isCurrentDriveOrStayTask(vehicle)){
-				eventsManager.processEvent(new VehicleArrivesAtFacilityEvent(mobsimTimer.getTimeOfDay(),Id.createVehicleId(vehicle.getId().toString()),
-					bayManager.getStopIdByLinkId(nextTask.getLink().getId()), 1));
 			}
 			if (isCurrentQueueTask(vehicle)){
 				scheduler.updateQueue(vehicle);
@@ -242,10 +247,7 @@ public class DefaultDrtOptimizer implements DrtOptimizer {
 		if (schedule.getStatus() != Schedule.ScheduleStatus.STARTED){
 			return false;
 		}
-		if (!(schedule.getCurrentTask() instanceof DrtStopTask)){
-			return false;
-		}
-		return true;
+		return (schedule.getCurrentTask() instanceof DrtStopTask);
 	}
 
 	private boolean isRelocateToDepotOrStreet(Vehicle vehicle){
@@ -349,5 +351,23 @@ public class DefaultDrtOptimizer implements DrtOptimizer {
 
 		// TODO we may here possibly decide whether or not to reoptimize
 		// if (delays/speedups encountered) {requiresReoptimization = true;}
+	}
+
+	@Override
+	public void notifyMobsimBeforeCleanup(MobsimBeforeCleanupEvent e) {
+		for (DrtRequest drtRequest: unplannedRequests){
+			eventsManager.processEvent(new PersonStuckEvent(mobsimTimer.getTimeOfDay(), drtRequest.getPassenger().getId(),drtRequest.getFromLink().getId(),drtRequest.getMode()));
+		}
+		for (Vehicle vehicle: fleet.getVehicles().values()) {
+			if (vehicle.getSchedule().getStatus() != Schedule.ScheduleStatus.STARTED){
+				continue;
+			}
+			for (int i = vehicle.getSchedule().getCurrentTask().getTaskIdx(); i < vehicle.getSchedule().getTasks().size(); i++) {
+				Task task = vehicle.getSchedule().getTasks().get(i);
+				if (task instanceof DrtStopTask)
+					for (DrtRequest drtRequest : ((DrtStopTask) task).getPickupRequests())
+						eventsManager.processEvent(new PersonStuckEvent(mobsimTimer.getTimeOfDay(), drtRequest.getPassenger().getId(), drtRequest.getFromLink().getId(), drtRequest.getMode()));
+			}
+		}
 	}
 }

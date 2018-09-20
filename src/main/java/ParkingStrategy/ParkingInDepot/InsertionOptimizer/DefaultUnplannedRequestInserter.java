@@ -25,6 +25,7 @@ import Vehicle.Fleet;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.events.PersonStuckEvent;
 import org.matsim.contrib.drt.passenger.events.DrtRequestRejectedEvent;
 
 import Run.DrtConfigGroup;
@@ -59,15 +60,14 @@ public class DefaultUnplannedRequestInserter implements UnplannedRequestInserter
 
 	@Inject
 	public DefaultUnplannedRequestInserter(DrtConfigGroup drtCfg, Fleet fleet, MobsimTimer mobsimTimer,
-										   EventsManager eventsManager, DrtScheduler scheduler, PrecalculatablePathDataProvider pathDataProvider,
-										   @Named(VrpAgentSource.DVRP_VEHICLE_TYPE) VehicleType vehicleType) {
+										   EventsManager eventsManager, DrtScheduler scheduler, PrecalculatablePathDataProvider pathDataProvider) {
 		this.drtCfg = drtCfg;
 		this.fleet = fleet;
 		this.mobsimTimer = mobsimTimer;
 		this.eventsManager = eventsManager;
 		this.scheduler = scheduler;
 
-		insertionProblem = new ParallelMultiVehicleInsertionProblem(pathDataProvider, drtCfg, mobsimTimer, vehicleType.getAccessTime(), vehicleType.getEgressTime());
+		insertionProblem = new ParallelMultiVehicleInsertionProblem(pathDataProvider, drtCfg, mobsimTimer);
 	}
 
 	@Override
@@ -91,6 +91,7 @@ public class DefaultUnplannedRequestInserter implements UnplannedRequestInserter
 			if (!best.isPresent()) {
 				req.setRejected(true);
 				eventsManager.processEvent(new DrtRequestRejectedEvent(mobsimTimer.getTimeOfDay(), req.getId()));
+				eventsManager.processEvent(new PersonStuckEvent(mobsimTimer.getTimeOfDay(), req.getPassenger().getId(), req.getFromLink().getId(),req.getMode()));
 				if (drtCfg.isPrintDetailedWarnings()) {
 					log.warn("No vehicle found for drt request " + req + " from passenger id="
 							+ req.getPassenger().getId() + " fromLinkId=" + req.getFromLink().getId());

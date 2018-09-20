@@ -44,7 +44,7 @@ public class FleetImpl implements Fleet {
 		return vehicles.entrySet().stream().filter(vehicle -> ((VehicleImpl)vehicle.getValue()).getMode().equals(mode)).collect(Collectors.toMap(map -> map.getKey(), map -> map.getValue()));
 	}
 
-	public void addVehicle(Vehicle vehicle) {
+	public void addVehicle(VehicleImpl vehicle) {
 		vehicles.put(vehicle.getId(), vehicle);
 	}
 

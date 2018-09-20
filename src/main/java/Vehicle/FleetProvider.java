@@ -49,7 +49,7 @@ public class FleetProvider implements Provider<Fleet> {
 	@Override
 	public Fleet get() {
 		FleetImpl fleet = new FleetImpl();
-		new VehicleReader(network, fleet, vehicleType).parse(url);
+		new VehicleReader(network, fleet).parse(url);
 		return fleet;
 	}
 

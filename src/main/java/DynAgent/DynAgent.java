@@ -32,6 +32,7 @@ import org.matsim.api.core.v01.population.Person;
 import org.matsim.contrib.dynagent.*;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.api.experimental.events.VehicleArrivesAtFacilityEvent;
+import org.matsim.core.api.experimental.events.VehicleDepartsAtFacilityEvent;
 import org.matsim.core.mobsim.qsim.interfaces.MobsimVehicle;
 import org.matsim.core.mobsim.qsim.pt.MobsimDriverPassengerAgent;
 import org.matsim.core.mobsim.qsim.pt.TransitVehicle;
@@ -102,7 +103,6 @@ public final class DynAgent implements MobsimDriverPassengerAgent {
 			events.processEvent(new ActivityStartEvent(now, id, currentLinkId, null, dynActivity.getActivityType()));
 		} else {
 			dynLeg = (DynLeg)nextDynAction;
-
 			state = State.LEG;
 		}
 	}
