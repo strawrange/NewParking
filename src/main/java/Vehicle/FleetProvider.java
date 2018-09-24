@@ -23,6 +23,7 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.name.Named;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.contrib.dvrp.data.Fleet;
 import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
 import org.matsim.contrib.dvrp.vrpagent.VrpAgentSource;
 import org.matsim.core.controler.AbstractModule;
@@ -33,7 +34,7 @@ import java.net.URL;
 /**
  * @author michalm
  */
-public class FleetProvider implements Provider<MultiOperatorFleet> {
+public class FleetProvider implements Provider<Fleet> {
 	@Inject
 	Network network;
 	@Inject(optional = true)
@@ -47,7 +48,7 @@ public class FleetProvider implements Provider<MultiOperatorFleet> {
 	}
 
 	@Override
-	public MultiOperatorFleet get() {
+	public Fleet get() {
 		FleetImpl fleet = new FleetImpl();
 		new VehicleReader(network, fleet).parse(url);
 		return fleet;
@@ -57,7 +58,7 @@ public class FleetProvider implements Provider<MultiOperatorFleet> {
 		return new AbstractModule() {
 			@Override
 			public void install() {
-				bind(MultiOperatorFleet.class).toProvider(new FleetProvider(url)).asEagerSingleton();
+				bind(Fleet.class).toProvider(new FleetProvider(url)).asEagerSingleton();
 			}
 		};
 	}

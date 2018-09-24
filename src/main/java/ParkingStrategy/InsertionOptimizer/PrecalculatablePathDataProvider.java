@@ -16,7 +16,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package ParkingStrategy.ParkingInDepot.InsertionOptimizer;
+package ParkingStrategy.InsertionOptimizer;
 
 import ParkingStrategy.VehicleData;
 import org.matsim.api.core.v01.Id;

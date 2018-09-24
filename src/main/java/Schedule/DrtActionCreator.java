@@ -20,10 +20,9 @@
 package Schedule;
 
 import Dwelling.BusStopActivity;
-import ParkingStrategy.ParkingInDepot.InsertionOptimizer.DrtScheduler;
+import ParkingStrategy.InsertionOptimizer.DrtScheduler;
 import Passenger.PassengerEngine;
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import org.matsim.contrib.dvrp.data.Vehicle;
 import org.matsim.contrib.dvrp.optimizer.VrpOptimizer;
 import org.matsim.contrib.dvrp.optimizer.VrpOptimizerWithOnlineTracking;
@@ -33,7 +32,6 @@ import org.matsim.contrib.dvrp.vrpagent.VrpLegs;
 import org.matsim.contrib.dynagent.DynAction;
 import org.matsim.core.mobsim.qsim.QSim;
 import DynAgent.*;
-import org.matsim.vehicles.VehicleType;
 
 /**
  * @author michalm

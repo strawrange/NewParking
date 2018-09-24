@@ -17,7 +17,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package ParkingStrategy.ParkingInDepot.InsertionOptimizer;
+package ParkingStrategy.InsertionOptimizer;
 
 
 import ParkingStrategy.VehicleData;
@@ -25,9 +25,7 @@ import ParkingStrategy.VehicleData;
 import Schedule.*;
 import org.matsim.contrib.dvrp.schedule.Schedules;
 import org.matsim.contrib.dvrp.schedule.Task;
-import org.matsim.contrib.dvrp.vrpagent.VrpAgentSource;
 import org.matsim.core.mobsim.framework.MobsimTimer;
-import org.matsim.vehicles.VehicleType;
 
 /**
  * @author michalm
