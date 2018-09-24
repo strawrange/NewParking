@@ -19,7 +19,7 @@
 
 package Run;
 
-import ParkingStrategy.ParkingInDepot.InsertionOptimizer.DefaultUnplannedRequestInserter;
+import ParkingStrategy.InsertionOptimizer.DefaultUnplannedRequestInserter;
 import org.apache.log4j.*;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;

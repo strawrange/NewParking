@@ -31,7 +31,7 @@ import ParkingStrategy.NoParkingStrategy.NoParkingStrategy;
 import ParkingStrategy.ParkingInDepot.Depot.DepotManager;
 import ParkingStrategy.ParkingInDepot.Depot.DepotManagerDifferentDepots;
 import ParkingStrategy.ParkingInDepot.Depot.DepotManagerSameDepot;
-import ParkingStrategy.ParkingInDepot.InsertionOptimizer.*;
+import ParkingStrategy.InsertionOptimizer.*;
 import Passenger.PassengerRequestCreator;
 import firstLastAVPTRouter.MainModeIdentifierFirstLastAVPT;
 import firstLastAVPTRouter.TransitRouterFirstLastAVPTFactory;

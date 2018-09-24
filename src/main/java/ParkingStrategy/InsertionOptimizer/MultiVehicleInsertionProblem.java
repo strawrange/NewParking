@@ -16,33 +16,20 @@
  *                                                                         *
  * *********************************************************************** */
 
-package ParkingStrategy.ParkingInDepot.InsertionOptimizer;
+package ParkingStrategy.InsertionOptimizer;
 
-import Path.OneToManyPathSearch.PathData;
+
+
+
+import ParkingStrategy.VehicleData;
+import Schedule.DrtRequest;
+
+import java.util.Collection;
+import java.util.Optional;
 
 /**
  * @author michalm
  */
-public class InsertionWithPathData {
-	public final int pickupIdx;
-	public final int dropoffIdx;
-	public final PathData pathToPickup;
-	public final PathData pathFromPickup;
-	public final PathData pathToDropoff;// null if dropoff inserted directly after pickup
-	public final PathData pathFromDropoff;// null if dropoff inserted at the end
-
-	InsertionWithPathData(int pickupIdx, int dropoffIdx, PathData pathToPickup, PathData pathFromPickup,
-                          PathData pathToDropoff, PathData pathFromDropoff) {
-		this.pickupIdx = pickupIdx;
-		this.dropoffIdx = dropoffIdx;
-		this.pathToPickup = pathToPickup;
-		this.pathFromPickup = pathFromPickup;
-		this.pathToDropoff = pathToDropoff;
-		this.pathFromDropoff = pathFromDropoff;
-	}
-
-	@Override
-	public String toString() {
-		return "Insertion: pickupIdx=" + pickupIdx + ", dropoffIdx=" + dropoffIdx;
-	}
+public interface MultiVehicleInsertionProblem {
+	Optional<SingleVehicleInsertionProblem.BestInsertion> findBestInsertion(DrtRequest drtRequest, Collection<VehicleData.Entry> vData);
 }

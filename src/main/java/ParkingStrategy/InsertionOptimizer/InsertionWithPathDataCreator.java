@@ -16,20 +16,35 @@
  *                                                                         *
  * *********************************************************************** */
 
-package ParkingStrategy.ParkingInDepot.InsertionOptimizer;
-
-
+package ParkingStrategy.InsertionOptimizer;
 
 
 import ParkingStrategy.VehicleData;
+import Path.OneToManyPathSearch.PathData;
 import Schedule.DrtRequest;
-
-import java.util.Collection;
-import java.util.Optional;
 
 /**
  * @author michalm
  */
-public interface MultiVehicleInsertionProblem {
-	Optional<SingleVehicleInsertionProblem.BestInsertion> findBestInsertion(DrtRequest drtRequest, Collection<VehicleData.Entry> vData);
+class InsertionWithPathDataCreator {
+	private final PathDataProvider.PathDataSet set;
+	private final int stopCount;
+
+	InsertionWithPathDataCreator(PathDataProvider pathDataProvider, DrtRequest drtRequest, VehicleData.Entry vEntry) {
+		set = pathDataProvider.getPathDataSet(drtRequest, vEntry);
+		stopCount = vEntry.stops.size();
+	}
+
+	InsertionWithPathData create(InsertionGenerator.Insertion insertion) {
+		int i = insertion.pickupIdx;
+		int j = insertion.dropoffIdx;
+		// i -> pickup
+		PathData toPickup = set.pathsToPickup[i]; // i -> pickup
+		PathData fromPickup = set.pathsFromPickup[i == j ? 0 : i + 1]; // pickup -> (dropoff | i+1)
+		PathData toDropoff = i == j ? null // pickup followed by dropoff
+				: set.pathsToDropoff[j]; // j -> dropoff
+		PathData fromDropoff = j == stopCount ? null // dropoff inserted at the end
+				: set.pathsFromDropoff[j + 1];
+		return new InsertionWithPathData(i, j, toPickup, fromPickup, toDropoff, fromDropoff);
+	}
 }

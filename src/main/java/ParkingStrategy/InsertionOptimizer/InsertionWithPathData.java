@@ -1,9 +1,8 @@
 /* *********************************************************************** *
  * project: org.matsim.*
- *                                                                         *
  * *********************************************************************** *
  *                                                                         *
- * copyright       : (C) 2017 by the members listed in the COPYING,        *
+ * copyright       : (C) 2018 by the members listed in the COPYING,        *
  *                   LICENSE and WARRANTY file.                            *
  * email           : info at matsim dot org                                *
  *                                                                         *
@@ -17,17 +16,33 @@
  *                                                                         *
  * *********************************************************************** */
 
-package ParkingStrategy.ParkingInDepot.InsertionOptimizer;
+package ParkingStrategy.InsertionOptimizer;
 
-
-
-import Schedule.DrtRequest;
-
-import java.util.Collection;
+import Path.OneToManyPathSearch.PathData;
 
 /**
  * @author michalm
  */
-public interface UnplannedRequestInserter {
-	void scheduleUnplannedRequests(Collection<DrtRequest> unplannedRequests);
+public class InsertionWithPathData {
+	public final int pickupIdx;
+	public final int dropoffIdx;
+	public final PathData pathToPickup;
+	public final PathData pathFromPickup;
+	public final PathData pathToDropoff;// null if dropoff inserted directly after pickup
+	public final PathData pathFromDropoff;// null if dropoff inserted at the end
+
+	InsertionWithPathData(int pickupIdx, int dropoffIdx, PathData pathToPickup, PathData pathFromPickup,
+                          PathData pathToDropoff, PathData pathFromDropoff) {
+		this.pickupIdx = pickupIdx;
+		this.dropoffIdx = dropoffIdx;
+		this.pathToPickup = pathToPickup;
+		this.pathFromPickup = pathFromPickup;
+		this.pathToDropoff = pathToDropoff;
+		this.pathFromDropoff = pathFromDropoff;
+	}
+
+	@Override
+	public String toString() {
+		return "Insertion: pickupIdx=" + pickupIdx + ", dropoffIdx=" + dropoffIdx;
+	}
 }

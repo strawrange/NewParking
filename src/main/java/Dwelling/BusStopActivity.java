@@ -20,7 +20,7 @@
 package Dwelling;
 
 
-import ParkingStrategy.ParkingInDepot.InsertionOptimizer.DrtScheduler;
+import ParkingStrategy.InsertionOptimizer.DrtScheduler;
 import Passenger.PassengerEngine;
 import Schedule.DrtRequest;
 import org.matsim.contrib.dvrp.passenger.PassengerPickupActivity;
@@ -28,7 +28,6 @@ import org.matsim.contrib.dvrp.passenger.PassengerRequest;
 import org.matsim.contrib.dvrp.schedule.StayTask;
 import org.matsim.contrib.dynagent.AbstractDynActivity;
 import org.matsim.core.mobsim.framework.MobsimPassengerAgent;
-import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.matsim.contrib.dvrp.data.Vehicle;
 import DynAgent.DynAgent;
 import java.util.List;
