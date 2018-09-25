@@ -2,22 +2,15 @@ package Dwelling;
 
 import BayInfrastructure.Bay;
 import BayInfrastructure.BayManager;
-import Schedule.DrtRequest;
-import com.google.inject.Inject;
 import org.apache.log4j.Logger;
-import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.network.Link;
-import org.matsim.contrib.dvrp.passenger.PassengerRequest;
 import org.matsim.core.mobsim.qsim.interfaces.MobsimVehicle;
 import org.matsim.core.mobsim.qsim.pt.PTPassengerAgent;
 import org.matsim.core.mobsim.qsim.pt.PassengerAccessEgress;
-import org.matsim.core.mobsim.qsim.pt.TransitStopHandler;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.matsim.vehicles.Vehicle;
 import org.matsim.vehicles.VehicleType;
 
 import java.util.List;
-import java.util.Set;
 
 public class FixedTransitStopHandler implements org.matsim.core.mobsim.qsim.pt.TransitStopHandler {
 

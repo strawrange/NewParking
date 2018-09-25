@@ -1,15 +1,8 @@
 package Dwelling;
 
-import BayInfrastructure.BayManager;
-import Schedule.DrtRequest;
-import Vehicle.DynVehicleType;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
+import Schedule.AtodRequest;
 import org.apache.log4j.Logger;
-import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.network.Link;
-import org.matsim.contrib.dvrp.vrpagent.VrpAgentSource;
-import org.matsim.vehicles.VehicleType;
+import org.matsim.contrib.drt.data.DrtRequest;
 
 import java.util.List;
 

@@ -23,6 +23,7 @@ import Dwelling.BusStopActivity;
 import ParkingStrategy.InsertionOptimizer.DrtScheduler;
 import Passenger.PassengerEngine;
 import com.google.inject.Inject;
+import org.matsim.contrib.drt.schedule.DrtTask;
 import org.matsim.contrib.dvrp.data.Vehicle;
 import org.matsim.contrib.dvrp.optimizer.VrpOptimizer;
 import org.matsim.contrib.dvrp.optimizer.VrpOptimizerWithOnlineTracking;
@@ -60,16 +61,15 @@ public class DrtActionCreator implements VrpAgentLogic.DynActionCreator {
 				return legCreator.createLeg(vehicle);
 
 			case STOP:
-				DrtStopTask t = (DrtStopTask)task;
-				return new BusStopActivity(passengerEngine, dynAgent, t, t.getDropoffRequests(), t.getPickupRequests(),
-						DRT_STOP_NAME, drtScheduler, vehicle, ((VehicleImpl)vehicle).getVehicleType().getAccessTime(), ((VehicleImpl)vehicle).getVehicleType().getEgressTime(), now);
+				DrtStopTask t = (DrtStopTask) task;
+				return new BusStopActivity(passengerEngine, dynAgent, t, t.getDrtDropoffRequests(), t.getDrtPickupRequests(),
+						DRT_STOP_NAME, drtScheduler, vehicle, ((VehicleImpl) vehicle).getVehicleType().getAccessTime(), ((VehicleImpl) vehicle).getVehicleType().getEgressTime(), now);
 
 			case STAY:
-				return new VrpActivity(DRT_STAY_NAME, (StayTask)task);
-
-            case QUEUE:
-                return new VrpActivity(DRT_QUEUE_NAME, (StayTask)task);
-
+				if (task instanceof DrtQueueTask) {
+					return new VrpActivity(DRT_QUEUE_NAME, (StayTask) task);
+				}
+				return new VrpActivity(DRT_STAY_NAME, (StayTask) task);
 			default:
 				throw new IllegalStateException();
 		}

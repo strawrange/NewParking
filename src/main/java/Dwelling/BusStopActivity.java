@@ -22,7 +22,7 @@ package Dwelling;
 
 import ParkingStrategy.InsertionOptimizer.DrtScheduler;
 import Passenger.PassengerEngine;
-import Schedule.DrtRequest;
+import org.matsim.contrib.drt.data.DrtRequest;
 import org.matsim.contrib.dvrp.passenger.PassengerPickupActivity;
 import org.matsim.contrib.dvrp.passenger.PassengerRequest;
 import org.matsim.contrib.dvrp.schedule.StayTask;
@@ -30,7 +30,10 @@ import org.matsim.contrib.dynagent.AbstractDynActivity;
 import org.matsim.core.mobsim.framework.MobsimPassengerAgent;
 import org.matsim.contrib.dvrp.data.Vehicle;
 import DynAgent.DynAgent;
+
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -72,12 +75,13 @@ public class BusStopActivity extends AbstractDynActivity implements PassengerPic
 
 	@Override
 	public void doSimStep(double now) {
-		double delay = handler.handleDrtTransitStop(now, dropoffRequests, pickupRequests, this);
-		if (delay == 0){
-			task.setEndTime(now);
-			drtScheduler.updateQueue(vehicle);
-			endTime = now;
+		if (endTime < Double.MAX_VALUE && now < endTime){
+			return;
 		}
+		double delay = handler.handleDrtTransitStop(now, dropoffRequests, pickupRequests, this);
+		task.setEndTime(now + delay);
+		drtScheduler.updateQueue(vehicle);
+		endTime = now + delay;
 	}
 
 	@Override

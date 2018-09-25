@@ -21,8 +21,8 @@ package ParkingStrategy.InsertionOptimizer;
 
 
 
-import ParkingStrategy.VehicleData;
-import Schedule.DrtRequest;
+import Schedule.VehicleData;
+import Schedule.AtodRequest;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -31,5 +31,5 @@ import java.util.Optional;
  * @author michalm
  */
 public interface MultiVehicleInsertionProblem {
-	Optional<SingleVehicleInsertionProblem.BestInsertion> findBestInsertion(DrtRequest drtRequest, Collection<VehicleData.Entry> vData);
+	Optional<SingleVehicleInsertionProblem.BestInsertion> findBestInsertion(AtodRequest drtRequest, Collection<VehicleData.Entry> vData);
 }

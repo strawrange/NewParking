@@ -3,7 +3,7 @@
  *                                                                         *
  * *********************************************************************** *
  *                                                                         *
- * copyright       : (C) 2013 by the members listed in the COPYING,        *
+ * copyright       : (C) 2015 by the members listed in the COPYING,        *
  *                   LICENSE and WARRANTY file.                            *
  * email           : info at matsim dot org                                *
  *                                                                         *
@@ -19,34 +19,41 @@
 
 package Schedule;
 
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.contrib.dvrp.schedule.StayTask;
+import org.matsim.contrib.drt.data.DrtRequest;
+import org.matsim.contrib.drt.schedule.DrtStopTask;
+import org.matsim.contrib.dvrp.data.Request;
+import org.matsim.contrib.dvrp.passenger.PassengerRequest;
+import org.matsim.core.mobsim.framework.MobsimPassengerAgent;
 
-public class StayTaskImpl extends AbstractTask implements StayTask {
-	private final Link link;
-	private final String name;
+/**
+ * @author michalm
+ */
+public class AtodRequest extends DrtRequest {
 
-	public StayTaskImpl(double beginTime, double endTime, Link link) {
-		this(beginTime, endTime, link, null);
+
+	private String mode;
+
+	public AtodRequest(Id<Request> id, MobsimPassengerAgent passenger, Link fromLink, Link toLink,
+					   double earliestStartTime, double latestStartTime, double latestArrivalTime, double submissionTime,String mode) {
+		super(id, passenger, fromLink, toLink, earliestStartTime, latestStartTime, latestArrivalTime, submissionTime);
+		this.mode = mode;
 	}
 
-	public StayTaskImpl(double beginTime, double endTime, Link link, String name) {
-		super(beginTime, endTime);
-		this.link = link;
-		this.name = name;
+
+
+	public String getMode() {
+		return mode;
 	}
 
-	@Override
-	public Link getLink() {
-		return link;
+	public void setMode(String mode) {
+		this.mode = mode;
 	}
 
-	public String getName() {
-		return name;
-	}
 
 	@Override
 	public String toString() {
-		return "S(" + (name != null ? name : "") + "@" + link.getId() + ")" + commonToString();
+		return Request.toString(this);
 	}
 }

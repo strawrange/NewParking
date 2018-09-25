@@ -20,9 +20,12 @@
 package ParkingStrategy.InsertionOptimizer;
 
 
-import ParkingStrategy.VehicleData;
+import Schedule.VehicleData;
 
 import Schedule.*;
+import org.matsim.contrib.drt.schedule.DrtDriveTask;
+import org.matsim.contrib.drt.schedule.DrtStayTask;
+import org.matsim.contrib.drt.schedule.DrtTask;
 import org.matsim.contrib.dvrp.schedule.Schedules;
 import org.matsim.contrib.dvrp.schedule.Task;
 import org.matsim.core.mobsim.framework.MobsimTimer;
@@ -46,7 +49,7 @@ public class InsertionCostCalculator {
 	// the insertion is invalid if some maxTravel/Wait constraints are not fulfilled
 	// ==> checks if all the constraints are satisfied for all passengers/requests ==> if not ==>
 	// INFEASIBLE_SOLUTION_COST is returned
-	public double calculate(DrtRequest drtRequest, VehicleData.Entry vEntry, InsertionWithPathData insertion) {
+	public double calculate(AtodRequest drtRequest, VehicleData.Entry vEntry, InsertionWithPathData insertion) {
 		double pickupDetourTimeLoss = calculatePickupDetourTimeLoss(drtRequest, vEntry, insertion);
 		double dropoffDetourTimeLoss = calculateDropoffDetourTimeLoss(drtRequest, vEntry, insertion);
 
@@ -58,12 +61,12 @@ public class InsertionCostCalculator {
 		return constraintsSatisfied ? totalTimeLoss : INFEASIBLE_SOLUTION_COST;
 	}
 
-	private double calculatePickupDetourTimeLoss(DrtRequest drtRequest, VehicleData.Entry vEntry,
-			InsertionWithPathData insertion) {
+	private double calculatePickupDetourTimeLoss(AtodRequest drtRequest, VehicleData.Entry vEntry,
+												 InsertionWithPathData insertion) {
 		// 'no detour' is also possible now for pickupIdx==0 if the currentTask is STOP
         boolean ongoingStopTask = insertion.pickupIdx == 0
 				&& (((DrtTask)vEntry.vehicle.getSchedule().getCurrentTask()).getDrtTaskType() == DrtTask.DrtTaskType.STOP ||
-				((DrtTask)vEntry.vehicle.getSchedule().getCurrentTask()).getDrtTaskType() == DrtTask.DrtTaskType.QUEUE);
+				vEntry.vehicle.getSchedule().getCurrentTask() instanceof DrtQueueTask);
 
 		if ((ongoingStopTask && drtRequest.getFromLink().getId().equals(vEntry.start.link)) //
 				|| (insertion.pickupIdx > 0 //
@@ -87,8 +90,8 @@ public class InsertionCostCalculator {
 		return toPickupTT + vEntry.vehicle.getCapacity() * (((VehicleImpl)vEntry.vehicle).getVehicleType().getAccessTime() + ((VehicleImpl)vEntry.vehicle).getVehicleType().getEgressTime()) + fromPickupTT - replacedDriveTT;
 	}
 
-	private double calculateDropoffDetourTimeLoss(DrtRequest drtRequest, VehicleData.Entry vEntry,
-			InsertionWithPathData insertion) {
+	private double calculateDropoffDetourTimeLoss(AtodRequest drtRequest, VehicleData.Entry vEntry,
+												  InsertionWithPathData insertion) {
 		if (insertion.dropoffIdx > 0
 				&& drtRequest.getToLink().getId().equals(vEntry.stops.get(insertion.dropoffIdx - 1).task.getLink().getId())) {
 			return 0; // no detour
@@ -116,8 +119,8 @@ public class InsertionCostCalculator {
 		return replacedDriveEndTime - replacedDriveStartTime;
 	}
 
-	private boolean areConstraintsSatisfied(DrtRequest drtRequest, VehicleData.Entry vEntry,
-			InsertionWithPathData insertion, double pickupDetourTimeLoss, double totalTimeLoss) {
+	private boolean areConstraintsSatisfied(AtodRequest drtRequest, VehicleData.Entry vEntry,
+											InsertionWithPathData insertion, double pickupDetourTimeLoss, double totalTimeLoss) {
 		// this is what we cannot violate
         // vehicle's time window cannot be violated
         DrtStayTask lastTask = (DrtStayTask)Schedules.getLastTask(vEntry.vehicle.getSchedule());

@@ -19,8 +19,9 @@
 package ParkingStrategy.InsertionOptimizer;
 
 import ParkingStrategy.DefaultDrtOptimizer;
-import ParkingStrategy.VehicleData;
+import Schedule.VehicleData;
 import Path.OneToManyPathSearch;
+import Schedule.AtodRequest;
 import com.google.common.collect.ImmutableList;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
@@ -32,7 +33,6 @@ import org.matsim.core.mobsim.framework.events.MobsimBeforeCleanupEvent;
 import org.matsim.core.mobsim.framework.listeners.MobsimBeforeCleanupListener;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
-import Schedule.DrtRequest;
 import Path.OneToManyPathSearch.PathData;
 
 import javax.inject.Inject;
@@ -80,7 +80,7 @@ public class ParallelPathDataProvider implements PrecalculatablePathDataProvider
 	}
 
 	@Override
-	public void precalculatePathData(DrtRequest drtRequest, Collection<VehicleData.Entry> vEntries) {
+	public void precalculatePathData(AtodRequest drtRequest, Collection<VehicleData.Entry> vEntries) {
 		Map<Id<Link>, Link> startLinks = new HashMap<>();
 		Map<Id<Link>, Link> stopLinks = new HashMap<>();
 
@@ -145,7 +145,7 @@ public class ParallelPathDataProvider implements PrecalculatablePathDataProvider
 	}
 
 	@Override
-	public PathDataSet getPathDataSet(DrtRequest drtRequest, VehicleData.Entry vEntry) {
+	public PathDataSet getPathDataSet(AtodRequest drtRequest, VehicleData.Entry vEntry) {
 		return PrecalculatablePathDataProvider.getPathDataSet(drtRequest, vEntry, pathsToPickupMap, pathsFromPickupMap,
 				pathsToDropoffMap, pathsFromDropoffMap);
 	}

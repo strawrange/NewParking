@@ -55,6 +55,7 @@ public class PassengerEnginePlugin extends AbstractQSimPlugin {
 		@Inject
 		private VrpOptimizer optimizer;
 		@Inject
+		@Named(DvrpRoutingNetworkProvider.DVRP_ROUTING)
 		private Network network;
 
 		public PassengerEngineProvider(String mode) {

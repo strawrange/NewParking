@@ -53,7 +53,7 @@ public class DrtRequestCreator implements PassengerRequestCreator {
 	private final MobsimTimer timer;
 
 	@Inject
-	public DrtRequestCreator(DrtConfigGroup drtCfg, @Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) Network network, Network networkT,
+	public DrtRequestCreator(DrtConfigGroup drtCfg, @Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) Network network,
 							 @Named(DvrpTravelTimeModule.DVRP_ESTIMATED) TravelTime travelTime, QSim qSim,
 							 @Named(DefaultDrtOptimizer.DRT_OPTIMIZER) TravelDisutility travelDisutility) {
 		this.drtCfg = drtCfg;
@@ -66,8 +66,8 @@ public class DrtRequestCreator implements PassengerRequestCreator {
 	}
 
 	@Override
-	public DrtRequest createRequest(Id<Request> id, MobsimPassengerAgent passenger, Link fromLink, Link toLink,
-									double departureTime, double submissionTime, String mode) {
+	public AtodRequest createRequest(Id<Request> id, MobsimPassengerAgent passenger, Link fromLink, Link toLink,
+									 double departureTime, double submissionTime, String mode) {
 		double latestDepartureTime = departureTime + drtCfg.getMaxWaitTime();
 		VrpPathWithTravelData unsharedRidePath;
 		if (mode =="drt") {
@@ -87,7 +87,7 @@ public class DrtRequestCreator implements PassengerRequestCreator {
 		eventsManager.processEvent(new DrtRequestSubmittedEvent(timer.getTimeOfDay(), id, passenger.getId(),
 				fromLink.getId(), toLink.getId(), unsharedRidePath.getTravelTime(), unsharedDistance));
 
-		return new DrtRequest(id, passenger, fromLink, toLink, departureTime, latestDepartureTime, latestArrivalTime,
+		return new AtodRequest(id, passenger, fromLink, toLink, departureTime, latestDepartureTime, latestArrivalTime,
 				submissionTime, mode);
 	}
 }

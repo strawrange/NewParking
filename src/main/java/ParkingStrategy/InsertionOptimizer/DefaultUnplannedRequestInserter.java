@@ -19,8 +19,9 @@
 
 package ParkingStrategy.InsertionOptimizer;
 
-import ParkingStrategy.VehicleData;
+import Schedule.VehicleData;
 import Passenger.Event.DrtRequestScheduledEvent;
+import Schedule.AtodRequest;
 import Vehicle.FleetImpl;
 import com.google.inject.Inject;
 import org.apache.log4j.Logger;
@@ -34,7 +35,6 @@ import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.core.mobsim.framework.events.MobsimBeforeCleanupEvent;
 import org.matsim.core.mobsim.framework.listeners.MobsimBeforeCleanupListener;
-import Schedule.DrtRequest;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -72,16 +72,16 @@ public class DefaultUnplannedRequestInserter implements UnplannedRequestInserter
 	}
 
 	@Override
-	public void scheduleUnplannedRequests(Collection<DrtRequest> unplannedRequests) {
+	public void scheduleUnplannedRequests(Collection<AtodRequest> unplannedRequests) {
 		if (unplannedRequests.isEmpty()) {
 			return;
 		}
 
 
 
-		Iterator<DrtRequest> reqIter = unplannedRequests.iterator();
+		Iterator<AtodRequest> reqIter = unplannedRequests.iterator();
 		while (reqIter.hasNext()) {
-			DrtRequest req = reqIter.next();
+			AtodRequest req = reqIter.next();
 			VehicleData vData = new VehicleData(mobsimTimer.getTimeOfDay(), ((FleetImpl)fleet).getVehicles(req.getMode()).values().stream());
 			Optional<SingleVehicleInsertionProblem.BestInsertion> best = insertionProblem.findBestInsertion(req, vData.getEntries());
 			if (!best.isPresent()) {

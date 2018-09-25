@@ -19,9 +19,9 @@
 package ParkingStrategy.InsertionOptimizer;
 
 
-import ParkingStrategy.VehicleData;
+import Schedule.VehicleData;
 import Path.OneToManyPathSearch.PathData;
-import Schedule.DrtRequest;
+import Schedule.AtodRequest;
 
 /**
  * @author michalm
@@ -30,7 +30,7 @@ class InsertionWithPathDataCreator {
 	private final PathDataProvider.PathDataSet set;
 	private final int stopCount;
 
-	InsertionWithPathDataCreator(PathDataProvider pathDataProvider, DrtRequest drtRequest, VehicleData.Entry vEntry) {
+	InsertionWithPathDataCreator(PathDataProvider pathDataProvider, AtodRequest drtRequest, VehicleData.Entry vEntry) {
 		set = pathDataProvider.getPathDataSet(drtRequest, vEntry);
 		stopCount = vEntry.stops.size();
 	}

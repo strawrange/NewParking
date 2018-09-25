@@ -19,9 +19,9 @@
 package ParkingStrategy.InsertionOptimizer;
 
 
-import ParkingStrategy.VehicleData;
+import Schedule.VehicleData;
 import Path.OneToManyPathSearch.PathData;
-import Schedule.DrtRequest;
+import Schedule.AtodRequest;
 
 /**
  * @author michalm
@@ -43,5 +43,5 @@ public interface PathDataProvider {
 		}
 	}
 
-	PathDataSet getPathDataSet(DrtRequest drtRequest, VehicleData.Entry vEntry);
+	PathDataSet getPathDataSet(AtodRequest drtRequest, VehicleData.Entry vEntry);
 }
