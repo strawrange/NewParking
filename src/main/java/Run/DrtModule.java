@@ -4,12 +4,12 @@ import BayInfrastructure.BayManager;
 import Dwelling.ClearNetworkChangeEvents;
 import Dwelling.DrtAndTransitStopHandlerFactory;
 import ParkingStrategy.DefaultDrtOptimizer;
-import Schedule.validator.DefaultDrtRequestValidator;
-import Schedule.validator.DrtRequestValidator;
 import Vehicle.FleetProvider;
 
 import com.google.inject.name.Names;
 import org.matsim.api.core.v01.Scenario;
+import org.matsim.contrib.drt.data.validator.DefaultDrtRequestValidator;
+import org.matsim.contrib.drt.data.validator.DrtRequestValidator;
 import org.matsim.contrib.drt.optimizer.rebalancing.NoRebalancingStrategy;
 import org.matsim.contrib.drt.optimizer.rebalancing.RebalancingStrategy;
 import org.matsim.contrib.drt.routing.DrtMainModeIdentifier;

@@ -68,13 +68,13 @@ class TravelTimeHandler implements BasicEventHandler,PersonEntersVehicleEventHan
 
     @Override
     public void handleEvent(Event event) {
-        if (event.getEventType().equals("DrtRequest scheduled")) {
+        if (event.getEventType().equals("AtodRequest scheduled")) {
             Id<Request> rid = Id.create(event.getAttributes().get("request"), Request.class);
             Id<Person> pid = dict.get(rid);
             TravelTime t = tt.get(pid);
             t.scheduledT = event.getTime();
         }
-        if (event.getEventType().equals("DrtRequest submitted")){
+        if (event.getEventType().equals("AtodRequest submitted")){
             Id<Person> pid = Id.createPersonId(event.getAttributes().get("person"));
             if (!tt.containsKey(pid)){
                 tt.put(pid,new TravelTime(event.getTime()));

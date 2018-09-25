@@ -19,8 +19,8 @@
 
 package ParkingStrategy.InsertionOptimizer;
 
-import ParkingStrategy.VehicleData;
-import Schedule.DrtRequest;
+import Schedule.VehicleData;
+import Schedule.AtodRequest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,7 +66,7 @@ public class InsertionGenerator {
 		}
 	}
 
-	public List<Insertion> generateInsertions(DrtRequest drtRequest, VehicleData.Entry vEntry) {
+	public List<Insertion> generateInsertions(AtodRequest drtRequest, VehicleData.Entry vEntry) {
 		int stopCount = vEntry.stops.size();
 		List<Insertion> insertions = new ArrayList<>();
 		int occupancy = vEntry.startOccupancy;
@@ -85,8 +85,8 @@ public class InsertionGenerator {
 		return insertions;
 	}
 
-	private void generateDropoffInsertions(DrtRequest drtRequest, VehicleData.Entry vEntry, int i,
-			List<Insertion> insertions) {
+	private void generateDropoffInsertions(AtodRequest drtRequest, VehicleData.Entry vEntry, int i,
+                                           List<Insertion> insertions) {
 		int stopCount = vEntry.stops.size();
 		for (int j = i; j < stopCount; j++) {// insertions up to before last stop
 			// no need to check the capacity constraints if i == j

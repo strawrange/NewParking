@@ -19,11 +19,17 @@
 
 package ParkingStrategy.InsertionOptimizer;
 
-import ParkingStrategy.VehicleData;
+import Schedule.VehicleData;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.api.core.v01.network.Network;
+import org.matsim.contrib.drt.data.DrtRequest;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
+import org.matsim.contrib.drt.schedule.DrtDriveTask;
+import org.matsim.contrib.drt.schedule.DrtStayTask;
+import org.matsim.contrib.drt.schedule.DrtTask;
 import org.matsim.contrib.dvrp.data.Fleet;
 import org.matsim.contrib.dvrp.data.Vehicles;
 import org.matsim.contrib.dvrp.data.Vehicle;
@@ -52,14 +58,16 @@ public class DrtScheduler implements ScheduleInquiry {
 	private final MobsimTimer timer;
 	private final TravelTime travelTime;
 	private final QSim qSim;
+	private final Network network;
 
 	@Inject
 	public DrtScheduler(DrtConfigGroup drtCfg, Fleet fleet, MobsimTimer timer,
-                        @Named(DvrpTravelTimeModule.DVRP_ESTIMATED) TravelTime travelTime, QSim qSim) {
+                        @Named(DvrpTravelTimeModule.DVRP_ESTIMATED) TravelTime travelTime, QSim qSim, Network network) {
 		this.fleet = fleet;
 		this.timer = timer;
 		this.travelTime = travelTime;
 		this.qSim = qSim;
+		this.network = network;
 		initMultiOperatorFleet(drtCfg);
     }
 
@@ -197,7 +205,7 @@ public class DrtScheduler implements ScheduleInquiry {
         List<VehicleData.Stop> stops = vehicleEntry.stops;
 
         DrtTask currentTask = (DrtTask)schedule.getCurrentTask();
-        if (currentTask instanceof DrtQuequeTask){
+        if (currentTask instanceof DrtQueueTask){
             currentTask = (DrtTask)schedule.getTasks().get(schedule.getCurrentTask().getTaskIdx() + 1);
         }
         Task beforePickupTask;
@@ -421,17 +429,18 @@ public class DrtScheduler implements ScheduleInquiry {
 		Schedule schedule = vehicle.getSchedule();
 		int currentTaskIdx = schedule.getCurrentTask().getTaskIdx();
 		DrtStopTask nextTask = (DrtStopTask) schedule.getTasks().get(currentTaskIdx + 1);
-		if (schedule.getCurrentTask() instanceof DrtQuequeTask){
+		if (schedule.getCurrentTask() instanceof DrtQueueTask){
 			schedule.getCurrentTask().setEndTime(schedule.getCurrentTask().getEndTime() + 1);
 		}else{
-			schedule.addTask(currentTaskIdx + 1, new DrtQuequeTask(timer.getTimeOfDay(), timer.getTimeOfDay() + 1.0, nextTask.getLink()));
-			modifyLanes(nextTask.getLink(), timer.getTimeOfDay(), -1.0);
+			schedule.addTask(currentTaskIdx + 1, new DrtQueueTask(timer.getTimeOfDay(), timer.getTimeOfDay() + 1.0, nextTask.getLink()));
+			modifyLanes(nextTask.getLink().getId(), timer.getTimeOfDay(), -1.0);
 			schedule.nextTask();
 		}
 
 	}
 
-    public void modifyLanes(Link currentLink, double time, double change){
+    public void modifyLanes(Id<Link> linkId, double time, double change){
+	    Link currentLink = network.getLinks().get(linkId);
         double numOfLanes = currentLink.getNumberOfLanes();
         if (numOfLanes == 1){
             change = 0.5 * change;

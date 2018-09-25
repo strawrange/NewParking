@@ -2,9 +2,11 @@ package ParkingStrategy.ParkingInDepot.Depot;
 
 import Run.AtodConfigGroup;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.data.Vehicle;
+import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
 import org.matsim.core.config.Config;
 
 import java.util.HashMap;
@@ -17,7 +19,7 @@ public class DepotManagerDifferentDepots implements DepotManager{
     Map<Id<Vehicle>,Id<Depot>> vehicleLists = new HashMap<>(); //  vehicle id, depot id
 
     @Inject
-    public DepotManagerDifferentDepots(Config config, Network network){
+    public DepotManagerDifferentDepots(Config config, @Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) Network network){
         AtodConfigGroup drtConfig = AtodConfigGroup.get(config);
         new DepotReader(this,network).parse(drtConfig.getDepotFileUrl(config.getContext()));
     }

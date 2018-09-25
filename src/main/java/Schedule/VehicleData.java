@@ -17,15 +17,18 @@
  *                                                                         *
  * *********************************************************************** */
 
-package ParkingStrategy;
+package Schedule;
 
 import com.google.common.collect.ImmutableList;
 import org.matsim.api.core.v01.Id;
+import org.matsim.contrib.drt.data.DrtRequest;
+import org.matsim.contrib.drt.schedule.DrtDriveTask;
+import org.matsim.contrib.drt.schedule.DrtStayTask;
+import org.matsim.contrib.drt.schedule.DrtTask;
 import org.matsim.contrib.dvrp.schedule.Schedule;
 import org.matsim.contrib.dvrp.schedule.Schedule.ScheduleStatus;
 import org.matsim.contrib.dvrp.tracker.OnlineDriveTaskTracker;
 import org.matsim.contrib.dvrp.util.LinkTimePair;
-import Schedule.*;
 import org.matsim.contrib.dvrp.data.Vehicle;
 
 import java.util.*;
@@ -64,12 +67,12 @@ public class VehicleData {
 
 			maxArrivalTime = calcMaxArrivalTime();
 			maxDepartureTime = calcMaxDepartureTime();
-			occupancyChange = task.getPickupRequests().size() - task.getDropoffRequests().size();
+			occupancyChange = task.getDrtPickupRequests().size() - task.getDrtDropoffRequests().size();
 		}
 
 		private double calcMaxArrivalTime() {
 			double maxTime = Double.MAX_VALUE;
-			for (DrtRequest r : task.getDropoffRequests()) {
+			for (DrtRequest r : task.getDrtDropoffRequests()) {
 				double reqMaxArrivalTime = r.getLatestArrivalTime();
 				if (reqMaxArrivalTime < maxTime) {
 					maxTime = reqMaxArrivalTime;
@@ -80,7 +83,7 @@ public class VehicleData {
 
 		private double calcMaxDepartureTime() {
 			double maxTime = Double.MAX_VALUE;
-			for (DrtRequest r : task.getPickupRequests()) {
+			for (DrtRequest r : task.getDrtPickupRequests()) {
 				double reqMaxDepartureTime = r.getLatestStartTime();
 				if (reqMaxDepartureTime < maxTime) {
 					maxTime = reqMaxDepartureTime;
@@ -145,19 +148,17 @@ public class VehicleData {
 					break;
 
 				case STAY:
-					DrtStayTask stayTask = (DrtStayTask)currentTask;
-					start = new LinkTimePair(stayTask.getLink(), currentTime);
-					break;
-
-				case QUEUE:
-					DrtStopTask quequeTask = (DrtStopTask) schedule.getTasks().get(currentTask.getTaskIdx() + 1);
-					start = new LinkTimePair(quequeTask.getLink(), quequeTask.getEndTime());
-					currentTask = quequeTask;
-//					DrtQuequeTask quequeTask = (DrtQuequeTask) schedule.getCurrentTask();
-//					start = new LinkTimePair(quequeTask.getLink(), currentTime);
+					if (currentTask instanceof DrtQueueTask) {
+						DrtStopTask quequeTask = (DrtStopTask) schedule.getTasks().get(currentTask.getTaskIdx() + 1);
+						start = new LinkTimePair(quequeTask.getLink(), quequeTask.getEndTime());
+						currentTask = quequeTask;
+					}else {
+						DrtStayTask stayTask = (DrtStayTask) currentTask;
+						start = new LinkTimePair(stayTask.getLink(), currentTime);
+					}
 					break;
 				default:
-					throw new RuntimeException();
+						throw new RuntimeException();
 			}
 
 			nextTaskIdx = currentTask.getTaskIdx() + 1;

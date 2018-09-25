@@ -1,30 +1,21 @@
 package ParkingStrategy.ParkingOntheRoad;
 
 import BayInfrastructure.BayManager;
-import ParkingStrategy.ParkingInDepot.Depot.DepotManager;
 import ParkingStrategy.ParkingStrategy;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.api.core.v01.network.Node;
+import org.matsim.contrib.drt.schedule.DrtStayTask;
 import org.matsim.contrib.dvrp.data.Vehicle;
 import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
 import org.matsim.core.controler.ControlerListenerManager;
 import org.matsim.core.controler.events.IterationStartsEvent;
 import org.matsim.core.controler.listener.IterationStartsListener;
-import org.matsim.core.mobsim.framework.events.MobsimBeforeCleanupEvent;
-import org.matsim.core.mobsim.framework.events.MobsimBeforeSimStepEvent;
-import org.matsim.core.mobsim.framework.events.MobsimInitializedEvent;
-import org.matsim.core.mobsim.framework.listeners.MobsimBeforeCleanupListener;
-import org.matsim.core.mobsim.framework.listeners.MobsimBeforeSimStepListener;
-import org.matsim.core.mobsim.framework.listeners.MobsimInitializedListener;
 import org.matsim.core.mobsim.qsim.QSim;
 import org.matsim.core.network.NetworkChangeEvent;
-import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.NetworkCleaner;
-import Schedule.DrtStayTask;
 
 import java.util.*;
 
@@ -35,20 +26,15 @@ public class ParkingOntheRoad implements ParkingStrategy, IterationStartsListene
     private final Map<Id<Link>, Integer> supply = new HashMap<>();
     private final double vehicleLength = 8.0; //TODO: Later Move to the DRTConfig or Vehicle File
     private Network cleanNetwork;
+    private Network network;
 
 
     @Inject
-    public ParkingOntheRoad(@Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) Network network, BayManager bayManager, ControlerListenerManager manager) {
+    public ParkingOntheRoad(@Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) Network cleanNetwork, Network network, BayManager bayManager, ControlerListenerManager manager) {
         //controlerListenerManager.addControlerListener(this);
+        this.cleanNetwork = cleanNetwork;
+        this.network = network;
         manager.addControlerListener(this);
-        cleanNetwork = NetworkUtils.createNetwork();
-        for (Node node : network.getNodes().values()) {
-            NetworkUtils.createAndAddNode(cleanNetwork,node.getId(),node.getCoord());
-        }
-        for (Link link : network.getLinks().values()){
-            NetworkUtils.createAndAddLink(cleanNetwork, link.getId(), cleanNetwork.getNodes().get(link.getFromNode().getId()), cleanNetwork.getNodes().get(link.getToNode().getId()),
-                    link.getLength(),link.getFreespeed(),link.getCapacity(), link.getNumberOfLanes());
-        }
         new NetworkCleaner().run(cleanNetwork);
         for (Link link : cleanNetwork.getLinks().values()){
             if (link.getNumberOfLanes() > 1 && !isTransitStop(link, bayManager) ) {
@@ -70,7 +56,7 @@ public class ParkingOntheRoad implements ParkingStrategy, IterationStartsListene
         if (supply.get(currentLink.getId()) > 0){
             if (!linkRecord.containsKey(currentLink.getId())){
                 linkRecord.put(currentLink.getId(),0);
-                modifyLanes(currentLink, time, -0.5);
+                modifyLanes(currentLink.getId(), time, -1.D);
             }
             if (supply.get(currentLink.getId()) > linkRecord.get(currentLink.getId())) {
                 int num = linkRecord.get(currentLink.getId()) + 1;
@@ -87,7 +73,7 @@ public class ParkingOntheRoad implements ParkingStrategy, IterationStartsListene
         Map<Id<Link>, ? extends Link> nextLinks = cleanLink.getToNode().getOutLinks();
         //ArrayList<Id<Link>> linksKey = new ArrayList<>(nextLinks.keySet());
         Link link = nextLinkWithProbability(nextLinks);
-        return currentLink.getToNode().getOutLinks().get(link.getId());
+        return link;
     }
 
     private Link nextLinkWithProbability(Map<Id<Link>, ? extends Link> nextLinks) {
@@ -133,7 +119,7 @@ public class ParkingOntheRoad implements ParkingStrategy, IterationStartsListene
         int num = linkRecord.get(link.getId()) - 1;
         linkRecord.put(link.getId(),num);
         if (num == 0){
-            modifyLanes(link, time, 0.D);
+            modifyLanes(link.getId(), time, 0.D);
         }
     }
 
@@ -142,7 +128,8 @@ public class ParkingOntheRoad implements ParkingStrategy, IterationStartsListene
         return Strategies.ParkingOntheRoad;
     }
 
-    public void modifyLanes(Link currentLink, double time, double change){
+    public void modifyLanes(Id<Link> linkId, double time, double change){
+        Link currentLink = network.getLinks().get(linkId);
         double numOfLanes = currentLink.getNumberOfLanes();
         NetworkChangeEvent event = new NetworkChangeEvent(time + Math.random());
         event.addLink(currentLink);

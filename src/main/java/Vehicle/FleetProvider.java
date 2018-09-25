@@ -36,6 +36,7 @@ import java.net.URL;
  */
 public class FleetProvider implements Provider<Fleet> {
 	@Inject
+	@Named(DvrpRoutingNetworkProvider.DVRP_ROUTING)
 	Network network;
 	@Inject(optional = true)
 	@Named(VrpAgentSource.DVRP_VEHICLE_TYPE)

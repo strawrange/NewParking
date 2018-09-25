@@ -19,6 +19,7 @@
 
 package Passenger;
 
+import com.google.inject.name.Named;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.events.PersonEntersVehicleEvent;
 import org.matsim.api.core.v01.events.PersonLeavesVehicleEvent;
@@ -27,6 +28,7 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.data.Request;
 import org.matsim.contrib.dvrp.optimizer.VrpOptimizer;
 import org.matsim.contrib.dvrp.passenger.*;
+import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.mobsim.framework.MobsimAgent;
 import org.matsim.core.mobsim.framework.MobsimAgent.State;
@@ -52,7 +54,7 @@ public class PassengerEngine implements MobsimEngine, DepartureHandler {
 	private final AwaitingPickupStorage awaitingPickupStorage;
 
 	public PassengerEngine(String mode, EventsManager eventsManager, PassengerRequestCreator requestCreator,
-                           VrpOptimizer optimizer, Network network) {
+                           VrpOptimizer optimizer,  Network network) {
 		this.mode = mode;
 		this.eventsManager = eventsManager;
 		this.requestCreator = requestCreator;

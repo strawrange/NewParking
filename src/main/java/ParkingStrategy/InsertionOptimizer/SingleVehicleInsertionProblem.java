@@ -20,8 +20,8 @@
 package ParkingStrategy.InsertionOptimizer;
 
 
-import ParkingStrategy.VehicleData;
-import Schedule.DrtRequest;
+import Schedule.VehicleData;
+import Schedule.AtodRequest;
 
 
 import java.util.Optional;
@@ -51,7 +51,7 @@ public class SingleVehicleInsertionProblem {
 		this.costCalculator = costCalculator;
 	}
 
-	public Optional<BestInsertion> findBestInsertion(DrtRequest drtRequest, VehicleData.Entry vEntry) {
+	public Optional<BestInsertion> findBestInsertion(AtodRequest drtRequest, VehicleData.Entry vEntry) {
 		InsertionWithPathDataCreator insertionWithPathDataCreator = new InsertionWithPathDataCreator(pathDataProvider,
 				drtRequest, vEntry);
 		double minCost = InsertionCostCalculator.INFEASIBLE_SOLUTION_COST;

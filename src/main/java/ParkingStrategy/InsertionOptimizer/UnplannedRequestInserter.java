@@ -21,7 +21,7 @@ package ParkingStrategy.InsertionOptimizer;
 
 
 
-import Schedule.DrtRequest;
+import Schedule.AtodRequest;
 
 import java.util.Collection;
 
@@ -29,5 +29,5 @@ import java.util.Collection;
  * @author michalm
  */
 public interface UnplannedRequestInserter {
-	void scheduleUnplannedRequests(Collection<DrtRequest> unplannedRequests);
+	void scheduleUnplannedRequests(Collection<AtodRequest> unplannedRequests);
 }

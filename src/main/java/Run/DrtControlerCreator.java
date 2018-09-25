@@ -127,8 +127,8 @@ public final class DrtControlerCreator {
 		controler.getEvents().addHandler(linkLinkTimeCalculatorAV);
 		final TravelTimeCalculator travelTimeCalculator = new TravelTimeCalculator(scenario.getNetwork(), scenario.getConfig().travelTimeCalculator());
 
-		//String EVENTSFILE = "/home/ubuntu/data/biyu/IdeaProjects/NewParking/out/artifacts/output/drt_mix_V450_T250_bay_optimal/ITERS/it.40/40.events.xml.gz";
-		String EVENTSFILE = "/home/biyu/IdeaProjects/NewParking/output/drt_mix_V450_T250_bay_optimal/ITERS/it.40/40.events.xml.gz";
+		String EVENTSFILE = "/home/ubuntu/data/biyu/IdeaProjects/NewParking/out/artifacts/output/drt_mix_V450_T250_bay_optimal/ITERS/it.40/40.events.xml.gz";
+		//String EVENTSFILE = "/home/biyu/IdeaProjects/NewParking/output/drt_mix_V450_T250_bay_optimal/ITERS/it.40/40.events.xml.gz";
 		EventsManager manager = EventsUtils.createEventsManager();
 //		manager.addHandler(waitTimeCalculator);
 //		manager.addHandler(waitLinkTimeCalculatorAV);

@@ -20,11 +20,11 @@
 package ParkingStrategy.InsertionOptimizer;
 
 
-import ParkingStrategy.VehicleData;
+import Schedule.VehicleData;
 
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.core.mobsim.framework.MobsimTimer;
-import Schedule.DrtRequest;
+import Schedule.AtodRequest;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -47,7 +47,7 @@ public class ParallelMultiVehicleInsertionProblem implements MultiVehicleInserti
 	}
 
 	@Override
-	public Optional<SingleVehicleInsertionProblem.BestInsertion> findBestInsertion(DrtRequest drtRequest, Collection<VehicleData.Entry> vEntries) {
+	public Optional<SingleVehicleInsertionProblem.BestInsertion> findBestInsertion(AtodRequest drtRequest, Collection<VehicleData.Entry> vEntries) {
 		pathDataProvider.precalculatePathData(drtRequest, vEntries);
 		return forkJoinPool.submit(() -> vEntries.parallelStream()//
 				.map(v -> new SingleVehicleInsertionProblem(pathDataProvider, insertionCostCalculator)
