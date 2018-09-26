@@ -19,9 +19,9 @@
 package ParkingStrategy.InsertionOptimizer;
 
 
-import Schedule.VehicleData;
-import Path.OneToManyPathSearch.PathData;
 import Schedule.AtodRequest;
+import Schedule.VehicleData;
+import org.matsim.contrib.dvrp.path.OneToManyPathSearch.PathData;
 
 /**
  * @author michalm
