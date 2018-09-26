@@ -22,7 +22,8 @@ import Schedule.VehicleData;
 import Schedule.AtodRequest;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
-import Path.OneToManyPathSearch.PathData;
+import org.matsim.contrib.dvrp.path.OneToManyPathSearch.PathData;
+
 
 import java.util.Collection;
 import java.util.Map;
@@ -34,8 +35,8 @@ public interface PrecalculatablePathDataProvider extends PathDataProvider {
 	void precalculatePathData(AtodRequest drtRequest, Collection<VehicleData.Entry> vEntries);
 
 	static PathDataSet getPathDataSet(AtodRequest drtRequest, VehicleData.Entry vEntry, Map<Id<Link>, PathData> pathsToPickupMap,
-                                      Map<Id<Link>, PathData> pathsFromPickupMap, Map<Id<Link>, PathData> pathsToDropoffMap,
-                                      Map<Id<Link>, PathData> pathsFromDropoffMap) {
+									  Map<Id<Link>, PathData> pathsFromPickupMap, Map<Id<Link>, PathData> pathsToDropoffMap,
+									  Map<Id<Link>, PathData> pathsFromDropoffMap) {
 
 		int length = vEntry.stops.size() + 1;
 		PathData[] pathsToPickup = new PathData[length];

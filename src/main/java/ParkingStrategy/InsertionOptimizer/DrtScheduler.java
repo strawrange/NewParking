@@ -19,7 +19,10 @@
 
 package ParkingStrategy.InsertionOptimizer;
 
+import Schedule.DrtQueueTask;
+import Schedule.DrtStopTask;
 import Schedule.VehicleData;
+import Schedule.VehicleImpl;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.matsim.api.core.v01.Id;
@@ -31,10 +34,10 @@ import org.matsim.contrib.drt.schedule.DrtDriveTask;
 import org.matsim.contrib.drt.schedule.DrtStayTask;
 import org.matsim.contrib.drt.schedule.DrtTask;
 import org.matsim.contrib.dvrp.data.Fleet;
-import org.matsim.contrib.dvrp.data.Vehicles;
 import org.matsim.contrib.dvrp.data.Vehicle;
+import org.matsim.contrib.dvrp.data.Vehicles;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
-import Path.VrpPaths;
+import org.matsim.contrib.dvrp.path.VrpPaths;
 import org.matsim.contrib.dvrp.schedule.*;
 import org.matsim.contrib.dvrp.schedule.Schedule.ScheduleStatus;
 import org.matsim.contrib.dvrp.tracker.OnlineDriveTaskTracker;
@@ -46,7 +49,6 @@ import org.matsim.core.mobsim.qsim.QSim;
 import org.matsim.core.network.NetworkChangeEvent;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.utils.misc.Time;
-import Schedule.*;
 
 import java.util.List;
 
