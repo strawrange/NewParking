@@ -84,15 +84,19 @@ public class VehicleReader extends MatsimXmlParser {
 			if (vehicleType instanceof DynVehicleType) {
 				if (capacity == 1.0){
 					vehicleType.setLength(3.0);
+					((DynVehicleType) vehicleType).setBatteryCapacity(20.0);
 				}
 				if (capacity == 4.0){
 					vehicleType.setLength(5.0);
+					((DynVehicleType) vehicleType).setBatteryCapacity(32.0);
 				}
 				if (capacity == 10.0){
 					vehicleType.setLength(6.5);
+					((DynVehicleType) vehicleType).setBatteryCapacity(60.0);
 				}
 				if (capacity == 20.0){
 					vehicleType.setLength(9.0);
+					((DynVehicleType) vehicleType).setBatteryCapacity(90.0);
 				}
 			}
 			vehicleTypes.put(type, vehicleType);

@@ -1,0 +1,12 @@
+<!DOCTYPE chargers SYSTEM "/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/charger.dtd">
+
+<chargers>
+    <charger id="charger_1" link="mplb_28" capacity="10" mode="level2" />
+    <charger id="charger_2" link="30904-1543"  capacity="10" mode="level2"/>
+    <charger id="charger_3" link="mplb_1" capacity="10" mode="level2"/>
+    <charger id="charger_4" link="mpla_45"  capacity="10" mode="level2"/>
+    <charger id="charger_5" link = "30898-1536" capacity="10" mode="level2"/>
+    <charger id="charger_6" link = "mpla_31" capacity="10" mode="level2"/>
+    <charger id="charger_7" link = "1546-32174" capacity="10" mode="level2"/>
+</chargers>
+              
