@@ -9,6 +9,7 @@ public class DynVehicleType extends VehicleTypeImpl {
     public static String DYNTYPE = "dynType";
     private double accessTime = 1.5;
     private double egressTime = 1.5;
+    private double batteryCapacity;
 
 
     public DynVehicleType(){
@@ -25,4 +26,11 @@ public class DynVehicleType extends VehicleTypeImpl {
         return this.egressTime;
     }
 
+    public double getBatteryCapacity() {
+        return batteryCapacity;
+    }
+
+    public void setBatteryCapacity(double batteryCapacity) {
+        this.batteryCapacity = batteryCapacity;
+    }
 }

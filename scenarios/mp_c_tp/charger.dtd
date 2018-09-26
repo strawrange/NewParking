@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+        <!-- ============================================================ -->
+
+        <!ELEMENT chargers (charger)*>
+
+        <!ELEMENT charger EMPTY>
+
+        <!ATTLIST charger
+                id          CDATA   #REQUIRED
+                link  CDATA   #REQUIRED
+                capacity    CDATA   #REQUIRED
+                mode    CDATA   #REQUIRED>

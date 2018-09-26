@@ -60,6 +60,14 @@ public class AtodConfigGroup extends ReflectiveConfigGroup {
 	public static final String MIN_BAY_SIZE = "minBaySize";
 	static final String MIN_BAY_SIZE_EXP = "The minimum bay size for transit stop, 0.0 by default.";
 
+	public static final String CHARGE_FILE ="chargingFile";
+	static final String CHARGE_FILE_EXP = "The location of the charging points. The file format according to charger.dtd";
+
+	public static final String MIN_BATTERY = "minBattery";
+	static final String MIN_BATTERY_EXP = "When reaches the min battery value, the vehicle will go to charge";
+
+	public static final String MIN_REQUEST_ACCEPT = "minRequestAccept";
+	static final String MIN_REQUEST_ACCEPT_EXP ="If the request is too far, reject it";
 
 	@NotNull
 	private ParkingStrategy.Strategies parkingStrategy = ParkingStrategy.Strategies.NoParkingStrategy;
@@ -73,9 +81,14 @@ public class AtodConfigGroup extends ReflectiveConfigGroup {
 
 	private double minBaySize = 0.0;
 
+
 	public enum Door2DoorStop{
 		infinity, linkLength
 	}
+
+	private String chargeFile = null;
+	private double minBattery = 0.0;
+	private double minRequestAccept = 0.0;
 
 
 	@Override
@@ -85,6 +98,9 @@ public class AtodConfigGroup extends ReflectiveConfigGroup {
 		map.put(DEPOT_FILE, DEPOT_FILE_EXP);
 		map.put(DOOR_2_DOOR_STOP, DOOR_2_DOOR_STOP_EXP);
 		map.put(MIN_BAY_SIZE, MIN_BAY_SIZE_EXP);
+		map.put(CHARGE_FILE, CHARGE_FILE_EXP);
+		map.put(MIN_BATTERY, MIN_BATTERY_EXP);
+		map.put(MIN_REQUEST_ACCEPT, MIN_REQUEST_ACCEPT_EXP);
 		return map;
 	}
 
@@ -151,4 +167,36 @@ public class AtodConfigGroup extends ReflectiveConfigGroup {
 	public void setMinBaySize(double minBaySize){
 		this.minBaySize = minBaySize;
 	}
+
+
+	public URL getChargeFileURL(URL context){
+		return ConfigGroup.getInputFileURL(context, chargeFile);
+	}
+	@StringGetter(CHARGE_FILE)
+	public String getChargeFile(){
+		return this.chargeFile;
+	}
+	@StringSetter(CHARGE_FILE)
+	public void setChargeFile(String chargeFile){
+		this.chargeFile = chargeFile;
+	}
+
+	@StringGetter(MIN_BATTERY)
+	public double getMinBattery() {
+		return minBattery;
+	}
+	@StringSetter(MIN_BATTERY)
+	public void setMinBattery(double minBattery) {
+		this.minBattery = minBattery;
+	}
+
+	@StringGetter(MIN_REQUEST_ACCEPT)
+	public double getMinRequestAccept() {
+		return minRequestAccept;
+	}
+	@StringSetter(MIN_REQUEST_ACCEPT)
+	public void setMinRequestAccept(double minRequestAccept) {
+		this.minRequestAccept = minRequestAccept;
+	}
+
 }

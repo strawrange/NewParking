@@ -20,7 +20,6 @@
 package ParkingStrategy.InsertionOptimizer;
 
 import Schedule.VehicleData;
-import Passenger.Event.DrtRequestScheduledEvent;
 import Schedule.AtodRequest;
 import Vehicle.FleetImpl;
 import com.google.inject.Inject;
@@ -29,6 +28,7 @@ import org.matsim.api.core.v01.events.PersonStuckEvent;
 import org.matsim.contrib.drt.passenger.events.DrtRequestRejectedEvent;
 
 
+import org.matsim.contrib.drt.passenger.events.DrtRequestScheduledEvent;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.dvrp.data.Fleet;
 import org.matsim.core.api.experimental.events.EventsManager;
