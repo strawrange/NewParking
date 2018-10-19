@@ -26,6 +26,8 @@ package Run;
 
 import BayInfrastructure.VehicleLength;
 import DynAgent.VrpAgentLogic;
+import EAV.ChargingStrategy;
+import EAV.EarlyReservedChargingStrategy;
 import ParkingStrategy.AlwaysRoaming.RoamingStrategy;
 import ParkingStrategy.NoParkingStrategy.NoParkingStrategy;
 import ParkingStrategy.ParkingInDepot.Depot.DepotManager;
@@ -127,17 +129,17 @@ public final class DrtControlerCreator {
 		controler.getEvents().addHandler(linkLinkTimeCalculatorAV);
 		final TravelTimeCalculator travelTimeCalculator = new TravelTimeCalculator(scenario.getNetwork(), scenario.getConfig().travelTimeCalculator());
 
-		//String EVENTSFILE = "/home/ubuntu/data/biyu/IdeaProjects/NewParking/out/artifacts/output/drt_mix_V450_T250_bay_optimal/ITERS/it.40/40.events.xml.gz";
-		String EVENTSFILE = "/home/biyu/IdeaProjects/NewParking/output/drt_mix_V450_T250_bay_optimal/ITERS/it.40/40.events.xml.gz";
-		EventsManager manager = EventsUtils.createEventsManager();
-//		manager.addHandler(waitTimeCalculator);
-//		manager.addHandler(waitLinkTimeCalculatorAV);
-//		manager.addHandler(waitTimeCalculatorAV);
-//		manager.addHandler(stopStopTimeCalculator);
-//		manager.addHandler(stopStopTimeCalculatorAV);
-//		manager.addHandler(linkLinkTimeCalculatorAV);
-		manager.addHandler(travelTimeCalculator);
-		new MatsimEventsReader(manager).readFile(EVENTSFILE);
+//		//String EVENTSFILE = "/home/ubuntu/data/biyu/IdeaProjects/NewParking/out/artifacts/output/drt_mix_V450_T250_bay_optimal/ITERS/it.40/40.events.xml.gz";
+//		String EVENTSFILE = "/home/biyu/IdeaProjects/NewParking/output/drt_mix_V450_T250_bay_optimal/ITERS/it.40/40.events.xml.gz";
+//		EventsManager manager = EventsUtils.createEventsManager();
+////		manager.addHandler(waitTimeCalculator);
+////		manager.addHandler(waitLinkTimeCalculatorAV);
+////		manager.addHandler(waitTimeCalculatorAV);
+////		manager.addHandler(stopStopTimeCalculator);
+////		manager.addHandler(stopStopTimeCalculatorAV);
+////		manager.addHandler(linkLinkTimeCalculatorAV);
+//		manager.addHandler(travelTimeCalculator);
+//		new MatsimEventsReader(manager).readFile(EVENTSFILE);
 
 
 
@@ -216,6 +218,7 @@ public final class DrtControlerCreator {
 			@Override
 			protected void configure() {
 				AtodConfigGroup drtCfg = AtodConfigGroup.get(config);
+				//bind(ChargingStrategy.class).to(EarlyReservedChargingStrategy.class).asEagerSingleton();
 				bind(DrtOptimizer.class).to(DefaultDrtOptimizer.class).asEagerSingleton();
 				bind(VrpOptimizer.class).to(DrtOptimizer.class);
 				bind(DefaultUnplannedRequestInserter.class).asEagerSingleton();

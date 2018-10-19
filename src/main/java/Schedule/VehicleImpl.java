@@ -24,8 +24,16 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.schedule.Schedule;
 import org.matsim.contrib.dvrp.data.Vehicle;
 import org.matsim.contrib.dvrp.schedule.ScheduleImpl;
+import org.matsim.contrib.dvrp.schedule.StayTaskImpl;
+import org.matsim.contrib.dvrp.schedule.Task;
+import org.matsim.core.utils.collections.Tuple;
 import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.VehicleUtils;
+import Vehicle.DynVehicleType;
+import org.xml.sax.Attributes;
+
+import javax.xml.stream.events.Attribute;
+import java.util.List;
 
 /**
  * @author michalm
@@ -45,6 +53,12 @@ public class VehicleImpl implements Vehicle {
 
 	private VehicleType vehicleType;
 
+	private double battery;
+
+	boolean charging = false;
+
+	boolean parking = false;
+
 	public VehicleImpl(Id<Vehicle> id, Link startLink, double capacity, double serviceBeginTime,
 					   double serviceEndTime, String mode, VehicleType vehicleType) {
 		this.id = id;
@@ -54,22 +68,10 @@ public class VehicleImpl implements Vehicle {
 		this.serviceEndTime = serviceEndTime;
 		this.mode = mode;
 		this.vehicleType = vehicleType;
+		this.battery = ((DynVehicleType)vehicleType).getBatteryCapacity();
 
 		schedule = new ScheduleImpl(this);
 	}
-	public VehicleImpl(Id<Vehicle> id, Link startLink, double capacity, double serviceBeginTime,
-					   double serviceEndTime, String mode) {
-		this.id = id;
-		this.startLink = startLink;
-		this.capacity = capacity;
-		this.serviceBeginTime = serviceBeginTime;
-		this.serviceEndTime = serviceEndTime;
-		this.mode = mode;
-		this.vehicleType = VehicleUtils.getDefaultVehicleType();;
-
-		schedule = new ScheduleImpl(this);
-	}
-
 
 	@Override
 	public Id<Vehicle> getId() {
@@ -118,6 +120,7 @@ public class VehicleImpl implements Vehicle {
 	@Override
 	public void resetSchedule() {
 		schedule = new ScheduleImpl(this);
+		battery = ((DynVehicleType)vehicleType).getBatteryCapacity();
 	}
 
 	public String getMode() {
@@ -130,5 +133,48 @@ public class VehicleImpl implements Vehicle {
 
 	public VehicleType getVehicleType() {
 		return vehicleType;
+	}
+
+	public double getBattery() {
+		return battery;
+	}
+
+	public void charge(double change){
+		this.battery = this.battery + change;
+	}
+
+	public void discharge(double change) {
+		this.battery = this.battery - change;
+		if (this.battery < 0){
+			String s = "";
+			for (int i = schedule.getCurrentTask().getTaskIdx(); i < schedule.getTasks().size();i++){
+				Task task = schedule.getTasks().get(i);
+				if (task instanceof StayTaskImpl){
+					s += ((StayTaskImpl) task).toString() + ";";
+					if (task instanceof DrtStopTask){
+						String drop = ((DrtStopTask) task).getDrtDropoffRequests().size() > 0 ? Double.toString(((DrtStopTask) task).getDrtDropoffRequests().get(0).getSubmissionTime()):"";
+						String pick = ((DrtStopTask) task).getDrtPickupRequests().size() > 0 ? Double.toString(((DrtStopTask) task).getDrtPickupRequests().get(0).getSubmissionTime()):"";
+						s += " submissionT " + drop + " " + pick + "\n";
+					}
+				}
+			}
+			throw new RuntimeException(this.id + " is out of Power!!!" + s);
+		}
+	}
+
+	public void changeStatus(boolean status){
+		charging = status;
+	}
+
+	public boolean getStatus(){
+		return charging;
+	}
+
+	public boolean isParking(){
+		return parking;
+	}
+
+	public void changeParking(boolean parking){
+		this.parking = parking;
 	}
 }

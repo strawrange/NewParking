@@ -126,8 +126,6 @@ public class TransitRouterTravelTimeAndDisutilityFirstLastAVPT extends TransitRo
 		else
 			//inside link
 			cachedLinkTime = 0;
-		if(cachedLinkTime+cachedWaitTime>10000000)
-			System.out.println();
 		return cachedLinkTime + cachedWaitTime;
 	}
 	@Override

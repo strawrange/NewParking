@@ -19,6 +19,9 @@
 
 package ParkingStrategy.InsertionOptimizer;
 
+import EAV.ChargerPathPair;
+import EAV.DischargingRate;
+import EAV.DrtChargeTask;
 import Schedule.DrtQueueTask;
 import Schedule.DrtStopTask;
 import Schedule.VehicleData;
@@ -160,6 +163,10 @@ public class DrtScheduler implements ScheduleInquiry {
 	private double calcNewEndTime(Vehicle vehicle, DrtTask task, double newBeginTime) {
 		switch (task.getDrtTaskType()) {
 			case STAY: {
+			    if (task instanceof DrtChargeTask){
+			        double duration = ((DrtChargeTask) task).getCharger().getChargingTime((VehicleImpl) vehicle);
+			        return newBeginTime + duration;
+                }
 				if (Schedules.getLastTask(vehicle.getSchedule()).equals(task)) {// last task
 					// even if endTime=beginTime, do not remove this task!!! A DRT Schedule should end with WAIT
 					return Math.max(newBeginTime, vehicle.getServiceEndTime());
@@ -233,7 +240,7 @@ public class DrtScheduler implements ScheduleInquiry {
             DrtStayTask stayTask = null;
             DrtStopTask stopTask = null;
             if (insertion.pickupIdx == 0) {
-                if (currentTask.getDrtTaskType() == DrtTask.DrtTaskType.STAY) {
+                if (currentTask instanceof DrtStayTask) {
                     stayTask = (DrtStayTask)currentTask; // ongoing stay task
                     double now = timer.getTimeOfDay();
                     if (stayTask.getEndTime() > now) { // stop stay task; a new stop/drive task can be inserted now
@@ -241,6 +248,9 @@ public class DrtScheduler implements ScheduleInquiry {
                     }
                 } else if (currentTask instanceof DrtStopTask){
                     stopTask = (DrtStopTask)currentTask; // ongoing stop task
+                }else if (currentTask instanceof DrtChargeTask){
+                    stayTask = (DrtStayTask)schedule.getTasks().get(currentTask.getTaskIdx() + 1);
+                    stayTask.setEndTime(stayTask.getBeginTime());
                 }
             } else {
                 stopTask = stops.get(insertion.pickupIdx - 1).task; // future stop task
@@ -421,16 +431,19 @@ public class DrtScheduler implements ScheduleInquiry {
 		}
 
 		stayTask.setEndTime(vrpPath.getDepartureTime()); // finish STAY
-		schedule.addTask(new DrtDriveTask(vrpPath)); // add DRIVE
+        int idx = stayTask.getTaskIdx();
+        idx++;
+		schedule.addTask(idx,new DrtDriveTask(vrpPath)); // add DRIVE
 		// append STAY
-		schedule.addTask(new DrtStayTask(vrpPath.getArrivalTime(), vehicle.getServiceEndTime(), vrpPath.getToLink()));
+        idx++;
+		schedule.addTask(idx, new DrtStayTask(vrpPath.getArrivalTime(), vehicle.getServiceEndTime(), vrpPath.getToLink()));
 		// add end time to stay task
 	}
 
 	public void insertQuequingTask(Vehicle vehicle){
 		Schedule schedule = vehicle.getSchedule();
 		int currentTaskIdx = schedule.getCurrentTask().getTaskIdx();
-		DrtStopTask nextTask = (DrtStopTask) schedule.getTasks().get(currentTaskIdx + 1);
+		StayTaskImpl nextTask = (StayTaskImpl) schedule.getTasks().get(currentTaskIdx + 1);
 		if (schedule.getCurrentTask() instanceof DrtQueueTask){
 			schedule.getCurrentTask().setEndTime(schedule.getCurrentTask().getEndTime() + 1);
 		}else{
@@ -456,4 +469,27 @@ public class DrtScheduler implements ScheduleInquiry {
         qSim.addNetworkChangeEvent(event);
     }
 
+    public void chargingVehicle(Vehicle vehicle, ChargerPathPair lp) {
+        Schedule schedule = vehicle.getSchedule();
+        int idx = schedule.getCurrentTask().getTaskIdx();
+        Link currentLink = ((DrtStayTask)schedule.getCurrentTask()).getLink();
+        schedule.getCurrentTask().setEndTime(this.timer.getTimeOfDay());
+        if (currentLink != lp.charger.getLink()) {
+            if (lp.path.getArrivalTime() < vehicle.getServiceEndTime()) {
+                idx++;
+                schedule.addTask(idx,new DrtDriveTask(lp.path)); // add DRIVE
+            }
+        }
+        double chargingTime = lp.charger.getEstimatedChargeTime((VehicleImpl) vehicle, ((VehicleImpl) vehicle).getBattery() - DischargingRate.calculateDischargeByDistance(VrpPaths.calcDistance(lp.path)));
+        DrtChargeTask drtChargeTask = new DrtChargeTask(lp.path.getArrivalTime(), lp.path.getArrivalTime() + chargingTime , lp.charger );
+        idx++;
+        if (drtChargeTask.getBeginTime() < vehicle.getServiceEndTime()) {
+            schedule.addTask(idx, drtChargeTask);
+        }
+        idx++;
+        if (drtChargeTask.getEndTime() < vehicle.getServiceEndTime()) {
+            schedule.addTask(idx, new DrtStayTask(drtChargeTask.getEndTime(), vehicle.getServiceEndTime(), lp.charger.getLink()));
+        }
+        ((VehicleImpl) vehicle).changeStatus(true);
+    }
 }

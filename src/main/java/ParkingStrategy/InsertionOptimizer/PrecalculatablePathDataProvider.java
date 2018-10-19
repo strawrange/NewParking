@@ -22,7 +22,7 @@ import Schedule.VehicleData;
 import Schedule.AtodRequest;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.contrib.dvrp.path.OneToManyPathSearch.PathData;
+import Path.OneToManyPathSearch.DrtPathData;
 
 
 import java.util.Collection;
@@ -34,15 +34,15 @@ import java.util.Map;
 public interface PrecalculatablePathDataProvider extends PathDataProvider {
 	void precalculatePathData(AtodRequest drtRequest, Collection<VehicleData.Entry> vEntries);
 
-	static PathDataSet getPathDataSet(AtodRequest drtRequest, VehicleData.Entry vEntry, Map<Id<Link>, PathData> pathsToPickupMap,
-									  Map<Id<Link>, PathData> pathsFromPickupMap, Map<Id<Link>, PathData> pathsToDropoffMap,
-									  Map<Id<Link>, PathData> pathsFromDropoffMap) {
+	static PathDataSet getPathDataSet(AtodRequest drtRequest, VehicleData.Entry vEntry, Map<Id<Link>, DrtPathData> pathsToPickupMap,
+									  Map<Id<Link>, DrtPathData> pathsFromPickupMap, Map<Id<Link>, DrtPathData> pathsToDropoffMap,
+									  Map<Id<Link>, DrtPathData> pathsFromDropoffMap) {
 
 		int length = vEntry.stops.size() + 1;
-		PathData[] pathsToPickup = new PathData[length];
-		PathData[] pathsFromPickup = new PathData[length];
-		PathData[] pathsToDropoff = new PathData[length];
-		PathData[] pathsFromDropoff = new PathData[length];
+		DrtPathData[] pathsToPickup = new DrtPathData[length];
+		DrtPathData[] pathsFromPickup = new DrtPathData[length];
+		DrtPathData[] pathsToDropoff = new DrtPathData[length];
+		DrtPathData[] pathsFromDropoff = new DrtPathData[length];
 
 		pathsToPickup[0] = pathsToPickupMap.get(vEntry.start.link.getId());// start->pickup
 		pathsFromPickup[0] = pathsFromPickupMap.get(drtRequest.getToLink().getId());// pickup->dropoff

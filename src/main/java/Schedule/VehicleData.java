@@ -19,6 +19,7 @@
 
 package Schedule;
 
+import EAV.DrtChargeTask;
 import com.google.common.collect.ImmutableList;
 import org.matsim.api.core.v01.Id;
 import org.matsim.contrib.drt.data.DrtRequest;
@@ -27,6 +28,7 @@ import org.matsim.contrib.drt.schedule.DrtStayTask;
 import org.matsim.contrib.drt.schedule.DrtTask;
 import org.matsim.contrib.dvrp.schedule.Schedule;
 import org.matsim.contrib.dvrp.schedule.Schedule.ScheduleStatus;
+import org.matsim.contrib.dvrp.schedule.Task;
 import org.matsim.contrib.dvrp.tracker.OnlineDriveTaskTracker;
 import org.matsim.contrib.dvrp.util.LinkTimePair;
 import org.matsim.contrib.dvrp.data.Vehicle;
@@ -149,13 +151,22 @@ public class VehicleData {
 
 				case STAY:
 					if (currentTask instanceof DrtQueueTask) {
-						DrtStopTask quequeTask = (DrtStopTask) schedule.getTasks().get(currentTask.getTaskIdx() + 1);
-						start = new LinkTimePair(quequeTask.getLink(), quequeTask.getEndTime());
-						currentTask = quequeTask;
-					}else {
-						DrtStayTask stayTask = (DrtStayTask) currentTask;
-						start = new LinkTimePair(stayTask.getLink(), currentTime);
-					}
+						DrtTask nextTask = (DrtTask) schedule.getTasks().get(currentTask.getTaskIdx() + 1);
+						if (nextTask instanceof  DrtStopTask) {
+							start = new LinkTimePair(((DrtStopTask) nextTask).getLink(), nextTask.getEndTime());
+							currentTask = nextTask;
+						}else if (nextTask instanceof DrtChargeTask) {
+							start = new LinkTimePair(((DrtChargeTask) nextTask).getLink(), nextTask.getEndTime());
+							currentTask = nextTask;
+						}else{
+							throw  new RuntimeException();
+						}
+					}else if (currentTask instanceof DrtChargeTask) {
+						start = new LinkTimePair(((DrtChargeTask) currentTask).getLink(), currentTask.getEndTime());
+					}else{
+							DrtStayTask stayTask = (DrtStayTask) currentTask;
+							start = new LinkTimePair(stayTask.getLink(), currentTime);
+						}
 					break;
 				default:
 						throw new RuntimeException();

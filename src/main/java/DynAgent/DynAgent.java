@@ -26,6 +26,7 @@ import org.matsim.api.core.v01.events.ActivityStartEvent;
 import org.matsim.api.core.v01.events.PersonArrivalEvent;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.population.Person;
+import org.matsim.contrib.drt.schedule.DrtStayTask;
 import org.matsim.contrib.dynagent.*;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.mobsim.qsim.interfaces.MobsimVehicle;
@@ -92,7 +93,6 @@ public final class DynAgent implements MobsimDriverPassengerAgent {
 					return;
 				}else{
 					events.processEvent(new ActivityEndEvent(now, id, currentLinkId, null, ((DynActivity)oldDynAction).getActivityType()));
-					return;
 				}
 			}
 			events.processEvent(new ActivityStartEvent(now, id, currentLinkId, null, dynActivity.getActivityType()));

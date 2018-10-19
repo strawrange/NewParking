@@ -37,7 +37,7 @@ public class ParkingOntheRoad implements ParkingStrategy, IterationStartsListene
         manager.addControlerListener(this);
         new NetworkCleaner().run(cleanNetwork);
         for (Link link : cleanNetwork.getLinks().values()){
-            if (link.getNumberOfLanes() > 1 && !isTransitStop(link, bayManager) ) {
+            if (link.getNumberOfLanes() > 1 && !isTransitStop(link, bayManager) && link.getCapacity() < 4000 ) {
                 supply.put(link.getId(), (int) Math.floor(link.getLength() / vehicleLength));
             } else {
                 supply.put(link.getId(), 0);

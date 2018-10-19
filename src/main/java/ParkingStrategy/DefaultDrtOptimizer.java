@@ -22,6 +22,7 @@ package ParkingStrategy;
 
 import BayInfrastructure.Bay;
 import BayInfrastructure.BayManager;
+import EAV.*;
 import ParkingStrategy.ParkingInDepot.Depot.DepotManager;
 import ParkingStrategy.InsertionOptimizer.DrtScheduler;
 import ParkingStrategy.InsertionOptimizer.EmptyVehicleRelocator;
@@ -54,6 +55,7 @@ import org.matsim.core.mobsim.framework.events.MobsimBeforeSimStepEvent;
 import org.matsim.core.mobsim.framework.listeners.MobsimBeforeCleanupListener;
 import Schedule.AtodRequest;
 import Schedule.DrtQueueTask;
+import Schedule.VehicleImpl;
 
 
 import java.util.Collection;
@@ -80,7 +82,11 @@ public class DefaultDrtOptimizer implements DrtOptimizer, MobsimBeforeCleanupLis
 	private boolean requiresReoptimization = false;
 	@Inject(optional = true)
 	private DepotManager depotManager;
+	@Inject(optional = true)
+	private ChargerManager chargerManager;
 	private final BayManager bayManager;
+	@Inject(optional = true)
+	private ChargingStrategy chargingStrategy;
 
 	@Inject
 	public DefaultDrtOptimizer(AtodConfigGroup drtCfg, Fleet fleet, MobsimTimer mobsimTimer, EventsManager eventsManager,
@@ -108,7 +114,7 @@ public class DefaultDrtOptimizer implements DrtOptimizer, MobsimBeforeCleanupLis
 			requestInserter.scheduleUnplannedRequests(unplannedRequests);
 			requiresReoptimization = false;
 		}
-//		if (mobsimTimer.getTimeOfDay() == 30 * 3600 - 300){
+//		if (mobsimTimer.getTimeOfDay() == 30 * 3600 - 1){
 //			System.out.println();
 //		}
 //		if (parkingStrategy != null && e.getSimulationTime() % drtCfg.getRebalancingInterval() == 0) {
@@ -169,8 +175,13 @@ public class DefaultDrtOptimizer implements DrtOptimizer, MobsimBeforeCleanupLis
 			scheduler.modifyLanes(((DrtStopTask) schedule.getCurrentTask()).getLink().getId(), mobsimTimer.getTimeOfDay(), 0.D);
 		}
 
-		if (isNextStopTask(vehicle)){
+		if (isCurrentChargeTask(vehicle)){
+			DrtChargeTask currentTask = (DrtChargeTask) vehicle.getSchedule().getCurrentTask();
+			Charger charger = chargerManager.getChargersByLinkId(currentTask.getLink().getId());
+			charger.removeVehicle((VehicleImpl) vehicle, mobsimTimer.getTimeOfDay());
+		}
 
+		if (isNextStopTask(vehicle)){
 			int currentTaskIdx = schedule.getCurrentTask().getTaskIdx();
 			DrtStopTask nextTask = (DrtStopTask) schedule.getTasks().get(currentTaskIdx + 1);
 			Bay bay = bayManager.getBayByLinkId(nextTask.getLink().getId());
@@ -188,23 +199,83 @@ public class DefaultDrtOptimizer implements DrtOptimizer, MobsimBeforeCleanupLis
 			}
 		}
 
+		if (isNextChargeTask(vehicle)){
+			int currentTaskIdx = schedule.getCurrentTask().getTaskIdx();
+			DrtChargeTask nextTask = (DrtChargeTask) schedule.getTasks().get(currentTaskIdx + 1);
+			Charger charger = chargerManager.getChargersByLinkId(nextTask.getLink().getId());
+			charger.addVehicle((VehicleImpl) vehicle, mobsimTimer.getTimeOfDay());
+			if (charger.isFull() && charger.isQueue(vehicle)) {
+				scheduler.insertQuequingTask(vehicle);
+				return;
+			}
+			if (isCurrentQueueTask(vehicle)){
+				scheduler.updateQueue(vehicle);
+			}
+		}
+
 		schedule.nextTask();
 //		if (isCurrentStopTask(vehicle)){
 //			eventsManager.processEvent(new VehicleArrivesAtFacilityEvent(mobsimTimer.getTimeOfDay(),Id.createVehicleId(vehicle.getId().toString()),
 //					bayManager.getBayByLinkId(((DrtStopTask) schedule.getCurrentTask()).getLink().getId()).getTransitStop().getId(), 1));
 //		}
 
-		if (parkingStrategy != null && isIdle(vehicle)) {
-			parking(vehicle);
+		if (chargingStrategy != null && isIdle(vehicle)) {
+			if (((VehicleImpl)vehicle).getBattery() <= drtCfg.getMinBattery()){
+				charging(vehicle);
+				return;
+			}
 		}
 
-		if (parkingStrategy !=null && isParking(vehicle)){
+		if (parkingStrategy !=null && isIdle(vehicle) && isNotChargingTransit(vehicle)){
+			parking(vehicle);
+			((VehicleImpl)vehicle).changeParking(true);
+		}
+
+		if (parkingStrategy !=null && isParking((VehicleImpl) vehicle) && !isNextChargeTask(vehicle)){
 			parkingStrategy.departing(vehicle, mobsimTimer.getTimeOfDay());
+			((VehicleImpl)vehicle).changeParking(false);
 		}
 
 		if (parkingStrategy.getCurrentStrategy(vehicle.getId()) != null && parkingStrategy.getCurrentStrategy(vehicle.getId()).equals(ParkingStrategy.Strategies.ParkingInDepot) && isCancelReservation(vehicle)){
 			depotManager.vehicleLeavingDepot(vehicle);
 		}
+	}
+
+	private boolean isNotChargingTransit(Vehicle vehicle) {
+		Schedule schedule = vehicle.getSchedule();
+		int previousTaskIdx = schedule.getCurrentTask().getTaskIdx() - 1;
+		if (previousTaskIdx > 0 &&  schedule.getTasks().get(previousTaskIdx) instanceof DrtChargeTask){
+			return schedule.getCurrentTask().getBeginTime() != schedule.getCurrentTask().getEndTime();
+		}
+		return true;
+	}
+
+	private boolean isCurrentChargeTask(Vehicle vehicle) {
+		Schedule schedule = vehicle.getSchedule();
+		if (schedule.getStatus() != Schedule.ScheduleStatus.STARTED){
+			return false;
+		}
+		return (schedule.getCurrentTask() instanceof DrtChargeTask);
+	}
+
+	private boolean isNextChargeTask(Vehicle vehicle) {
+		Schedule schedule = vehicle.getSchedule();
+		if (schedule.getStatus() != Schedule.ScheduleStatus.STARTED){
+			return false;
+		}
+		if (schedule.getCurrentTask().getTaskIdx() == schedule.getTaskCount() - 1){
+			return false;
+		}
+		Task nextTask = schedule.getTasks().get(schedule.getCurrentTask().getTaskIdx() + 1);
+		if (!(nextTask instanceof DrtChargeTask)){
+			return false;
+		}
+		return true;
+	}
+
+	private void charging(Vehicle vehicle) {
+		ChargerPathPair r = chargingStrategy.charging(vehicle, mobsimTimer.getTimeOfDay());
+		scheduler.chargingVehicle(vehicle, r);
 	}
 
 	private boolean isCurrentQueueTask(Vehicle vehicle) {
@@ -292,7 +363,7 @@ public class DefaultDrtOptimizer implements DrtOptimizer, MobsimBeforeCleanupLis
 		return true;
 	}
 
-	private boolean isParking(Vehicle vehicle) {
+	private boolean isParking(VehicleImpl vehicle) {
 		Schedule schedule = vehicle.getSchedule();
 
 		// only active vehicles
@@ -303,11 +374,11 @@ public class DefaultDrtOptimizer implements DrtOptimizer, MobsimBeforeCleanupLis
 		// previous task is STAY
 		int previousTaskIdx = schedule.getCurrentTask().getTaskIdx() - 1;
 		int nextTaskIdx = schedule.getCurrentTask().getTaskIdx() + 1;
-
+//
 		if (previousTaskIdx < 0){
 			return false;
 		}
-
+//
 		DrtTask previousTask = (DrtTask)schedule.getTasks().get(previousTaskIdx);
 		if (!(previousTask instanceof DrtStayTask)) {
 			return false;
@@ -327,7 +398,8 @@ public class DefaultDrtOptimizer implements DrtOptimizer, MobsimBeforeCleanupLis
 		//int previousTaskIdx = currentTask.getTaskIdx() - 1;
 		//return (previousTaskIdx >= 0
 		//		&& (((DrtTask)getTasks().get(previousTaskIdx)).getDrtTaskType() != DrtTask.DrtTaskType.STAY) );
-		return true;
+//		return true;
+		return vehicle.isParking();
 	}
 
 	private static boolean isIdle(Vehicle vehicle) {
@@ -344,8 +416,11 @@ public class DefaultDrtOptimizer implements DrtOptimizer, MobsimBeforeCleanupLis
 			return false;
 		}
 
-		// previous task was STOP
-		//int previousTaskIdx = currentTask.getTaskIdx() - 1;
+//		if (currentTask.getTaskIdx() != schedule.getTasks().size() - 1){
+//			return false;
+//		}
+
+
 		//return (previousTaskIdx >= 0
 		//		&& (((DrtTask)getTasks().get(previousTaskIdx)).getDrtTaskType() != DrtTask.DrtTaskType.STAY) );
 		return true;

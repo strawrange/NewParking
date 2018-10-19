@@ -19,6 +19,7 @@
 package Vehicle;
 
 
+import Run.AtodConfigGroup;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.name.Named;
@@ -26,6 +27,8 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.data.Fleet;
 import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
 import org.matsim.contrib.dvrp.vrpagent.VrpAgentSource;
+import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigGroup;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.vehicles.VehicleType;
 
@@ -41,6 +44,8 @@ public class FleetProvider implements Provider<Fleet> {
 	@Inject(optional = true)
 	@Named(VrpAgentSource.DVRP_VEHICLE_TYPE)
 	VehicleType vehicleType;
+	@Inject
+	Config config;
 
 	private final URL url;
 

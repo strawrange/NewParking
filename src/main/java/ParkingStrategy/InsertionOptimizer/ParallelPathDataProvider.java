@@ -26,8 +26,8 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
-import org.matsim.contrib.dvrp.path.OneToManyPathSearch;
-import org.matsim.contrib.dvrp.path.OneToManyPathSearch.PathData;
+import Path.OneToManyPathSearch;
+import Path.OneToManyPathSearch.DrtPathData;
 import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
 import org.matsim.core.mobsim.framework.events.MobsimBeforeCleanupEvent;
@@ -62,10 +62,10 @@ public class ParallelPathDataProvider implements PrecalculatablePathDataProvider
 	private final ExecutorService executorService;
 
 	// ==== recalculated by precalculatePathData()
-	private Map<Id<Link>, PathData> pathsToPickupMap;
-	private Map<Id<Link>, PathData> pathsFromPickupMap;
-	private Map<Id<Link>, PathData> pathsToDropoffMap;
-	private Map<Id<Link>, PathData> pathsFromDropoffMap;
+	private Map<Id<Link>, DrtPathData> pathsToPickupMap;
+	private Map<Id<Link>, DrtPathData> pathsFromPickupMap;
+	private Map<Id<Link>, DrtPathData> pathsToDropoffMap;
+	private Map<Id<Link>, DrtPathData> pathsFromDropoffMap;
 
 	@Inject
 	public ParallelPathDataProvider(@Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) Network network,
@@ -103,7 +103,7 @@ public class ParallelPathDataProvider implements PrecalculatablePathDataProvider
 
 		ImmutableList<Link> stopLinkList = ImmutableList.copyOf(stopLinks.values());
 
-		Future<Map<Id<Link>, PathData>> pathsToPickupFuture = executorService.submit(() -> {
+		Future<Map<Id<Link>, DrtPathData>> pathsToPickupFuture = executorService.submit(() -> {
 			ImmutableList<Link> startAndStopLinkList = ImmutableList
 					.<Link> builderWithExpectedSize(startLinks.values().size() + stopLinkList.size())
 					.addAll(startLinks.values()).addAll(stopLinkList).build();
@@ -112,7 +112,7 @@ public class ParallelPathDataProvider implements PrecalculatablePathDataProvider
 			return toPickupPathSearch.calcPathDataMap(pickup, startAndStopLinkList, earliestPickupTime);
 		});
 
-		Future<Map<Id<Link>, PathData>> pathsFromPickupFuture = executorService.submit(() -> {
+		Future<Map<Id<Link>, DrtPathData>> pathsFromPickupFuture = executorService.submit(() -> {
 			ImmutableList<Link> dropoffAndStopLinkList = ImmutableList
 					.<Link> builderWithExpectedSize(stopLinkList.size() + 1).add(drtRequest.getToLink())
 					.addAll(stopLinkList).build();
@@ -121,14 +121,14 @@ public class ParallelPathDataProvider implements PrecalculatablePathDataProvider
 			return fromPickupPathSearch.calcPathDataMap(pickup, dropoffAndStopLinkList, earliestPickupTime);
 		});
 
-		Future<Map<Id<Link>, PathData>> pathsToDropoffFuture = executorService.submit(() -> {
+		Future<Map<Id<Link>, DrtPathData>> pathsToDropoffFuture = executorService.submit(() -> {
 			// calc backward dijkstra from dropoff to ends of all stops
 			// TODO exclude inserting dropoff after fully occupied stops (unless the new request's dropoff is located
 			// there)
 			return toDropoffPathSearch.calcPathDataMap(dropoff, stopLinkList, earliestDropoffTime);
 		});
 
-		Future<Map<Id<Link>, PathData>> pathsFromDropoffFuture = executorService.submit(() -> {
+		Future<Map<Id<Link>, DrtPathData>> pathsFromDropoffFuture = executorService.submit(() -> {
 			// calc forward dijkstra from dropoff to beginnings of all stops
 			// TODO exclude inserting dropoff before fully occupied stops
 			return fromDropoffPathSearch.calcPathDataMap(dropoff, stopLinkList, earliestDropoffTime);

@@ -21,7 +21,7 @@ package ParkingStrategy.InsertionOptimizer;
 
 import Schedule.AtodRequest;
 import Schedule.VehicleData;
-import org.matsim.contrib.dvrp.path.OneToManyPathSearch.PathData;
+import Path.OneToManyPathSearch.DrtPathData;
 
 /**
  * @author michalm
@@ -29,13 +29,13 @@ import org.matsim.contrib.dvrp.path.OneToManyPathSearch.PathData;
 public interface PathDataProvider {
 	class PathDataSet {
 		// path[0] is a special entry; path[i] corresponds to stop i-1, for 1 <= i <= stopCount
-		public final PathData[] pathsToPickup;//path[0] start->pickup
-		public final PathData[] pathsFromPickup;//path[0] pickup->dropoff
-		public final PathData[] pathsToDropoff;//path[0] null
-		public final PathData[] pathsFromDropoff;//path[0] null
+		public final DrtPathData[] pathsToPickup;//path[0] start->pickup
+		public final DrtPathData[] pathsFromPickup;//path[0] pickup->dropoff
+		public final DrtPathData[] pathsToDropoff;//path[0] null
+		public final DrtPathData[] pathsFromDropoff;//path[0] null
 
-		public PathDataSet(PathData[] pathsToPickup, PathData[] pathsFromPickup, PathData[] pathsToDropoff,
-				PathData[] pathsFromDropoff) {
+		public PathDataSet(DrtPathData[] pathsToPickup, DrtPathData[] pathsFromPickup, DrtPathData[] pathsToDropoff,
+						   DrtPathData[] pathsFromDropoff) {
 			this.pathsToPickup = pathsToPickup;
 			this.pathsFromPickup = pathsFromPickup;
 			this.pathsToDropoff = pathsToDropoff;

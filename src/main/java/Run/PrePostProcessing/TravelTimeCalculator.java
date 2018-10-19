@@ -79,8 +79,6 @@ class TravelTimeHandler implements BasicEventHandler,PersonEntersVehicleEventHan
             if (!tt.containsKey(pid)){
                 tt.put(pid,new TravelTime(event.getTime()));
                 dict.put(Id.create(event.getAttributes().get("request"), Request.class),pid);
-            }else{
-                System.out.println();
             }
         }
     }

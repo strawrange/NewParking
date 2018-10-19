@@ -21,7 +21,7 @@ package ParkingStrategy.InsertionOptimizer;
 
 import Schedule.VehicleData;
 import Schedule.AtodRequest;
-import org.matsim.contrib.dvrp.path.OneToManyPathSearch.PathData;
+import Path.OneToManyPathSearch.DrtPathData;
 
 /**
  * @author michalm
@@ -39,11 +39,11 @@ class InsertionWithPathDataCreator {
 		int i = insertion.pickupIdx;
 		int j = insertion.dropoffIdx;
 		// i -> pickup
-		PathData toPickup = set.pathsToPickup[i]; // i -> pickup
-		PathData fromPickup = set.pathsFromPickup[i == j ? 0 : i + 1]; // pickup -> (dropoff | i+1)
-		PathData toDropoff = i == j ? null // pickup followed by dropoff
+		DrtPathData toPickup = set.pathsToPickup[i]; // i -> pickup
+		DrtPathData fromPickup = set.pathsFromPickup[i == j ? 0 : i + 1]; // pickup -> (dropoff | i+1)
+		DrtPathData toDropoff = i == j ? null // pickup followed by dropoff
 				: set.pathsToDropoff[j]; // j -> dropoff
-		PathData fromDropoff = j == stopCount ? null // dropoff inserted at the end
+		DrtPathData fromDropoff = j == stopCount ? null // dropoff inserted at the end
 				: set.pathsFromDropoff[j + 1];
 		return new InsertionWithPathData(i, j, toPickup, fromPickup, toDropoff, fromDropoff);
 	}

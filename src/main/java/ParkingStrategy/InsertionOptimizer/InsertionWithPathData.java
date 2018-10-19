@@ -18,7 +18,7 @@
 
 package ParkingStrategy.InsertionOptimizer;
 
-import org.matsim.contrib.dvrp.path.OneToManyPathSearch.PathData;
+import Path.OneToManyPathSearch.DrtPathData;
 
 /**
  * @author michalm
@@ -26,13 +26,13 @@ import org.matsim.contrib.dvrp.path.OneToManyPathSearch.PathData;
 public class InsertionWithPathData {
 	public final int pickupIdx;
 	public final int dropoffIdx;
-	public final PathData pathToPickup;
-	public final PathData pathFromPickup;
-	public final PathData pathToDropoff;// null if dropoff inserted directly after pickup
-	public final PathData pathFromDropoff;// null if dropoff inserted at the end
+	public final DrtPathData pathToPickup;
+	public final DrtPathData pathFromPickup;
+	public final DrtPathData pathToDropoff;// null if dropoff inserted directly after pickup
+	public final DrtPathData pathFromDropoff;// null if dropoff inserted at the end
 
-	InsertionWithPathData(int pickupIdx, int dropoffIdx, PathData pathToPickup, PathData pathFromPickup,
-                          PathData pathToDropoff, PathData pathFromDropoff) {
+	InsertionWithPathData(int pickupIdx, int dropoffIdx, DrtPathData pathToPickup, DrtPathData pathFromPickup,
+                          DrtPathData pathToDropoff, DrtPathData pathFromDropoff) {
 		this.pickupIdx = pickupIdx;
 		this.dropoffIdx = dropoffIdx;
 		this.pathToPickup = pathToPickup;

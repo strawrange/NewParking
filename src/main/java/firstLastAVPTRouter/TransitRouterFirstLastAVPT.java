@@ -344,8 +344,6 @@ public class TransitRouterFirstLastAVPT implements RoutingModule {
 			act.setMaximumDuration(0.0D);
 			trip.add(act);
 		}
-		if (trip.size() <=0)
-			System.out.println();
 		trip.remove(trip.size() - 1);
 		return trip;
 	}

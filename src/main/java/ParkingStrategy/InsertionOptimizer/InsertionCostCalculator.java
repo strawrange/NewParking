@@ -20,14 +20,21 @@
 package ParkingStrategy.InsertionOptimizer;
 
 
+import EAV.DischargingRate;
+import EAV.DrtChargeTask;
+import Run.AtodConfigGroup;
 import Schedule.VehicleData;
 
 import Schedule.*;
+import com.google.inject.Inject;
 import org.matsim.contrib.drt.schedule.DrtDriveTask;
 import org.matsim.contrib.drt.schedule.DrtStayTask;
 import org.matsim.contrib.drt.schedule.DrtTask;
+import org.matsim.contrib.dvrp.path.VrpPaths;
 import org.matsim.contrib.dvrp.schedule.Schedules;
+import org.matsim.contrib.dvrp.schedule.StayTaskImpl;
 import org.matsim.contrib.dvrp.schedule.Task;
+import org.matsim.core.config.Config;
 import org.matsim.core.mobsim.framework.MobsimTimer;
 
 /**
@@ -37,10 +44,14 @@ public class InsertionCostCalculator {
 	public static final double INFEASIBLE_SOLUTION_COST = Double.MAX_VALUE;
 
 	private final MobsimTimer timer;
+	private final double minAcceptRequest;
 
 
-	public InsertionCostCalculator(MobsimTimer timer) {
+
+
+	public InsertionCostCalculator(MobsimTimer timer,  double minAcceptRequest) {
 		this.timer = timer;
+		this.minAcceptRequest = minAcceptRequest;
 	}
 
 	// the main goal - minimise bus operation time
@@ -66,7 +77,7 @@ public class InsertionCostCalculator {
 		// 'no detour' is also possible now for pickupIdx==0 if the currentTask is STOP
         boolean ongoingStopTask = insertion.pickupIdx == 0
 				&& (((DrtTask)vEntry.vehicle.getSchedule().getCurrentTask()).getDrtTaskType() == DrtTask.DrtTaskType.STOP ||
-				vEntry.vehicle.getSchedule().getCurrentTask() instanceof DrtQueueTask);
+				vEntry.vehicle.getSchedule().getCurrentTask() instanceof DrtQueueTask || vEntry.vehicle.getSchedule().getCurrentTask() instanceof DrtChargeTask);
 
 		if ((ongoingStopTask && drtRequest.getFromLink().getId().equals(vEntry.start.link)) //
 				|| (insertion.pickupIdx > 0 //
@@ -123,6 +134,7 @@ public class InsertionCostCalculator {
 											InsertionWithPathData insertion, double pickupDetourTimeLoss, double totalTimeLoss) {
 		// this is what we cannot violate
         // vehicle's time window cannot be violated
+
         DrtStayTask lastTask = (DrtStayTask)Schedules.getLastTask(vEntry.vehicle.getSchedule());
         double timeSlack = vEntry.vehicle.getServiceEndTime() //-600
                 - Math.max(lastTask.getBeginTime(), timer.getTimeOfDay());
@@ -174,8 +186,24 @@ public class InsertionCostCalculator {
 		if (dropoffStartTime > drtRequest.getLatestArrivalTime()) {
 			return false;
 		}
-
-
+		Double drive = 0.0;
+		//synchronized (drive) {
+		if (currentTask instanceof StayTaskImpl) {
+			drive = drive + ((StayTaskImpl) currentTask).getLink().getLength();
+		}
+		for (int i = vEntry.vehicle.getSchedule().getCurrentTask().getTaskIdx(); i < vEntry.vehicle.getSchedule().getTasks().size(); i++) {
+			Task drtTask = vEntry.vehicle.getSchedule().getTasks().get(i);
+			if (drtTask instanceof DrtDriveTask) {
+				drive = drive + VrpPaths.calcDistance(((DrtDriveTask) drtTask).getPath());
+			}
+		}
+		drive = drive + insertion.pathToPickup.getPathDistance() + insertion.pathFromPickup.getPathDistance() + (insertion.dropoffIdx == insertion.pickupIdx ? 0 : insertion.pathToDropoff.getPathDistance()) +
+					(insertion.dropoffIdx == vEntry.stops.size() ? 0 : insertion.pathFromDropoff.getPathDistance());
+		//}
+		double estimatedBatteryAfterAccept = (((VehicleImpl) vEntry.vehicle).getBattery() - DischargingRate.calculateDischargeByDistance( drive));
+		if (estimatedBatteryAfterAccept <= minAcceptRequest){
+			return false;
+		}
 
 		return true;// all constraints satisfied
 	}

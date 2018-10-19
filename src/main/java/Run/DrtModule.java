@@ -3,6 +3,10 @@ package Run;
 import BayInfrastructure.BayManager;
 import Dwelling.ClearNetworkChangeEvents;
 import Dwelling.DrtAndTransitStopHandlerFactory;
+import EAV.ChargerManager;
+import EAV.DischargingRate;
+import EAV.EarlyReservedChargingStrategy;
+import EAV.SimpleChargerManager;
 import ParkingStrategy.DefaultDrtOptimizer;
 import Vehicle.FleetProvider;
 
@@ -40,12 +44,17 @@ DrtModule extends AbstractModule {
 
 		bind(DrtRequestValidator.class).to(DefaultDrtRequestValidator.class);
 		bind(BayManager.class).asEagerSingleton();
+		//bind(ChargerManager.class).to(SimpleChargerManager.class).asEagerSingleton();
+		//bind(DischargingRate.class).asEagerSingleton();
+
 		bind(RebalancingStrategy.class).to(NoRebalancingStrategy.class);
 		bind(TravelDisutilityFactory.class).annotatedWith(Names.named(DefaultDrtOptimizer.DRT_OPTIMIZER))
 				.toInstance(timeCalculator -> new TimeAsTravelDisutility(timeCalculator));
 		bind(TransitStopHandlerFactory.class ).to( DrtAndTransitStopHandlerFactory.class );
 		addControlerListenerBinding().to(ClearNetworkChangeEvents.class).asEagerSingleton();
 		addControlerListenerBinding().to(BayManager.class).asEagerSingleton();
+		//addControlerListenerBinding().to(ChargerManager.class).asEagerSingleton();
+		//addControlerListenerBinding().to(DischargingRate.class).asEagerSingleton();
 
 		//bind(DebugHandler.class).asEagerSingleton();
 

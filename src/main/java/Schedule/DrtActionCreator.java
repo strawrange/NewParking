@@ -20,6 +20,9 @@
 package Schedule;
 
 import Dwelling.BusStopActivity;
+import EAV.ChargerManager;
+import EAV.ChargingActivity;
+import EAV.DrtChargeTask;
 import ParkingStrategy.InsertionOptimizer.DrtScheduler;
 import Passenger.PassengerEngine;
 import com.google.inject.Inject;
@@ -41,6 +44,7 @@ public class DrtActionCreator implements VrpAgentLogic.DynActionCreator {
 	public static final String DRT_STAY_NAME = "DrtStay";
 	public final static String DRT_STOP_NAME = "DrtBusStop";
 	public static final String DRT_QUEUE_NAME = "DrtQueue";
+	public static final String DRT_CHARGE_NAME = "DrtCharge";
 	private final PassengerEngine passengerEngine;
 	private final VrpLegs.LegCreator legCreator;
 	private final DrtScheduler drtScheduler;
@@ -68,6 +72,9 @@ public class DrtActionCreator implements VrpAgentLogic.DynActionCreator {
 			case STAY:
 				if (task instanceof DrtQueueTask) {
 					return new VrpActivity(DRT_QUEUE_NAME, (StayTask) task);
+				}
+				if (task instanceof DrtChargeTask){
+					return new ChargingActivity(DRT_CHARGE_NAME, (DrtChargeTask) task, ((DrtChargeTask) task).getCharger(), vehicle);
 				}
 				return new VrpActivity(DRT_STAY_NAME, (StayTask) task);
 			default:

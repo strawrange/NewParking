@@ -40,9 +40,9 @@ public class ParallelMultiVehicleInsertionProblem implements MultiVehicleInserti
 	private final ForkJoinPool forkJoinPool;
 
 	public ParallelMultiVehicleInsertionProblem(PrecalculatablePathDataProvider pathDataProvider, DrtConfigGroup drtCfg,
-                                                MobsimTimer timer) {
+                                                MobsimTimer timer, double minAcceptRequest) {
 		this.pathDataProvider = pathDataProvider;
-		insertionCostCalculator = new InsertionCostCalculator(timer);
+		insertionCostCalculator = new InsertionCostCalculator(timer,  minAcceptRequest);
 		forkJoinPool = new ForkJoinPool(drtCfg.getNumberOfThreads());
 	}
 

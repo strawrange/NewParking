@@ -36,6 +36,9 @@ import Schedule.VehicleImpl;
 public class FleetImpl implements Fleet {
 	private final Map<Id<Vehicle>, Vehicle> vehicles = new LinkedHashMap<>();
 
+	public FleetImpl (){
+	}
+
 	@Override
 	public Map<Id<Vehicle>, ? extends Vehicle> getVehicles() {
 		return Collections.unmodifiableMap(vehicles);
@@ -43,7 +46,7 @@ public class FleetImpl implements Fleet {
 
 
 	public Map<Id<Vehicle>, ? extends Vehicle> getVehicles(String mode) {
-		return vehicles.entrySet().stream().filter(vehicle -> ((VehicleImpl)vehicle.getValue()).getMode().equals(mode)).collect(Collectors.toMap(map -> map.getKey(), map -> map.getValue()));
+		return vehicles.entrySet().stream().filter(vehicle -> (((VehicleImpl)vehicle.getValue()).getMode().equals(mode) && !((VehicleImpl)vehicle.getValue()).getStatus()) ).collect(Collectors.toMap(map -> map.getKey(), map -> map.getValue()));
 	}
 
 	public void addVehicle(Vehicle vehicle) {
