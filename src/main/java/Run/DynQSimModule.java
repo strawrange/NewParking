@@ -21,6 +21,7 @@ package Run;
 
 import DynAgent.DynActivityEnginePlugin;
 import com.google.inject.Provides;
+import mobsim.qnetsimenginelong.QNetsimEnginePlugin;
 import org.matsim.core.config.Config;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.mobsim.framework.Mobsim;
@@ -30,7 +31,6 @@ import org.matsim.core.mobsim.qsim.TeleportationPlugin;
 import org.matsim.core.mobsim.qsim.changeeventsengine.NetworkChangeEventsPlugin;
 import org.matsim.core.mobsim.qsim.messagequeueengine.MessageQueuePlugin;
 import org.matsim.core.mobsim.qsim.pt.TransitEnginePlugin;
-import org.matsim.core.mobsim.qsim.qnetsimengine.QNetsimEnginePlugin;
 
 import java.util.ArrayList;
 import java.util.Collection;

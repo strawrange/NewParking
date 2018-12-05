@@ -169,6 +169,9 @@ public class DrtScheduler implements ScheduleInquiry {
                 }
 				if (Schedules.getLastTask(vehicle.getSchedule()).equals(task)) {// last task
 					// even if endTime=beginTime, do not remove this task!!! A DRT Schedule should end with WAIT
+                    if (!(task instanceof DrtStayTask)){
+                        System.out.println();
+                    }
 					return Math.max(newBeginTime, vehicle.getServiceEndTime());
 				} else {
 					// if this is not the last task then some other task (e.g. DRIVE or PICKUP)
@@ -239,6 +242,7 @@ public class DrtScheduler implements ScheduleInquiry {
         } else { // insert pickup after an existing stop/stay task
             DrtStayTask stayTask = null;
             DrtStopTask stopTask = null;
+            DrtChargeTask chargeTask = null;
             if (insertion.pickupIdx == 0) {
                 if (currentTask instanceof DrtStayTask) {
                     stayTask = (DrtStayTask)currentTask; // ongoing stay task
@@ -249,8 +253,12 @@ public class DrtScheduler implements ScheduleInquiry {
                 } else if (currentTask instanceof DrtStopTask){
                     stopTask = (DrtStopTask)currentTask; // ongoing stop task
                 }else if (currentTask instanceof DrtChargeTask){
-                    stayTask = (DrtStayTask)schedule.getTasks().get(currentTask.getTaskIdx() + 1);
-                    stayTask.setEndTime(stayTask.getBeginTime());
+                    if (schedule.getTasks().get(currentTask.getTaskIdx() + 1) instanceof DrtStayTask){
+                        stayTask = (DrtStayTask)schedule.getTasks().get(currentTask.getTaskIdx() + 1);
+                        stayTask.setEndTime(stayTask.getBeginTime());
+                    }else{
+                        chargeTask = (DrtChargeTask)currentTask;
+                    }
                 }
             } else {
                 stopTask = stops.get(insertion.pickupIdx - 1).task; // future stop task
@@ -296,6 +304,9 @@ public class DrtScheduler implements ScheduleInquiry {
                 return;
             } else {
                 StayTask stayOrStopTask = stayTask != null ? stayTask : stopTask;
+                if (stayOrStopTask == null){
+                    stayOrStopTask = chargeTask;
+                }
 
                 // remove drive i->i+1 (if there is one)
                 if (insertion.pickupIdx < stops.size()) {// there is at least one following stop
@@ -480,14 +491,15 @@ public class DrtScheduler implements ScheduleInquiry {
                 schedule.addTask(idx,new DrtDriveTask(lp.path)); // add DRIVE
             }
         }
-        double chargingTime = lp.charger.getEstimatedChargeTime((VehicleImpl) vehicle, ((VehicleImpl) vehicle).getBattery() - DischargingRate.calculateDischargeByDistance(VrpPaths.calcDistance(lp.path)));
-        DrtChargeTask drtChargeTask = new DrtChargeTask(lp.path.getArrivalTime(), lp.path.getArrivalTime() + chargingTime , lp.charger );
-        idx++;
-        if (drtChargeTask.getBeginTime() < vehicle.getServiceEndTime()) {
-            schedule.addTask(idx, drtChargeTask);
+        if (lp.path.getArrivalTime() >= vehicle.getServiceEndTime()){
+            return;
         }
+        double chargingTime = lp.charger.getEstimatedChargeTime((VehicleImpl) vehicle, ((VehicleImpl) vehicle).getBattery() - DischargingRate.calculateDischargeByDistance(VrpPaths.calcDistance(lp.path), (VehicleImpl) vehicle));
+        DrtChargeTask drtChargeTask = new DrtChargeTask(lp.path.getArrivalTime(), Double.min(lp.path.getArrivalTime() + chargingTime, vehicle.getServiceEndTime()) , lp.charger );
         idx++;
-        if (drtChargeTask.getEndTime() < vehicle.getServiceEndTime()) {
+        schedule.addTask(idx, drtChargeTask);
+        idx++;
+        if (drtChargeTask.getEndTime() <= vehicle.getServiceEndTime()) {
             schedule.addTask(idx, new DrtStayTask(drtChargeTask.getEndTime(), vehicle.getServiceEndTime(), lp.charger.getLink()));
         }
         ((VehicleImpl) vehicle).changeStatus(true);

@@ -70,7 +70,7 @@ public class DefaultUnplannedRequestInserter implements UnplannedRequestInserter
 		this.eventsManager = eventsManager;
 		this.scheduler = scheduler;
 
-		insertionProblem = new ParallelMultiVehicleInsertionProblem(pathDataProvider, drtCfg, mobsimTimer,atodConfigGroup.getMinRequestAccept());
+		insertionProblem = new ParallelMultiVehicleInsertionProblem(pathDataProvider, drtCfg, mobsimTimer);
 	}
 
 	@Override
@@ -83,8 +83,8 @@ public class DefaultUnplannedRequestInserter implements UnplannedRequestInserter
 		if (unplannedRequests.isEmpty()) {
 			return;
 		}
-		ArrayList<SingleVehicleInsertionProblem.BestInsertion> check = new ArrayList<>();
-		ArrayList<ArrayList<Task>> vehicles = new ArrayList<>();
+		//ArrayList<SingleVehicleInsertionProblem.BestInsertion> check = new ArrayList<>();
+		//ArrayList<ArrayList<Task>> vehicles = new ArrayList<>();
 
 		Iterator<AtodRequest> reqIter = unplannedRequests.iterator();
 		while (reqIter.hasNext()) {
@@ -101,8 +101,8 @@ public class DefaultUnplannedRequestInserter implements UnplannedRequestInserter
 				}
 			} else {
 				SingleVehicleInsertionProblem.BestInsertion bestInsertion = best.get();
-				check.add(bestInsertion);
-				vehicles.add(new ArrayList<>(bestInsertion.vehicleEntry.vehicle.getSchedule().getTasks()));
+				//check.add(bestInsertion);
+				//vehicles.add(new ArrayList<>(bestInsertion.vehicleEntry.vehicle.getSchedule().getTasks()));
 				scheduler.insertPickup(bestInsertion.vehicleEntry, req, bestInsertion.insertion);
 				vData.updateEntry(bestInsertion.vehicleEntry.vehicle);
 				scheduler.insertDropoff(bestInsertion.vehicleEntry, req, bestInsertion.insertion);
@@ -110,38 +110,58 @@ public class DefaultUnplannedRequestInserter implements UnplannedRequestInserter
 				eventsManager.processEvent(new DrtRequestScheduledEvent(mobsimTimer.getTimeOfDay(), req.getId(),
 						bestInsertion.vehicleEntry.vehicle.getId(), req.getPickupTask().getEndTime(),
 						req.getDropoffTask().getBeginTime()));
+//				Task currentTask = bestInsertion.vehicleEntry.vehicle.getSchedule().getCurrentTask();
+//				Double drive = 0.0;
+//				//synchronized (drive) {
+//				if (currentTask instanceof StayTaskImpl) {
+//					drive = drive + ((StayTaskImpl) currentTask).getLink().getLength();
+//				}
+//				for (int i = bestInsertion.vehicleEntry.vehicle.getSchedule().getCurrentTask().getTaskIdx(); i < bestInsertion.vehicleEntry.vehicle.getSchedule().getTasks().size(); i++) {
+//					Task drtTask = bestInsertion.vehicleEntry.vehicle.getSchedule().getTasks().get(i);
+//					if (drtTask instanceof DrtDriveTask) {
+//						drive = drive + VrpPaths.calcDistance(((DrtDriveTask) drtTask).getPath());
+//					}
+//				}
+//				drive = drive + bestInsertion.insertion.pathToPickup.getPathDistance() + bestInsertion.insertion.pathFromPickup.getPathDistance() + (bestInsertion.insertion.dropoffIdx == bestInsertion.insertion.pickupIdx ? 0 : bestInsertion.insertion.pathToDropoff.getPathDistance()) +
+//						(bestInsertion.insertion.dropoffIdx == bestInsertion.vehicleEntry.stops.size() ? 0 : bestInsertion.insertion.pathFromDropoff.getPathDistance());
+//				//}
+//				double estimatedBatteryAfterAccept = (((VehicleImpl) bestInsertion.vehicleEntry.vehicle).getBattery() - DischargingRate.calculateDischargeByDistance( drive));
+////				if (estimatedBatteryAfterAccept < bestInsertion.insertion.estimatedBattery){
+////					System.out.println();
+////				}
 			}
+
 			reqIter.remove();
 		}
-		for (int i = 0; i < check.size() - 1; i++){
-			SingleVehicleInsertionProblem.BestInsertion b = check.get(i);
-			for (int j = i + 1; j < check.size(); j++){
-				SingleVehicleInsertionProblem.BestInsertion a = check.get(j);
-				if (b.vehicleEntry.vehicle.getId().equals(a.vehicleEntry.vehicle.getId()) && b.insertion.pickupIdx == a.insertion.pickupIdx && b.insertion.dropoffIdx == a.insertion.dropoffIdx){
-					VehicleImpl vehicle = (VehicleImpl)b.vehicleEntry.vehicle;
-					Double drive = 0.0;
-					//synchronized (drive) {
-					Task currentTask = vehicle.getSchedule().getCurrentTask();
-					if (currentTask instanceof StayTaskImpl) {
-						drive = drive + ((StayTaskImpl) currentTask).getLink().getLength();
-					}
-					for (int m = vehicle.getSchedule().getCurrentTask().getTaskIdx(); m < vehicles.get(i).size(); m++) {
-						Task drtTask = vehicles.get(i).get(m);
-						if (drtTask instanceof DrtDriveTask) {
-							drive = drive + VrpPaths.calcDistance(((DrtDriveTask) drtTask).getPath());
-						}
-					}
-					double drivea = drive + a.insertion.pathToPickup.getPathDistance() + a.insertion.pathFromPickup.getPathDistance() + (a.insertion.dropoffIdx == a.insertion.pickupIdx ? 0 : a.insertion.pathToDropoff.getPathDistance()) +
-							(a.insertion.dropoffIdx == a.vehicleEntry.stops.size() ? 0 : a.insertion.pathFromDropoff.getPathDistance());
-					//}
-					double driveb = drive + b.insertion.pathToPickup.getPathDistance() + b.insertion.pathFromPickup.getPathDistance() + (b.insertion.dropoffIdx == b.insertion.pickupIdx ? 0 : b.insertion.pathToDropoff.getPathDistance()) +
-							(b.insertion.dropoffIdx == b.vehicleEntry.stops.size() ? 0 : b.insertion.pathFromDropoff.getPathDistance());
-					double estimatedBatteryAfterAccept = Double.min(vehicle.getBattery() - DischargingRate.calculateDischargeByDistance( drivea), vehicle.getBattery() - DischargingRate.calculateDischargeByDistance( driveb));
-					if (estimatedBatteryAfterAccept <= 8.0){
-						System.out.println();
-					}
-				}
-			}
-		}
+//		for (int i = 0; i < check.size() - 1; i++){
+//			SingleVehicleInsertionProblem.BestInsertion b = check.get(i);
+//			for (int j = i + 1; j < check.size(); j++){
+//				SingleVehicleInsertionProblem.BestInsertion a = check.get(j);
+//				if (b.vehicleEntry.vehicle.getId().equals(a.vehicleEntry.vehicle.getId()) && b.insertion.pickupIdx == a.insertion.pickupIdx && b.insertion.dropoffIdx == a.insertion.dropoffIdx){
+//					VehicleImpl vehicle = (VehicleImpl)b.vehicleEntry.vehicle;
+//					Double drive = 0.0;
+//					//synchronized (drive) {
+//					Task currentTask = vehicle.getSchedule().getCurrentTask();
+//					if (currentTask instanceof StayTaskImpl) {
+//						drive = drive + ((StayTaskImpl) currentTask).getLink().getLength();
+//					}
+//					for (int m = vehicle.getSchedule().getCurrentTask().getTaskIdx(); m < vehicles.get(i).size(); m++) {
+//						Task drtTask = vehicles.get(i).get(m);
+//						if (drtTask instanceof DrtDriveTask) {
+//							drive = drive + VrpPaths.calcDistance(((DrtDriveTask) drtTask).getPath());
+//						}
+//					}
+//					double drivea = drive + a.insertion.pathToPickup.getPathDistance() + a.insertion.pathFromPickup.getPathDistance() + (a.insertion.dropoffIdx == a.insertion.pickupIdx ? 0 : a.insertion.pathToDropoff.getPathDistance()) +
+//							(a.insertion.dropoffIdx == a.vehicleEntry.stops.size() ? 0 : a.insertion.pathFromDropoff.getPathDistance());
+//					//}
+//					double driveb = drive + b.insertion.pathToPickup.getPathDistance() + b.insertion.pathFromPickup.getPathDistance() + (b.insertion.dropoffIdx == b.insertion.pickupIdx ? 0 : b.insertion.pathToDropoff.getPathDistance()) +
+//							(b.insertion.dropoffIdx == b.vehicleEntry.stops.size() ? 0 : b.insertion.pathFromDropoff.getPathDistance());
+//					double estimatedBatteryAfterAccept = Double.min(vehicle.getBattery() - DischargingRate.calculateDischargeByDistance( drivea), vehicle.getBattery() - DischargingRate.calculateDischargeByDistance( driveb));
+//					if (estimatedBatteryAfterAccept != b.insertion.estimatedBattery){
+//						System.out.println();
+//					}
+//				}
+//			}
+//		}
 	}
 }

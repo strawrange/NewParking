@@ -30,6 +30,8 @@ public class InsertionWithPathData {
 	public final DrtPathData pathFromPickup;
 	public final DrtPathData pathToDropoff;// null if dropoff inserted directly after pickup
 	public final DrtPathData pathFromDropoff;// null if dropoff inserted at the end
+	//TODO
+	public double estimatedBattery = 0.0;
 
 	InsertionWithPathData(int pickupIdx, int dropoffIdx, DrtPathData pathToPickup, DrtPathData pathFromPickup,
                           DrtPathData pathToDropoff, DrtPathData pathFromDropoff) {

@@ -20,6 +20,7 @@
 
 package firstLastAVPTRouter;
 
+import Schedule.VehicleImpl;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
@@ -28,6 +29,7 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.*;
 import org.matsim.contrib.eventsBasedPTRouter.MultiDestinationDijkstra;
+import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.population.routes.RouteUtils;
 import org.matsim.core.router.InitialNode;
@@ -36,15 +38,18 @@ import org.matsim.core.router.StageActivityTypes;
 import org.matsim.core.router.StageActivityTypesImpl;
 import org.matsim.core.router.util.LeastCostPathCalculator.Path;
 import org.matsim.core.router.util.PreProcessDijkstra;
+import org.matsim.core.utils.collections.QuadTree;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.facilities.Facility;
 import org.matsim.pt.PtConstants;
 import org.matsim.pt.router.MultiNodeDijkstra;
 import org.matsim.pt.router.TransitRouterConfig;
 import org.matsim.pt.routes.ExperimentalTransitRoute;
+import org.matsim.pt.transitSchedule.api.TransitStopArea;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class TransitRouterFirstLastAVPT implements RoutingModule {
 
@@ -57,10 +62,11 @@ public class TransitRouterFirstLastAVPT implements RoutingModule {
 	private final TransitRouterConfig config;
 	private final TransitRouterTravelTimeAndDisutilityFirstLastAVPT ttCalculator;
 	private final Network cleanNetwork;
+	private final Map<Id<TransitStopArea>, QuadTree<TransitRouterNetworkFirstLastAVPT.TransitRouterNetworkNode>> stopsByArea;
 
 
 	public TransitRouterFirstLastAVPT(final TransitRouterConfig config, final TransitRouterTravelTimeAndDisutilityFirstLastAVPT ttCalculator,
-									  final TransitRouterNetworkFirstLastAVPT routerNetwork, Network cleanNetwork) {
+									  final TransitRouterNetworkFirstLastAVPT routerNetwork, Network cleanNetwork, Map<Id<TransitStopArea>, QuadTree<TransitRouterNetworkFirstLastAVPT.TransitRouterNetworkNode>> stopsByArea) {
 		this.config = config;
 		this.transitNetwork = routerNetwork;
 		this.ttCalculator = ttCalculator;
@@ -69,15 +75,22 @@ public class TransitRouterFirstLastAVPT implements RoutingModule {
 		preProcessDijkstra.run(routerNetwork);
 		mDijkstra = new MultiDestinationDijkstra(routerNetwork, this.ttCalculator, this.ttCalculator, preProcessDijkstra);
 		this.cleanNetwork = cleanNetwork;
+		this.stopsByArea = stopsByArea;
 	}
 	
 	private Map<Node, InitialNode>[] locateWrappedNearestTransitNodes(Person person, Coord coord, Id<Link> link, double departureTime) {
 		Collection<TransitRouterNetworkFirstLastAVPT.TransitRouterNetworkNode> nearestNodes = this.transitNetwork.getNearestNodes(coord, TransitRouterNetworkFirstLastAVPT.maxBeelineWalkConnectionDistance);
-		if (nearestNodes.size() < 2) {
+		if (nearestNodes.size() < 1) {
 			// also enlarge search area if only one stop found, maybe a second one is near the border of the search area
 			TransitRouterNetworkFirstLastAVPT.TransitRouterNetworkNode nearestNode = this.transitNetwork.getNearestNode(coord);
 			double distance = CoordUtils.calcEuclideanDistance(coord, nearestNode.stop.getCoord());
 			nearestNodes = this.transitNetwork.getNearestNodes(coord, distance + this.config.getExtensionRadius());
+		}
+		for (Id<TransitStopArea> stopAreaId: stopsByArea.keySet()){
+			TransitRouterNetworkFirstLastAVPT.TransitRouterNetworkNode nearestNode = stopsByArea.get(stopAreaId).getClosest(coord.getX(),coord.getY());
+			if (nearestNodes.stream().allMatch(node -> node.stop.getStopAreaId() != stopAreaId)) {
+				nearestNodes.add(nearestNode);
+			}
 		}
 		Map<Node, InitialNode> wrappedNearestNodes = new LinkedHashMap<>();
 		for (TransitRouterNetworkFirstLastAVPT.TransitRouterNetworkNode node : nearestNodes) {
@@ -87,6 +100,12 @@ public class TransitRouterFirstLastAVPT implements RoutingModule {
 			wrappedNearestNodes.put(node, new InitialNode(initialCost, initialTime + departureTime));
 		}
 		Collection<TransitRouterNetworkFirstLastAVPT.TransitRouterNetworkNode> nearestNodesAV = this.transitNetwork.getNearestAVNodes(coord, TransitRouterNetworkFirstLastAVPT.maxBeelineAVConnectionDistance);
+		if (nearestNodesAV.size() < 1) {
+			// also enlarge search area if only one stop found, maybe a second one is near the border of the search area
+			TransitRouterNetworkFirstLastAVPT.TransitRouterNetworkNode nearestNode = this.transitNetwork.getNearestNode(coord);
+			double distance = CoordUtils.calcEuclideanDistance(coord, nearestNode.stop.getCoord());
+			nearestNodesAV = this.transitNetwork.getNearestNodes(coord, distance + this.config.getExtensionRadius());
+		}
 		Map<Node, InitialNode> wrappedNearestNodesAV = new LinkedHashMap<>();
 		if(transitNetwork.getNetworkModes()!= TransitRouterNetworkFirstLastAVPT.NetworkModes.PT)
 			for (TransitRouterNetworkFirstLastAVPT.TransitRouterNetworkNode node : nearestNodesAV) {

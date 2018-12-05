@@ -22,6 +22,7 @@ package ParkingStrategy.InsertionOptimizer;
 
 import Schedule.VehicleData;
 import Schedule.AtodRequest;
+import com.sun.xml.internal.bind.v2.TODO;
 
 
 import java.util.Optional;
@@ -34,6 +35,7 @@ public class SingleVehicleInsertionProblem {
 		public final InsertionWithPathData insertion;
 		public final VehicleData.Entry vehicleEntry;
 		public final double cost;
+
 
 		public BestInsertion(InsertionWithPathData insertion, VehicleData.Entry vehicleEntry, double cost) {
 			this.insertion = insertion;

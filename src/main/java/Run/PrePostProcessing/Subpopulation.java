@@ -29,9 +29,9 @@ public class Subpopulation {
         Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
         StreamingPopulationReader reader = new StreamingPopulationReader(scenario);
         StreamingPopulationWriter writer = new StreamingPopulationWriter(prct);
-        writer.startStreaming("/home/biyu/IdeaProjects/NewParking/scenarios/tp_20181016/tanjong-pagar/tanjong-pagar/plans/0.plans_10prct.xml.gz");
+        writer.startStreaming("/home/biyu/IdeaProjects/NewParking/scenarios/tp_20181016/tanjong-pagar/tanjong-pagar/plans/tp-s1.3.10prct.plans.xml.gz");
         reader.addAlgorithm(writer);
-        reader.readFile("/home/biyu/IdeaProjects/NewParking/scenarios/tp_20181016/tanjong-pagar/tanjong-pagar/plans/0.plans.xml.gz");
+        reader.readFile("/home/biyu/IdeaProjects/NewParking/scenarios/tp_20181016/tanjong-pagar/tanjong-pagar/plans/tp-s1.3.plans.xml.gz");
         writer.closeStreaming();
 
 //        new PopulationReader(scenario).readFile("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/mp_c_tp_plans_082018.xml.gz");

@@ -32,6 +32,8 @@ public class DrtStopTask extends org.matsim.contrib.drt.schedule.DrtStopTask {
 	private final List<DrtRequest> dropoffRequests = new ArrayList<>();
 	private final List<DrtRequest> pickupRequests = new ArrayList<>();
 
+	private double estimatedBattery = 0.0;
+
 	public DrtStopTask(double beginTime, double endTime, Link link) {
 		super(beginTime, endTime, link);
 	}
@@ -39,6 +41,15 @@ public class DrtStopTask extends org.matsim.contrib.drt.schedule.DrtStopTask {
 	@Override
 	public DrtTaskType getDrtTaskType() {
 		return DrtTaskType.STOP;
+	}
+
+
+	public double getEstimatedBattery() {
+		return estimatedBattery;
+	}
+
+	public void setEstimatedBattery(double estimatedBattery) {
+		this.estimatedBattery = estimatedBattery;
 	}
 
 
@@ -52,10 +63,12 @@ public class DrtStopTask extends org.matsim.contrib.drt.schedule.DrtStopTask {
 
 	public void addDropoffRequest(DrtRequest request) {
 		dropoffRequests.add(request);
+		super.addDropoffRequest(request);
 	}
 
 	public void addPickupRequest(DrtRequest request) {
 		pickupRequests.add(request);
+		super.addPickupRequest(request);
 	}
 
 	@Override

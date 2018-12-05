@@ -1,11 +1,14 @@
 package Run.PrePostProcessing;
 
+import Run.AtodConfigGroup;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.data.FleetImpl;
 import org.matsim.contrib.dvrp.data.Vehicle;
 import Schedule.VehicleImpl;
+import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.NetworkCleaner;
 import org.matsim.core.network.algorithms.TransportModeNetworkFilter;
@@ -21,17 +24,18 @@ import java.util.*;
 public class VehicleGenerator {
     static FleetImpl newFleet = new FleetImpl();
     public static void main(String[] args) {
-        int numT = 50;
-        int numS = 200;
-        int numM = 150;
-        int numL = 50;
+        int numT = 250 *2;
+        int numS = 200 *2;
+        int numM = 150 *2;
+        int numL = 100 *2;
         int num = numL + numM + numS + numT;
         Network network = NetworkUtils.createNetwork();
-        new MatsimNetworkReader(network).readFile("/home/biyu/IdeaProjects/NewParking/scenarios/tp_20181016/tanjong-pagar/tanjong-pagar/network/network_TANVI_ACSP18.xml");
+        new MatsimNetworkReader(network).readFile("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/mp_c_tp_2018.xml");
         Network drtNetwork = NetworkUtils.createNetwork();
         new TransportModeNetworkFilter(network).filter(drtNetwork, Collections.singleton("car"));
         new NetworkCleaner().run(drtNetwork);
         Random random = new Random();
+        Config config = ConfigUtils.loadConfig("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/drtconfig_mix_V450_T250_charger.xml", new AtodConfigGroup());
         ArrayList<Id<Link>> links = new ArrayList<>(drtNetwork.getLinks().keySet());
         for (int i =0;i<numT;i++){
             Id<Link> lid = links.get(random.nextInt(links.size()));
@@ -61,7 +65,7 @@ public class VehicleGenerator {
             Vehicle veh = new VehicleImpl(Id.create("drt_20s_" + i, Vehicle.class),drtNetwork.getLinks().get(lid), 20.0,0,30*3600,"drt", new DynVehicleType());
             newFleet.addVehicle(veh);
         }
-        new VehicleWriter(newFleet.getVehicles().values()).write("/home/biyu/IdeaProjects/NewParking/scenarios/tp_20181016/tanjong-pagar/tanjong-pagar/vehicles/drtvehicles_" + num + ".xml");
+        new VehicleWriter(newFleet.getVehicles().values()).write("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/drtvehicles_" + num + ".xml");
     }
 
 }
@@ -75,7 +79,7 @@ class VehicleWriter extends MatsimXmlWriter {
 
     public void write(String file) {
         openFile(file);
-        writeDoctype("vehicles", "/home/ubuntu/data/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/drt_vehicles.dtd");
+        writeDoctype("vehicles", "/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/drt_vehicles.dtd");
         writeStartTag("vehicles", Collections.<Tuple<String, String>> emptyList());
         writeVehicles();
         writeEndTag("vehicles");

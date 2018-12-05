@@ -34,22 +34,19 @@ import java.io.IOException;
  * @author michalm
  */
 public class RunDrtScenario {
-	public static void run(String configFile, boolean otfvis, String fileStops) throws IOException {
+	public static void run(String configFile, boolean otfvis) throws IOException {
 		Config config = ConfigUtils.loadConfig(configFile, new AtodConfigGroup(),new DrtConfigGroup(), new DvrpConfigGroup(),
 				new OTFVisConfigGroup());
         Logger.getLogger("org.matsim.core.mobsim.qsim.changeeventsengine.NewNetworkChangeEventsEngine").setLevel(Level.ERROR);
         Logger.getLogger(DefaultUnplannedRequestInserter.class).setLevel(Level.ERROR);
-		createControler(config, otfvis, fileStops).run();
+		createControler(config, otfvis).run();
 	}
 
-	public static Controler createControler(Config config, boolean otfvis, String fileStops) throws IOException {
-		return DrtControlerCreator.createControler(config, otfvis, fileStops);
+	public static Controler createControler(Config config, boolean otfvis) throws IOException {
+		return DrtControlerCreator.createControler(config, otfvis);
 	}
 
 	public static void main(String[] args) throws IOException {
-		if (args.length != 2) {
-			throw new IllegalArgumentException("RunDrtScenario needs two arguments: path to the configuration file, path to the stops in area");
-		}
-		RunDrtScenario.run(args[0], false, args[1]);
+		RunDrtScenario.run(args[0], false);
 	}
 }

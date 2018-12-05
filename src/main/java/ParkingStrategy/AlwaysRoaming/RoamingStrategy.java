@@ -61,8 +61,11 @@ public class RoamingStrategy implements ParkingStrategy, MobsimBeforeSimStepList
         }
         if (zoneidlist == null || zoneidlist.size() == 0) {
             Random random = new Random();
-            Link randomLink = selectableLinks.get(random.nextInt(selectableLinks.size()));
-                return new ParkingLocation(vehicle.getId(), randomLink);
+            Link randomLink;
+            do {
+                randomLink = selectableLinks.get(random.nextInt(selectableLinks.size()));
+            }while(randomLink.getId().equals(((DrtStayTask)vehicle.getSchedule().getCurrentTask()).getLink().getId()));
+            return new ParkingLocation(vehicle.getId(), randomLink);
         }
             // Now choose a random item
         double random = Math.random();

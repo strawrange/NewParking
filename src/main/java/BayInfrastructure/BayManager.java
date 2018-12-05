@@ -14,9 +14,7 @@ import org.matsim.core.controler.listener.IterationStartsListener;
 import org.matsim.pt.transitSchedule.TransitScheduleFactoryImpl;
 import org.matsim.pt.transitSchedule.api.*;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class BayManager implements VehicleDepartsAtFacilityEventHandler, IterationStartsListener {
     Map<Id<TransitStopFacility>, Bay> bays = new HashMap<>();
@@ -24,6 +22,7 @@ public class BayManager implements VehicleDepartsAtFacilityEventHandler, Iterati
     Collection<TransitStopFacility> transitStopFacilities;
     Network network;
     AtodConfigGroup atodConfigGroup;
+    List<Id<Link>> linksToBeUpdated = new ArrayList<>();
 
 
     @Inject
@@ -75,6 +74,9 @@ public class BayManager implements VehicleDepartsAtFacilityEventHandler, Iterati
         if (bay.getDwellingVehicles().contains(event.getVehicleId())){
             throw new RuntimeException(event.getVehicleId().toString() + " is still in the bay " + event.getFacilityId());
         }
+        if (bay.isFull()){
+            linksToBeUpdated.add(bay.getLinkId());
+        }
     }
 
 
@@ -83,5 +85,13 @@ public class BayManager implements VehicleDepartsAtFacilityEventHandler, Iterati
         bays.clear();
         baysByStops.clear();
         initate();
+    }
+
+    public List<Id<Link>> getLinksToBeUpdated() {
+        return linksToBeUpdated;
+    }
+
+    public void clearLinksToBeUpdated(){
+        linksToBeUpdated.clear();
     }
 }

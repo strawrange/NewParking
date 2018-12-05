@@ -15,9 +15,9 @@ import org.matsim.core.network.io.NetworkReaderMatsimV2;
 
 public class AddParkingInVia {
 
-    private static String FOLDER = "/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/out/output/mp_c_tp/drt_road_V1500_max/";
-    private static String ITER = "30";
-    private static String EVENTSFILE =  FOLDER +  "ITERS/it." + ITER + "/" + ITER + ".events.xml.gz";
+    private static String FOLDER = "/home/biyu/IdeaProjects/matsim-spatialDRT/output/trb/";
+    private static String ITER = "0";
+    private static String EVENTSFILE =  FOLDER +  ITER + ".events.xml.gz";
     private static String NETWORKSFILE = "/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/mp_c_tp_2018.xml";
     public static void main(String[] args) {
         EventsManager manager = EventsUtils.createEventsManager();

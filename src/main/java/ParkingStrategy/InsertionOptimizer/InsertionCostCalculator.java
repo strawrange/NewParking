@@ -44,14 +44,13 @@ public class InsertionCostCalculator {
 	public static final double INFEASIBLE_SOLUTION_COST = Double.MAX_VALUE;
 
 	private final MobsimTimer timer;
-	private final double minAcceptRequest;
 
 
 
 
-	public InsertionCostCalculator(MobsimTimer timer,  double minAcceptRequest) {
+
+	public InsertionCostCalculator(MobsimTimer timer) {
 		this.timer = timer;
-		this.minAcceptRequest = minAcceptRequest;
 	}
 
 	// the main goal - minimise bus operation time
@@ -142,7 +141,29 @@ public class InsertionCostCalculator {
             return false;
         }
 
+		Double drive = 0.0;
 		Task currentTask = vEntry.vehicle.getSchedule().getCurrentTask();
+		//synchronized (drive) {
+//		if (currentTask instanceof StayTaskImpl) {
+//			drive = drive + ((StayTaskImpl) currentTask).getLink().getLength();
+//		}
+//		for (int i = vEntry.vehicle.getSchedule().getCurrentTask().getTaskIdx(); i < vEntry.vehicle.getSchedule().getTasks().size(); i++) {
+//			Task drtTask = vEntry.vehicle.getSchedule().getTasks().get(i);
+//			if (drtTask instanceof DrtDriveTask) {
+//				drive = drive + VrpPaths.calcDistance(((DrtDriveTask) drtTask).getPath());
+//			}
+//		}
+//		drive = drive + insertion.pathToPickup.getPathDistance() + insertion.pathFromPickup.getPathDistance() + (insertion.dropoffIdx == insertion.pickupIdx ? 0 : insertion.pathToDropoff.getPathDistance()) +
+//				(insertion.dropoffIdx == vEntry.stops.size() ? 0 : insertion.pathFromDropoff.getPathDistance());
+//		//}
+//		double estimatedBatteryAfterAccept = (((VehicleImpl) vEntry.vehicle).getBattery() - DischargingRate.calculateDischargeByDistance( drive, (VehicleImpl) vEntry.vehicle));
+//		insertion.estimatedBattery = estimatedBatteryAfterAccept;
+//
+//		if (estimatedBatteryAfterAccept <= DischargingRate.getMinAccepted(vEntry.vehicle.getCapacity())){
+//			return false;
+//		}
+
+
 		if (currentTask instanceof DrtStayTask){
 			return true; // idle vehicles always satisfy the contraints
 		}
@@ -186,24 +207,7 @@ public class InsertionCostCalculator {
 		if (dropoffStartTime > drtRequest.getLatestArrivalTime()) {
 			return false;
 		}
-		Double drive = 0.0;
-		//synchronized (drive) {
-		if (currentTask instanceof StayTaskImpl) {
-			drive = drive + ((StayTaskImpl) currentTask).getLink().getLength();
-		}
-		for (int i = vEntry.vehicle.getSchedule().getCurrentTask().getTaskIdx(); i < vEntry.vehicle.getSchedule().getTasks().size(); i++) {
-			Task drtTask = vEntry.vehicle.getSchedule().getTasks().get(i);
-			if (drtTask instanceof DrtDriveTask) {
-				drive = drive + VrpPaths.calcDistance(((DrtDriveTask) drtTask).getPath());
-			}
-		}
-		drive = drive + insertion.pathToPickup.getPathDistance() + insertion.pathFromPickup.getPathDistance() + (insertion.dropoffIdx == insertion.pickupIdx ? 0 : insertion.pathToDropoff.getPathDistance()) +
-					(insertion.dropoffIdx == vEntry.stops.size() ? 0 : insertion.pathFromDropoff.getPathDistance());
-		//}
-		double estimatedBatteryAfterAccept = (((VehicleImpl) vEntry.vehicle).getBattery() - DischargingRate.calculateDischargeByDistance( drive));
-		if (estimatedBatteryAfterAccept <= minAcceptRequest){
-			return false;
-		}
+
 
 		return true;// all constraints satisfied
 	}

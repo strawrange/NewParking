@@ -19,8 +19,11 @@
 
 package Schedule;
 
+import EAV.DischargingRate;
+import Path.VrpPaths;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.contrib.drt.schedule.DrtDriveTask;
 import org.matsim.contrib.dvrp.schedule.Schedule;
 import org.matsim.contrib.dvrp.data.Vehicle;
 import org.matsim.contrib.dvrp.schedule.ScheduleImpl;
@@ -34,6 +37,7 @@ import org.xml.sax.Attributes;
 
 import javax.xml.stream.events.Attribute;
 import java.util.List;
+import java.util.Random;
 
 /**
  * @author michalm
@@ -120,7 +124,11 @@ public class VehicleImpl implements Vehicle {
 	@Override
 	public void resetSchedule() {
 		schedule = new ScheduleImpl(this);
-		battery = ((DynVehicleType)vehicleType).getBatteryCapacity();
+		Random random = new Random();
+		double min =  DischargingRate.getMinBattery(capacity);
+		battery = (((DynVehicleType)vehicleType).getBatteryCapacity() - min) * Math.log10(random.nextInt(10) + 1) + min;
+		charging = false;
+		parking = false;
 	}
 
 	public String getMode() {
@@ -145,18 +153,19 @@ public class VehicleImpl implements Vehicle {
 
 	public void discharge(double change) {
 		this.battery = this.battery - change;
+//		if (this.schedule.getCurrentTask() instanceof DrtDriveTask && DischargingRate.calculateDischargeByDistance(VrpPaths.calcDistance(((DrtDriveTask) this.schedule.getCurrentTask()).getPath())) + this.battery <= 7.0){
+//			System.out.println();
+//		}
 		if (this.battery < 0){
 			String s = "";
 			for (int i = schedule.getCurrentTask().getTaskIdx(); i < schedule.getTasks().size();i++){
 				Task task = schedule.getTasks().get(i);
-				if (task instanceof StayTaskImpl){
-					s += ((StayTaskImpl) task).toString() + ";";
+					s +=  task.toString() + ";";
 					if (task instanceof DrtStopTask){
 						String drop = ((DrtStopTask) task).getDrtDropoffRequests().size() > 0 ? Double.toString(((DrtStopTask) task).getDrtDropoffRequests().get(0).getSubmissionTime()):"";
 						String pick = ((DrtStopTask) task).getDrtPickupRequests().size() > 0 ? Double.toString(((DrtStopTask) task).getDrtPickupRequests().get(0).getSubmissionTime()):"";
 						s += " submissionT " + drop + " " + pick + "\n";
 					}
-				}
 			}
 			throw new RuntimeException(this.id + " is out of Power!!!" + s);
 		}

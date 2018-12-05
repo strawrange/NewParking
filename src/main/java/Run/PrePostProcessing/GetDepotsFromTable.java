@@ -11,6 +11,9 @@ import org.matsim.core.network.algorithms.NetworkCleaner;
 import org.matsim.core.network.algorithms.TransportModeNetworkFilter;
 import org.matsim.core.network.io.NetworkReaderMatsimV2;
 import org.matsim.core.utils.collections.Tuple;
+import org.matsim.core.utils.geometry.CoordinateTransformation;
+import org.matsim.core.utils.geometry.transformations.GeotoolsTransformation;
+import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.core.utils.io.MatsimXmlWriter;
 import org.matsim.core.utils.io.UncheckedIOException;
@@ -28,18 +31,20 @@ public class GetDepotsFromTable {
     public static void main(String[] args) throws IOException {
         Network network = NetworkUtils.createNetwork();
         Network cleanNetwork = NetworkUtils.createNetwork();
-        new NetworkReaderMatsimV2(network).readFile("/home/biyu/IdeaProjects/NewParking/scenarios/tp_20181016/tanjong-pagar/tanjong-pagar/network/network_TANVI_ACSP18.xml");
+        new NetworkReaderMatsimV2(network).readFile("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/mp_c_tp_2018.xml");
         (new TransportModeNetworkFilter(network)).filter(cleanNetwork, Collections.singleton("car"));
         new NetworkCleaner().run(cleanNetwork);
-        BufferedReader reader = IOUtils.getBufferedReader("/home/biyu/IdeaProjects/NewParking/scenarios/tp_20181016/depot.csv");
+        BufferedReader reader = IOUtils.getBufferedReader("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/depot.csv");
         reader.readLine();
         String line = reader.readLine();
-        DepotWriter dw = new DepotWriter("/home/biyu/IdeaProjects/NewParking/scenarios/tp_20181016/tanjong-pagar/tanjong-pagar/network/depot2.xml");
+        DepotWriter dw = new DepotWriter("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/depot_nus.xml");
         dw.writeStart();
         while(line!=null) {
             String[] atts = line.split(",");
             Id<Depot> id = Id.create(atts[0], Depot.class);
-            Coord coord = new Coord(Double.valueOf(atts[1]), Double.valueOf(atts[2]));
+            Coord coord_old = new Coord(Double.valueOf(atts[1]), Double.valueOf(atts[2]));
+            CoordinateTransformation transformation = new GeotoolsTransformation(TransformationFactory.WGS84, TransformationFactory.WGS84_UTM48N);
+            Coord coord = transformation.transform(coord_old);
             Link link = NetworkUtils.getNearestLinkExactly(cleanNetwork,coord);
             Depot depot = new DepotImpl(id,link,Double.valueOf(atts[3]));
             dw.writeDepot(depot);

@@ -56,7 +56,7 @@ public class ParkingOntheRoad implements ParkingStrategy, IterationStartsListene
         if (supply.get(currentLink.getId()) > 0){
             if (!linkRecord.containsKey(currentLink.getId())){
                 linkRecord.put(currentLink.getId(),0);
-                modifyLanes(currentLink.getId(), time, -1.D);
+                modifyLanes(currentLink.getId(), time, -0.75);
             }
             if (supply.get(currentLink.getId()) > linkRecord.get(currentLink.getId())) {
                 int num = linkRecord.get(currentLink.getId()) + 1;

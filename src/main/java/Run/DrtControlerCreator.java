@@ -42,6 +42,11 @@ import firstLastAVPTRouter.linkLinkTimes.LinkLinkTimeCalculatorAV;
 import firstLastAVPTRouter.stopStopTimes.StopStopTimeCalculatorAV;
 import firstLastAVPTRouter.waitLinkTime.WaitLinkTimeCalculatorAV;
 import firstLastAVPTRouter.waitTimes.WaitTimeCalculatorAV;
+import firstLastAVPTRouter.waitTimes.WorstWaitTimeStuckCalculator;
+import mobsim.QSimPlugins;
+import mobsim.QSimProvider;
+import mobsim.qnetsimenginelong.DefaultQNetworkFactory;
+import mobsim.qnetsimenginelong.QNetworkFactory;
 import org.matsim.api.core.v01.Id;
 import org.matsim.contrib.drt.optimizer.DrtOptimizer;
 import Schedule.DrtActionCreator;
@@ -100,20 +105,20 @@ import java.util.Set;
  */
 public final class DrtControlerCreator {
 
-	public static Controler createControler(Config config, boolean otfvis, String fileStops) throws IOException {
+	public static Controler createControler(Config config, boolean otfvis) throws IOException {
 		adjustConfig(config);
 		Scenario scenario = ScenarioUtils.loadScenario(config);
-		return createControlerImpl(otfvis, scenario, fileStops);
+		return createControlerImpl(otfvis, scenario);
 	}
 
-	public static Controler createControler(Scenario scenario, boolean otfvis, String fileStops) throws IOException {
+	public static Controler createControler(Scenario scenario, boolean otfvis) throws IOException {
 		// yy I know that this one breaks the sequential loading of the building blocks, but I would like to be able
 		// to modify the scenario before I pass it to the controler. kai, oct'17
 		adjustConfig(scenario.getConfig());
-		return createControlerImpl(otfvis, scenario, fileStops);
+		return createControlerImpl(otfvis, scenario);
 	}
 
-	private static Controler createControlerImpl(boolean otfvis, Scenario scenario, String fileStops) throws IOException {
+	private static Controler createControlerImpl(boolean otfvis, Scenario scenario) throws IOException {
 		Controler controler = new Controler(scenario);
 		final WaitTimeStuckCalculator waitTimeCalculator = new WaitTimeStuckCalculator(scenario.getPopulation(), scenario.getTransitSchedule(), scenario.getConfig().travelTimeCalculator().getTraveltimeBinSize(), (int) (scenario.getConfig().qsim().getEndTime()-scenario.getConfig().qsim().getStartTime()));
 		controler.getEvents().addHandler(waitTimeCalculator);
@@ -142,25 +147,6 @@ public final class DrtControlerCreator {
 //		new MatsimEventsReader(manager).readFile(EVENTSFILE);
 
 
-
-
-		BufferedReader reader = new BufferedReader(new FileReader(fileStops));
-		String line = reader.readLine();
-		Set<Id<TransitStopFacility>> ids = new HashSet<>();
-		while(line!=null) {
-			ids.add(Id.create(line, TransitStopFacility.class));
-			line = reader.readLine();
-
-		}
-		reader.close();
-		for(TransitStopFacility stop:scenario.getTransitSchedule().getFacilities().values()) {
-			IDS:
-			for(Id<TransitStopFacility> id:ids)
-				if(stop.getId().equals(id)) {
-					stop.setStopAreaId(Id.create("mp", TransitStopArea.class));
-					break IDS;
-				}
-		}
 		controler.addOverridingModule(new DvrpModule(DrtControlerCreator::createModuleForQSimPlugin,
 				DrtOptimizer.class,
 				DefaultUnplannedRequestInserter.class, ParallelPathDataProvider.class));
@@ -173,6 +159,9 @@ public final class DrtControlerCreator {
 				addTravelTimeBinding(DvrpTravelTimeModule.DVRP_INITIAL).toInstance(travelTimeCalculator.getLinkTravelTimes());
 				bind(MainModeIdentifier.class).toInstance(new MainModeIdentifierFirstLastAVPT(new HashSet<>(Arrays.asList("pvt","taxi","walk"))));
 				addRoutingModuleBinding("pt").toProvider(new TransitRouterFirstLastAVPTFactory(scenario, waitTimeCalculator.get(), waitTimeCalculatorAV.get(), waitLinkTimeCalculatorAV.get(), stopStopTimeCalculator.get(), stopStopTimeCalculatorAV.get(), linkLinkTimeCalculatorAV.get(), TransitRouterNetworkFirstLastAVPT.NetworkModes.PT_AV));
+				//bindMobsim().toProvider(QSimProvider.class);
+				bind(QNetworkFactory.class).to(DefaultQNetworkFactory.class);
+				//bind(QSimPlugins.class);
 			}
 
 		});

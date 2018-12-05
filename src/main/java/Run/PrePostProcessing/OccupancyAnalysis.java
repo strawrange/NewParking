@@ -31,21 +31,25 @@ public class OccupancyAnalysis {
     private static String ITER = "40";
     private static String EVENTSFILE;
     public static void main(String[] args) throws IOException {
-        //double[] bay = new double[]{1,1.5,2};
-        //for (double i:bay) {
-            //FOLDER = "/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/out/output/HKSTS/Mix/tanjong_pagar_mix_max_v600_plans_" + i + "/ITERS/";
-        FOLDER ="/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/out/output/mp_c_tp/drt_mix_V1500_max/ITERS/";
-        EVENTSFILE = FOLDER + "it." + ITER + "/" + ITER + ".events.xml.gz";
-            EventsManager manager = EventsUtils.createEventsManager();
-            Network network = NetworkUtils.createNetwork();
-            new NetworkReaderMatsimV2(network).readFile("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/mp_c_tp_2018.xml");
-            OccupancyHandler handler = new OccupancyHandler(network);
-            manager.addHandler(handler);
-            new MatsimEventsReader(manager).readFile(EVENTSFILE);
-            handler.output(FOLDER + ITER + "occupancy_28.csv");
-            handler.distanceSummarize(FOLDER + ITER + "drt_distance_28.csv");
-        }
-    //}
+        String[] parking = new String[]{"depot","roam","road"};
+        String[] bay = new String[]{"bay","curb","infinity","single"};
+//        for (String p:parking) {
+//            for (String b: bay) {
+                FOLDER = "/home/biyu/IdeaProjects/NewParking/output/charging/drt_mix_V450_T250_bay_nocharger_debug/";
+                //FOLDER = "/home/biyu/IdeaProjects/matsim-spatialDRT/output/trb/" + p + "/" + b + "/";
+                EVENTSFILE = FOLDER + "it.40/40.events.xml.gz";
+                EventsManager manager = EventsUtils.createEventsManager();
+                Network network = NetworkUtils.createNetwork();
+        new NetworkReaderMatsimV2(network).readFile("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/mp_c_tp_2018_old.xml");
+        //new NetworkReaderMatsimV2(network).readFile("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/mp_c_tp_2018.xml");
+                OccupancyHandler handler = new OccupancyHandler(network);
+                manager.addHandler(handler);
+                new MatsimEventsReader(manager).readFile(EVENTSFILE);
+                handler.output(FOLDER + ITER + "occupancy.csv");
+                handler.distanceSummarize(FOLDER + ITER + "drt_distance.csv");
+//            }
+//        }
+    }
 }
 
 class OccupancyHandler implements PersonEntersVehicleEventHandler, PersonLeavesVehicleEventHandler,  LinkLeaveEventHandler {
@@ -62,33 +66,26 @@ class OccupancyHandler implements PersonEntersVehicleEventHandler, PersonLeavesV
 
     @Override
     public void handleEvent(PersonEntersVehicleEvent event) {
-        if (event.getTime() > 28 * 3600){
-            return;
-        }
         if (event.getPersonId().toString().equals(event.getVehicleId().toString())){
             return;
         }
         if (!occupancy.containsKey(event.getVehicleId())){
-            Occ o = new Occ(event.getTime(), 1);
+            Occ initialO = new Occ(0,0);
             ArrayList<Occ> os = new ArrayList<>();
-            os.add(o);
+            os.add(initialO);
             occupancy.put(event.getVehicleId(),os);
-        }else{
-            ArrayList<Occ> os = occupancy.get(event.getVehicleId());
-            Occ lastO = os.get(os.size() - 1);
-            lastO.endT = event.getTime();
-            double newOcc = lastO.occ + 1;
-            Occ newO = new Occ(event.getTime(),newOcc);
-            os.add(newO);
         }
+        ArrayList<Occ> os = occupancy.get(event.getVehicleId());
+        Occ lastO = os.get(os.size() - 1);
+        lastO.endT = event.getTime();
+        double newOcc = lastO.occ + 1;
+        Occ newO = new Occ(event.getTime(),newOcc);
+        os.add(newO);
     }
 
     @Override
     public void handleEvent(PersonLeavesVehicleEvent event) {
         if (event.getPersonId().toString().equals(event.getVehicleId().toString())){
-            return;
-        }
-        if (event.getTime() > 28 * 3600){
             return;
         }
         ArrayList<Occ> os = occupancy.get(event.getVehicleId());
@@ -114,9 +111,6 @@ class OccupancyHandler implements PersonEntersVehicleEventHandler, PersonLeavesV
 
     @Override
     public void handleEvent(LinkLeaveEvent event) {
-        if (event.getTime() > 28 * 3600){
-            return;
-        }
         if (!occupancy.containsKey(event.getVehicleId())){
             Occ initialO = new Occ(0,0);
             ArrayList<Occ> os = new ArrayList<>();
@@ -147,7 +141,7 @@ class OccupancyHandler implements PersonEntersVehicleEventHandler, PersonLeavesV
 
 class Occ{
     final double startT;
-    double endT = 28*3600;
+    double endT = 30*3600;
     final double occ;
     double distance = 0;
 

@@ -41,6 +41,7 @@ public class Bay {
             case linkLength:
                 this.capacity = Double.max(linkLength, drtconfig.getMinBaySize());
                 break;
+
             default:
                 throw new RuntimeException("No such door-to-door stop strategy!");
         }
@@ -59,7 +60,7 @@ public class Bay {
     }
 
 
-    public void addVehicle(Id<Vehicle> vid){
+    public synchronized void addVehicle(Id<Vehicle> vid){
         if (dwellLength > capacity){
             throw new RuntimeException("too many dwelling vehicles!");
         }
@@ -77,7 +78,7 @@ public class Bay {
         }
     }
 
-    public void removeVehicle(Id<Vehicle> vid){
+    public synchronized void removeVehicle(Id<Vehicle> vid){
         if(!dwellingVehicles.contains(vid) && !vehicles.contains(vid)){
             String dwell = new String();
             String vehs = new String();
