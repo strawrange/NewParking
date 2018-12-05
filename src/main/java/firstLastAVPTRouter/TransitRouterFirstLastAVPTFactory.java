@@ -61,7 +61,9 @@ public class TransitRouterFirstLastAVPTFactory implements Provider<TransitRouter
 	private final LinkLinkTime linkLinkTimeAV;
 	private  Network cleanNetwork;
 	private TransitRouterParams params;
+
 	private Map<Id<TransitStopArea>,QuadTree<TransitRouterNetworkFirstLastAVPT.TransitRouterNetworkNode>> stopsByArea = new HashMap<>();
+
 
 	@Inject
     public TransitRouterFirstLastAVPTFactory(final Scenario scenario, final WaitTime waitTime, final WaitTime waitTimeAV, final WaitLinkTime waitLinkTime, final StopStopTime stopStopTime, final StopStopTime stopStopTimeAV, final LinkLinkTime linkLinkTime, final TransitRouterNetworkFirstLastAVPT.NetworkModes networkModes) {

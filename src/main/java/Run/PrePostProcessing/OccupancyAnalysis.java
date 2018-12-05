@@ -31,6 +31,7 @@ public class OccupancyAnalysis {
     private static String ITER = "40";
     private static String EVENTSFILE;
     public static void main(String[] args) throws IOException {
+
         String[] parking = new String[]{"depot","roam","road"};
         String[] bay = new String[]{"bay","curb","infinity","single"};
 //        for (String p:parking) {
@@ -50,6 +51,7 @@ public class OccupancyAnalysis {
 //            }
 //        }
     }
+
 }
 
 class OccupancyHandler implements PersonEntersVehicleEventHandler, PersonLeavesVehicleEventHandler,  LinkLeaveEventHandler {
@@ -66,10 +68,12 @@ class OccupancyHandler implements PersonEntersVehicleEventHandler, PersonLeavesV
 
     @Override
     public void handleEvent(PersonEntersVehicleEvent event) {
+
         if (event.getPersonId().toString().equals(event.getVehicleId().toString())){
             return;
         }
         if (!occupancy.containsKey(event.getVehicleId())){
+
             Occ initialO = new Occ(0,0);
             ArrayList<Occ> os = new ArrayList<>();
             os.add(initialO);
@@ -81,6 +85,7 @@ class OccupancyHandler implements PersonEntersVehicleEventHandler, PersonLeavesV
         double newOcc = lastO.occ + 1;
         Occ newO = new Occ(event.getTime(),newOcc);
         os.add(newO);
+
     }
 
     @Override

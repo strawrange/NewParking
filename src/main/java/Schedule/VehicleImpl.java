@@ -23,6 +23,7 @@ import EAV.DischargingRate;
 import Path.VrpPaths;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
+
 import org.matsim.contrib.drt.schedule.DrtDriveTask;
 import org.matsim.contrib.dvrp.schedule.Schedule;
 import org.matsim.contrib.dvrp.data.Vehicle;
@@ -38,6 +39,7 @@ import org.xml.sax.Attributes;
 import javax.xml.stream.events.Attribute;
 import java.util.List;
 import java.util.Random;
+
 
 /**
  * @author michalm
@@ -55,6 +57,7 @@ public class VehicleImpl implements Vehicle {
 
 	private String mode;
 
+
 	private VehicleType vehicleType;
 
 	private double battery;
@@ -65,6 +68,7 @@ public class VehicleImpl implements Vehicle {
 
 	public VehicleImpl(Id<Vehicle> id, Link startLink, double capacity, double serviceBeginTime,
 					   double serviceEndTime, String mode, VehicleType vehicleType) {
+
 		this.id = id;
 		this.startLink = startLink;
 		this.capacity = capacity;
@@ -73,7 +77,6 @@ public class VehicleImpl implements Vehicle {
 		this.mode = mode;
 		this.vehicleType = vehicleType;
 		this.battery = ((DynVehicleType)vehicleType).getBatteryCapacity();
-
 		schedule = new ScheduleImpl(this);
 	}
 
@@ -131,13 +134,6 @@ public class VehicleImpl implements Vehicle {
 		parking = false;
 	}
 
-	public String getMode() {
-		return mode;
-	}
-
-	public void setMode(String mode) {
-		this.mode = mode;
-	}
 
 	public VehicleType getVehicleType() {
 		return vehicleType;
@@ -185,5 +181,13 @@ public class VehicleImpl implements Vehicle {
 
 	public void changeParking(boolean parking){
 		this.parking = parking;
+	}
+
+	public String getMode() {
+		return mode;
+	}
+
+	public void setMode(String mode) {
+		this.mode = mode;
 	}
 }

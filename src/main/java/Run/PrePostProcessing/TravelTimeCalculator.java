@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import static Run.PrePostProcessing.TravelTimeCalculator.END_TIME;
-
 public class TravelTimeCalculator {
     private static String FOLDER;
     private static String ITER = "40";
@@ -164,16 +163,19 @@ class TravelTimeHandler implements BasicEventHandler,PersonEntersVehicleEventHan
 }
 
 class TravelTime{
+
     Id<Vehicle> vid;
     double submissionT;
     double scheduledT;
     double enterVehicleT = END_TIME;
     double leaveVehicleT = END_TIME;
 
+
     public TravelTime(double submissionT){
         this.submissionT = submissionT;
     }
 }
+
 
 class AccessEgressTime{
     double departureT;

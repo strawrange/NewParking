@@ -12,6 +12,7 @@ import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.NetworkCleaner;
 import org.matsim.core.network.algorithms.TransportModeNetworkFilter;
+
 import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.utils.collections.Tuple;
 
@@ -53,6 +54,7 @@ public class VehicleGenerator {
         }
         for (int i =0;i<numM;i++){
             Id<Link> lid = links.get(random.nextInt(links.size()));
+
             List<Tuple<String, String>> atts = new ArrayList<Tuple<String, String>>();
             atts.add(new Tuple<>("mode","drt"));
             Vehicle veh = new VehicleImpl(Id.create("drt_10s_" + i, Vehicle.class),drtNetwork.getLinks().get(lid), 10.0,0,30*3600,"drt", new DynVehicleType());

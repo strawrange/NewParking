@@ -19,6 +19,7 @@
 
 package Passenger;
 
+
 import com.google.inject.name.Named;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.events.PersonEntersVehicleEvent;
@@ -162,7 +163,7 @@ public class PassengerEngine implements MobsimEngine, DepartureHandler {
 		Id<Link> linkId = driver.getCurrentLinkId();
 
 		if (passenger.getCurrentLinkId() != linkId || passenger.getState() != State.LEG
-				|| !passenger.getMode().equals(mode)) {
+				|| !passenger.getMode().startsWith(mode)) {
 			awaitingPickupStorage.storeAwaitingPickup(request, pickupActivity);
 			return false;// wait for the passenger
 		}

@@ -22,17 +22,20 @@ import java.util.*;
 
 public class VehicleInDepot {
     public static void main(String[] args) {
+
         Config config = ConfigUtils.loadConfig("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/drtconfig_mix_V900_T500_charger.xml", new AtodConfigGroup());
         Scenario scenario = ScenarioUtils.loadScenario(config);
         Network network = scenario.getNetwork();
         FleetImpl fleet = new FleetImpl();
         (new VehicleReader(network,fleet)).parse(IOUtils.getUrlFromFileOrResource("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/drtvehicles_1400.xml"));
+
         DepotManager depotManager = new DepotManagerSameDepot(config,network);
         List depotIds = new ArrayList(depotManager.getDepots().keySet());
         for (Vehicle vehicle: fleet.getVehicles().values()){
             Depot depot = findDepots(vehicle, depotManager);
             vehicle.setStartLink(depot.getLink());
         }
+
         new VehicleWriter(fleet.getVehicles().values()).write("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/drtvehicles_1400_depot.xml");
     }
 

@@ -129,7 +129,7 @@ public class TransitRouterFirstLastAVPT implements RoutingModule {
 	}
 
 	private double getAVDisutility(Person person, Id<Link> linkA, Id<Link> linkB, double time) {
-		return this.ttCalculator.getAVTravelDisutility(person, linkA, linkB, time);
+		return this.ttCalculator.getAVTaxiTravelDisutility(person, linkA, linkB, time);
 	}
 	
 	public Map<Id<Node>, Path> calcPathRoutes(final Id<Node> fromNodeId, final Set<Id<Node>> toNodeIds, final double startTime, final Person person) {

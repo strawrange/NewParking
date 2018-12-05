@@ -77,6 +77,7 @@ public class VehicleReader extends MatsimXmlParser {
 		double t0 = ReaderUtils.getDouble(atts, "t_0", DEFAULT_T_0);
 		double t1 = ReaderUtils.getDouble(atts, "t_1", DEFAULT_T_1);
 		String mode = ReaderUtils.getString(atts, "mode",null);
+
 		String type = capacity + "V";
 		if (!vehicleTypes.containsKey(type)){
 			VehicleType vehicleType = new DynVehicleType();

@@ -1,8 +1,11 @@
 package BayInfrastructure;
 
+
 import Run.AtodConfigGroup;
+
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 import org.matsim.vehicles.Vehicle;
 
@@ -19,6 +22,7 @@ public class Bay {
     private Queue<Id<Vehicle>> dwellingVehicles = new ConcurrentLinkedQueue<>();
     private double dwellLength = 0;
 
+
     public Bay(TransitStopFacility transitStop, double linkLength, double minBaySize){
         this.transitStop = transitStop;
         this.linkId = transitStop.getLinkId();
@@ -27,7 +31,22 @@ public class Bay {
         }else if ((double) transitStop.getAttributes().getAttribute("capacity") == 0) {
             this.capacity = Double.max(linkLength, minBaySize);
         }else{
-            this.capacity = (double) transitStop.getAttributes().getAttribute("capacity");
+            this.capacity = Double.max((double) transitStop.getAttributes().getAttribute("capacity"), linkLength);
+        }
+    }
+
+    public Bay(TransitStopFacility transitStop, double linkLength, AtodConfigGroup.Door2DoorStop door2DoorStop){
+        this.transitStop =transitStop;
+        this.linkId = transitStop.getLinkId();
+        switch (door2DoorStop){
+            case infinity:
+                this.capacity = Double.POSITIVE_INFINITY;
+                break;
+            case linkLength:
+                this.capacity = linkLength;
+                break;
+            default:
+                throw new RuntimeException("No such door-to-door stop strategy!");
         }
     }
 

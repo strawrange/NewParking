@@ -139,6 +139,7 @@ public class TransitRouterTravelTimeAndDisutilityFirstLastAVPT extends TransitRo
 		int index = time/timeSlot<numSlots ? (int)(time/timeSlot) : (numSlots-1);
 		double length = wrapped.getLength()<3?3:wrapped.getLength();
 		if (wrapped.route != null)
+
 			return -(cachedTravelDisutility?cachedLinkTime:linkTravelTimes.get(wrapped.getId())[index])*params.marginalUtilityOfTravelTimePt_s
 					- link.getLength()*params.marginalUtilityOfTravelDistancePt_m;
 		else if (wrapped.toNode.route!=null && wrapped.toNode.line!=null)
@@ -181,6 +182,7 @@ public class TransitRouterTravelTimeAndDisutilityFirstLastAVPT extends TransitRo
 	public double getLinkMinimumTravelDisutility(Link link) {
 		return 0;
 	}
+
 
 	public double getAVTaxiTravelDisutility(Person person, Id<Link> linkA, Id<Link> linkB, double time) {
 		double travelTime = linkLinkTime.getLinkLinkTime(linkA, linkB, time);

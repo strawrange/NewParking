@@ -70,13 +70,8 @@ public class DrtRequestCreator implements PassengerRequestCreator {
 									 double departureTime, double submissionTime, String mode) {
 		double latestDepartureTime = departureTime + drtCfg.getMaxWaitTime();
 		VrpPathWithTravelData unsharedRidePath;
-		if (mode =="drt") {
-			unsharedRidePath = VrpPaths.calcAndCreatePath(fromLink, toLink, departureTime, router,
+		unsharedRidePath = VrpPaths.calcAndCreatePath(fromLink, toLink, departureTime, router,
 					travelTime);
-		}else{
-			unsharedRidePath = VrpPaths.calcAndCreatePath(fromLink, toLink, departureTime, router,
-					travelTime);
-		}
 
 		double optimisticTravelTime = unsharedRidePath.getTravelTime();
 		double maxTravelTime = drtCfg.getMaxTravelTimeAlpha() * optimisticTravelTime + drtCfg.getMaxTravelTimeBeta();
