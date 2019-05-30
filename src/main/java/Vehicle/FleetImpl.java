@@ -21,9 +21,7 @@ package Vehicle;
 
 import org.matsim.api.core.v01.Id;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.matsim.contrib.dvrp.data.Fleet;
@@ -35,6 +33,8 @@ import Schedule.VehicleImpl;
  */
 public class FleetImpl implements Fleet {
 	private final Map<Id<Vehicle>, Vehicle> vehicles = new LinkedHashMap<>();
+
+	private Collection<DynVehicleType> vehicleTypes;
 
 	public FleetImpl (){
 	}
@@ -57,5 +57,13 @@ public class FleetImpl implements Fleet {
 		for (Vehicle v : vehicles.values()) {
 			v.resetSchedule();
 		}
+	}
+
+	public Collection<DynVehicleType> getVehicleTypes(){
+		return vehicleTypes;
+	}
+
+	public void setVehicleTypes(Collection<DynVehicleType> vehicleTypes) {
+		this.vehicleTypes = vehicleTypes;
 	}
 }

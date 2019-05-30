@@ -114,9 +114,6 @@ public class DefaultDrtOptimizer implements DrtOptimizer, MobsimBeforeCleanupLis
 			requestInserter.scheduleUnplannedRequests(unplannedRequests);
 			requiresReoptimization = false;
 		}
-		if (mobsimTimer.getTimeOfDay() == 30 * 3600 - 1){
-			System.out.println();
-		}
 		for (Id<Link> lid: bayManager.getLinksToBeUpdated()){
 			scheduler.modifyLanes(lid, mobsimTimer.getTimeOfDay(), 0.D);
 		}
@@ -180,8 +177,11 @@ public class DefaultDrtOptimizer implements DrtOptimizer, MobsimBeforeCleanupLis
 
 		if (isCurrentChargeTask(vehicle)){
 			DrtChargeTask currentTask = (DrtChargeTask) vehicle.getSchedule().getCurrentTask();
-			Charger charger = chargerManager.getChargersByLinkId(currentTask.getLink().getId());
+			Charger charger = currentTask.getCharger();
 			charger.removeVehicle((VehicleImpl) vehicle, mobsimTimer.getTimeOfDay());
+			if (charger.isEmpty()){
+                    scheduler.modifyLanes(charger.getLink().getId(), mobsimTimer.getTimeOfDay(), 0.D);
+            }
 		}
 
 		if (isNextStopTask(vehicle)){
@@ -194,7 +194,7 @@ public class DefaultDrtOptimizer implements DrtOptimizer, MobsimBeforeCleanupLis
 						bayManager.getStopIdByLinkId(nextTask.getLink().getId()), 1));
 			}
 			if (bay.isFull() && bay.getVehicles().contains(vehicle.getId())) {
-				scheduler.insertQuequingTask(vehicle);
+				scheduler.insertQuequingTask(vehicle, 1.0);
 				return;
 			}
 			if (isCurrentQueueTask(vehicle)){
@@ -205,15 +205,35 @@ public class DefaultDrtOptimizer implements DrtOptimizer, MobsimBeforeCleanupLis
 		if (isNextChargeTask(vehicle)){
 			int currentTaskIdx = schedule.getCurrentTask().getTaskIdx();
 			DrtChargeTask nextTask = (DrtChargeTask) schedule.getTasks().get(currentTaskIdx + 1);
-			Charger charger = chargerManager.getChargersByLinkId(nextTask.getLink().getId());
-			charger.addVehicle((VehicleImpl) vehicle, mobsimTimer.getTimeOfDay());
-			if (charger.isFull() && charger.isQueue(vehicle)) {
-				scheduler.insertQuequingTask(vehicle);
-				return;
+			Charger charger = nextTask.getCharger();
+			if (!charger.checkChargerAvailability() && !charger.isQueue(vehicle) && !charger.isCharging(vehicle)){
+				scheduler.changeCharger(vehicle, mobsimTimer.getTimeOfDay());
+				schedule.nextTask();
+			}else {
+				charger.addVehicle((VehicleImpl) vehicle, mobsimTimer.getTimeOfDay());
+				if (!charger.isOpen(mobsimTimer.getTimeOfDay())){
+					scheduler.insertQuequingTask(vehicle, charger.getStartTime() - mobsimTimer.getTimeOfDay());
+                        scheduler.modifyLanes(charger.getLink().getId(), mobsimTimer.getTimeOfDay(), -1.D);
+					return;
+				}
+				if (charger.isFull() && charger.isQueue(vehicle)) {
+					scheduler.insertQuequingTask(vehicle, 1.0);
+                        scheduler.modifyLanes(charger.getLink().getId(), mobsimTimer.getTimeOfDay(), -1.D);
+					return;
+				}
+				if (!charger.isEmpty()){
+                        scheduler.modifyLanes(charger.getLink().getId(), mobsimTimer.getTimeOfDay(), -1.D);
+                }
 			}
-			if (isCurrentQueueTask(vehicle)){
-				scheduler.updateQueue(vehicle);
-			}
+            if (isCurrentQueueTask(vehicle)) {
+                scheduler.updateQueue(vehicle);
+                if (charger.isEmpty()){
+                    if (charger.getLink().getCapacity(mobsimTimer.getTimeOfDay()) != charger.getLink().getCapacity()) {
+                        scheduler.modifyLanes(charger.getLink().getId(), mobsimTimer.getTimeOfDay(), 0.D);
+                    }
+                }
+            }
+
 		}
 
 		schedule.nextTask();
@@ -223,9 +243,10 @@ public class DefaultDrtOptimizer implements DrtOptimizer, MobsimBeforeCleanupLis
 //		}
 
 		if (chargingStrategy != null && isIdle(vehicle)) {
-			if (((VehicleImpl)vehicle).getBattery() <= DischargingRate.getMinBattery(vehicle.getCapacity())){
-				charging(vehicle);
-				return;
+			if (((VehicleImpl)vehicle).getBattery() <= DischargingRate.getMinBattery(((VehicleImpl) vehicle).getVehicleType().getId())){
+				if (charging(vehicle)) {
+					return;
+				}
 			}
 		}
 
@@ -276,9 +297,13 @@ public class DefaultDrtOptimizer implements DrtOptimizer, MobsimBeforeCleanupLis
 		return true;
 	}
 
-	private void charging(Vehicle vehicle) {
+	private boolean charging(Vehicle vehicle) {
 		ChargerPathPair r = chargingStrategy.charging(vehicle, mobsimTimer.getTimeOfDay());
-		scheduler.chargingVehicle(vehicle, r);
+		if (r != null) {
+			scheduler.chargingVehicle(vehicle, r);
+			return true;
+		}
+		return false;
 	}
 
 	private boolean isCurrentQueueTask(Vehicle vehicle) {
@@ -426,7 +451,7 @@ public class DefaultDrtOptimizer implements DrtOptimizer, MobsimBeforeCleanupLis
 
 		//return (previousTaskIdx >= 0
 		//		&& (((DrtTask)getTasks().get(previousTaskIdx)).getDrtTaskType() != DrtTask.DrtTaskType.STAY) );
-		return true;
+		return currentTask.getBeginTime() != currentTask.getEndTime();
 	}
 
 	@Override

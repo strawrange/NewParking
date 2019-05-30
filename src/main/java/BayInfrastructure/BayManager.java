@@ -74,7 +74,7 @@ public class BayManager implements VehicleDepartsAtFacilityEventHandler, Iterati
         if (bay.getDwellingVehicles().contains(event.getVehicleId())){
             throw new RuntimeException(event.getVehicleId().toString() + " is still in the bay " + event.getFacilityId());
         }
-        if (bay.isFull()){
+        if (!bay.isFull()){
             linksToBeUpdated.add(bay.getLinkId());
         }
     }

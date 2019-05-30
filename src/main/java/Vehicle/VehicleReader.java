@@ -24,7 +24,6 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.data.file.ReaderUtils;
-import org.matsim.core.utils.collections.Tuple;
 import org.matsim.core.utils.io.MatsimXmlParser;
 import org.matsim.vehicles.VehicleCapacity;
 import org.matsim.vehicles.VehicleCapacityImpl;
@@ -32,8 +31,8 @@ import org.matsim.vehicles.VehicleType;
 import org.xml.sax.Attributes;
 import org.matsim.contrib.dvrp.data.Vehicle;
 
+import java.net.URL;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
@@ -43,20 +42,18 @@ import java.util.Stack;
 public class VehicleReader extends MatsimXmlParser {
 	private static final String VEHICLE = "vehicle";
 
-	private static final double DEFAULT_CAPACITY = 1;
 	private static final double DEFAULT_T_0 = 0;
 	private static final double DEFAULT_T_1 = 24 * 60 * 60;
-	private static final double DEFAULT_BOARDING = 1.0;
-	private static final double DEFAULT_ALIGHTING = 1.0;
 
 	private FleetImpl fleet;
 	private Map<Id<Link>, ? extends Link> links;
-	private Map<String, VehicleType> vehicleTypes = new HashMap<>();
+	private Map<String, DynVehicleType> vehicleTypes = new HashMap<>();
 
-	public VehicleReader(Network network, FleetImpl fleet) {
+	public VehicleReader(Network network, FleetImpl fleet, URL drtVehicleTypeFileURL) {
 		this.fleet = fleet;
 		links = network.getLinks();
-
+		new DrtVehicleTypeReader(vehicleTypes).parse(drtVehicleTypeFileURL);
+		fleet.setVehicleTypes(vehicleTypes.values());
 	}
 
 	@Override
@@ -73,43 +70,17 @@ public class VehicleReader extends MatsimXmlParser {
 	private VehicleImpl createVehicle(Attributes atts) {
 		Id<Vehicle> id = Id.create(atts.getValue("id"), Vehicle.class);
 		Link startLink = links.get(Id.createLinkId(atts.getValue("start_link")));
-		double capacity = ReaderUtils.getDouble(atts, "capacity", DEFAULT_CAPACITY);
 		double t0 = ReaderUtils.getDouble(atts, "t_0", DEFAULT_T_0);
 		double t1 = ReaderUtils.getDouble(atts, "t_1", DEFAULT_T_1);
 		String mode = ReaderUtils.getString(atts, "mode",null);
-
-		String type = capacity + "V";
-		if (!vehicleTypes.containsKey(type)){
-			VehicleType vehicleType = new DynVehicleType();
-			VehicleCapacity cap = new VehicleCapacityImpl();
-			cap.setSeats((int)capacity);
-			vehicleType.setCapacity(cap);
-			if (vehicleType instanceof DynVehicleType) {
-				if (capacity == 1.0){
-					vehicleType.setLength(3.0);
-					((DynVehicleType) vehicleType).setBatteryCapacity(64.0);
-				}
-				if (capacity == 4.0){
-					vehicleType.setLength(5.0);
-					((DynVehicleType) vehicleType).setBatteryCapacity(64.0);
-				}
-				if (capacity == 10.0){
-					vehicleType.setLength(6.5);
-					((DynVehicleType) vehicleType).setBatteryCapacity(120.0);
-				}
-				if (capacity == 20.0){
-					vehicleType.setLength(9.0);
-					((DynVehicleType) vehicleType).setBatteryCapacity(180.0);
-				}
-			}
-			vehicleTypes.put(type, vehicleType);
-		}
-		VehicleType vehicleType = vehicleTypes.get(type);
+		String type = ReaderUtils.getString(atts, "type", null);
+		DynVehicleType vehicleType = vehicleTypes.get(type);
+		int capacity = vehicleType.getSeats();
 		return createVehicle(id, startLink, capacity, t0, t1, mode, vehicleType);
 	}
 
 	protected VehicleImpl createVehicle(Id<Vehicle> id, Link startLink, double capacity, double t0, double t1,
-			String mode, VehicleType vehicleType) {
+			String mode, DynVehicleType vehicleType) {
 		return new VehicleImpl(id, startLink, capacity, t0, t1, mode, vehicleType);
 	}
 }

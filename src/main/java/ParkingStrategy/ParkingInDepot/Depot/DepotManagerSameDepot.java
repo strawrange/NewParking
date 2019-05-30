@@ -15,6 +15,9 @@ public class DepotManagerSameDepot extends DepotManagerDifferentDepots {
     public DepotManagerSameDepot(Config config, @Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) Network network) {
         super(config, network);
     }
+    public DepotManagerSameDepot() {
+        super();
+    }
 
     @Override
     public Map<Id<Depot>, Depot> getDepots(double capacity) {

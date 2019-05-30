@@ -19,6 +19,7 @@
 package Vehicle;
 
 
+import EAV.DischargingRate;
 import Run.AtodConfigGroup;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -41,9 +42,6 @@ public class FleetProvider implements Provider<Fleet> {
 	@Inject
 	@Named(DvrpRoutingNetworkProvider.DVRP_ROUTING)
 	Network network;
-	@Inject(optional = true)
-	@Named(VrpAgentSource.DVRP_VEHICLE_TYPE)
-	VehicleType vehicleType;
 	@Inject
 	Config config;
 
@@ -56,7 +54,7 @@ public class FleetProvider implements Provider<Fleet> {
 	@Override
 	public Fleet get() {
 		FleetImpl fleet = new FleetImpl();
-		new VehicleReader(network, fleet).parse(url);
+		new VehicleReader(network, fleet, AtodConfigGroup.get(config).getDrtVehicleTypeFileURL(config.getContext())).parse(url);
 		return fleet;
 	}
 

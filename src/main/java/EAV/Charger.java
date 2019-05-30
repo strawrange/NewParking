@@ -1,12 +1,12 @@
 package EAV;
 
 import Schedule.VehicleImpl;
+
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.data.Vehicle;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -16,21 +16,42 @@ public abstract class Charger {
     private Id<Charger> id;
     private Link link;
     private int capacity;
+
+    private double startTime;
+    private double endTime;
+
+    private boolean isBlocking;
     private ArrayList<VehicleImpl> chargingVehicles = new ArrayList<>();
     private Queue<VehicleImpl> waitingVehicles = new ConcurrentLinkedQueue<>();
-    private PriorityBlockingQueue<Double> endTime = new PriorityBlockingQueue<>();
+    private Queue<Id<Vehicle>> waitingForOpenVehicles = new ConcurrentLinkedQueue<>();
+    private PriorityBlockingQueue<Double> chargerAvailableTime = new PriorityBlockingQueue<>();
+    private boolean firstStart = true;
 
 
-    public Charger(Id<Charger> id, Link link, int capacity){
+    public Charger(Id<Charger> id, Link link, int capacity, double startTime, double endTime, boolean isBlocking){
         this.id = id;
         this.link = link;
         this.capacity = capacity;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.isBlocking = isBlocking;
     }
-public enum ChargerMode{
+
+    public abstract double getChargingRate();
+
+    public boolean isCharging(Vehicle vehicle) {
+        return chargingVehicles.contains(vehicle);
+    }
+
+    public enum ChargerMode{
         Level2,
     fast;
 }
 
+
+    public boolean isBlocking() {
+        return isBlocking;
+    }
 
 
     public abstract double getChargingTime(VehicleImpl vehicle);
@@ -40,6 +61,10 @@ public enum ChargerMode{
 
     public boolean isFull() {
         return waitingVehicles.size() > 0;
+    }
+
+    public boolean isOpen(double now){
+        return now >= startTime;
     }
 
 
@@ -72,9 +97,12 @@ public enum ChargerMode{
             VehicleImpl veh = waitingVehicles.poll();
             chargingVehicles.add(veh);
         }else{
-            endTime.poll();
+            chargerAvailableTime.poll();
         }
+    }
 
+    public boolean isEmpty(){
+        return isBlocking?(chargingVehicles.isEmpty() && waitingForOpenVehicles.isEmpty()): (waitingForOpenVehicles.isEmpty() && waitingVehicles.isEmpty());
     }
 
 
@@ -94,16 +122,20 @@ public enum ChargerMode{
     }
 
 
-    public TimeChargerPair calculateBestWaitTime(Id<Vehicle> vehicleId, double arrivalTime) {
-        ArrayList<Double> check = new ArrayList(endTime);
-        Collections.sort(check);
+    public TimeChargerPair calculateBestWaitTime( double arrivalTime) {
         TimeChargerPair best = new TimeChargerPair(Double.MAX_VALUE, this);
-        if (chargingVehicles.size() < capacity){
-            return new TimeChargerPair(0,this);
-        }else{
-            best.waitTime = Double.max(0, endTime.peek() - arrivalTime);
+        if (checkChargerAvailability()) {
+            if (chargerAvailableTime.size() < capacity) {
+                best.waitTime = Double.max(0, startTime - arrivalTime);
+            } else {
+                best.waitTime = Double.max(Double.max(0, startTime - arrivalTime), chargerAvailableTime.peek() - arrivalTime);
+            }
         }
         return best;
+    }
+
+    public boolean checkChargerAvailability(){
+        return chargerAvailableTime.peek() == null?true:chargerAvailableTime.peek() <= endTime;
     }
 
 
@@ -117,20 +149,48 @@ public enum ChargerMode{
         if (chargingVehicles.contains(vehicle)){
             return;
         }
+        if (now == startTime && waitingForOpenVehicles.contains(vehicle.getId())){
+            waitingForOpenVehicles.remove(vehicle.getId());
+            if (firstStart){
+                chargerAvailableTime.clear();
+                firstStart = false;
+            }
+        }
+        if (now < startTime ){
+            if (!waitingForOpenVehicles.contains(vehicle.getId())) {
+                if (chargerAvailableTime.size() == capacity) {
+                    double time = chargerAvailableTime.poll() + getChargingTime(vehicle);
+                    chargerAvailableTime.add(time);
+                } else {
+                    chargerAvailableTime.add(startTime + getChargingTime(vehicle));
+                }
+                waitingForOpenVehicles.add(vehicle.getId());
+            }
+            return;
+        }
         if (chargingVehicles.size() == capacity){
             if (!waitingVehicles.contains(vehicle)) {
                 waitingVehicles.add(vehicle);
-                endTime.add(endTime.poll() + getChargingTime(vehicle));
+                double time = chargerAvailableTime.poll() + getChargingTime(vehicle);
+                chargerAvailableTime.add(time);
             }
         }else{
             chargingVehicles.add(vehicle);
-            endTime.add(now + getChargingTime(vehicle));
+            chargerAvailableTime.add(now + getChargingTime(vehicle));
         }
     }
 
 
     public Id<Charger> getId() {
         return id;
+    }
+
+    public double getStartTime() {
+        return startTime;
+    }
+
+    public double getEndTime() {
+        return endTime;
     }
 }
 
@@ -143,6 +203,17 @@ class TimeChargerPair{
         this.waitTime = waitTime;
         this.charger = charger;
     }
+}
+
+class TimeVehiclePair{
+    double time;
+    VehicleImpl vehicle;
+
+    TimeVehiclePair(double time, VehicleImpl vehicle){
+        this.time = time;
+        this.vehicle = vehicle;
+    }
+
 }
 
 //class VehiclesByStation{

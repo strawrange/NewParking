@@ -58,7 +58,7 @@ public class VehicleImpl implements Vehicle {
 	private String mode;
 
 
-	private VehicleType vehicleType;
+	private DynVehicleType vehicleType;
 
 	private double battery;
 
@@ -67,7 +67,7 @@ public class VehicleImpl implements Vehicle {
 	boolean parking = false;
 
 	public VehicleImpl(Id<Vehicle> id, Link startLink, double capacity, double serviceBeginTime,
-					   double serviceEndTime, String mode, VehicleType vehicleType) {
+					   double serviceEndTime, String mode, DynVehicleType vehicleType) {
 
 		this.id = id;
 		this.startLink = startLink;
@@ -76,7 +76,7 @@ public class VehicleImpl implements Vehicle {
 		this.serviceEndTime = serviceEndTime;
 		this.mode = mode;
 		this.vehicleType = vehicleType;
-		this.battery = ((DynVehicleType)vehicleType).getBatteryCapacity();
+		this.battery = vehicleType.getBatteryCapacity();
 		schedule = new ScheduleImpl(this);
 	}
 
@@ -128,14 +128,14 @@ public class VehicleImpl implements Vehicle {
 	public void resetSchedule() {
 		schedule = new ScheduleImpl(this);
 		Random random = new Random();
-		double min =  DischargingRate.getMinBattery(capacity);
-		battery = (((DynVehicleType)vehicleType).getBatteryCapacity() - min) * Math.log10(random.nextInt(10) + 1) + min;
+		double minBattery = DischargingRate.getMinBattery(vehicleType.getId());
+		battery = (vehicleType.getBatteryCapacity() - minBattery) * Math.log10(random.nextInt(10) + 1) + minBattery;
 		charging = false;
 		parking = false;
 	}
 
 
-	public VehicleType getVehicleType() {
+	public DynVehicleType getVehicleType() {
 		return vehicleType;
 	}
 

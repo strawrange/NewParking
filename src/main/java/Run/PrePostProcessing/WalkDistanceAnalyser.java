@@ -26,11 +26,11 @@ public class WalkDistanceAnalyser {
     public static void main(String[] args) throws IOException {
         String[] parking = new String[]{"depot","roam","road"};
         String[] bay = new String[]{"bay","curb","infinity","single"};
-        for (String p:parking) {
-            for (String b: bay) {
-                //FOLDER = "/home/biyu/Dropbox (engaging_mobility)/TanjongPagar/out/output/HKSTS/Mix/tanjong_pagar_mix_max_v600_plans_" + i + "/ITERS/";
-                FOLDER = "/home/biyu/IdeaProjects/matsim-spatialDRT/output/trb/" + p + "/" + b + "/";
-                PLANFILE = FOLDER + "40.plans.xml.gz";
+//        for (String p:parking) {
+//            for (String b: bay) {
+                FOLDER = "/home/biyu/Dropbox (engaging_mobility)/Team-Ordner „engaging_mobility“/bulky/20181211_TANVI_result/tp-s1-3-MRT-AVBUS-AVTAXI_depot_V450/ITERS/it." + ITER + "/";
+                //FOLDER = "/home/biyu/IdeaProjects/matsim-spatialDRT/output/trb/" + p + "/" + b + "/";
+                PLANFILE = FOLDER + ITER + ".plans.xml.gz";
                 Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
                 new PopulationReader(scenario).readFile(PLANFILE);
                 BufferedWriter bw = org.matsim.core.utils.io.IOUtils.getBufferedWriter(FOLDER + ITER + "walk.csv");
@@ -78,5 +78,5 @@ public class WalkDistanceAnalyser {
             //bw.close();
         }
         //bw2.close();
-    }
-}
+//    }
+//}

@@ -47,6 +47,7 @@ import org.matsim.contrib.dvrp.tracker.OnlineDriveTaskTracker;
 import org.matsim.contrib.dvrp.tracker.TaskTrackers;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
 import org.matsim.contrib.dvrp.util.LinkTimePair;
+import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.core.mobsim.qsim.QSim;
 import org.matsim.core.network.NetworkChangeEvent;
@@ -169,9 +170,6 @@ public class DrtScheduler implements ScheduleInquiry {
                 }
 				if (Schedules.getLastTask(vehicle.getSchedule()).equals(task)) {// last task
 					// even if endTime=beginTime, do not remove this task!!! A DRT Schedule should end with WAIT
-                    if (!(task instanceof DrtStayTask)){
-                        System.out.println();
-                    }
 					return Math.max(newBeginTime, vehicle.getServiceEndTime());
 				} else {
 					// if this is not the last task then some other task (e.g. DRIVE or PICKUP)
@@ -451,57 +449,66 @@ public class DrtScheduler implements ScheduleInquiry {
 		// add end time to stay task
 	}
 
-	public void insertQuequingTask(Vehicle vehicle){
+	public void insertQuequingTask(Vehicle vehicle, double queueTime){
 		Schedule schedule = vehicle.getSchedule();
 		int currentTaskIdx = schedule.getCurrentTask().getTaskIdx();
 		StayTaskImpl nextTask = (StayTaskImpl) schedule.getTasks().get(currentTaskIdx + 1);
 		if (schedule.getCurrentTask() instanceof DrtQueueTask){
-			schedule.getCurrentTask().setEndTime(schedule.getCurrentTask().getEndTime() + 1);
+			schedule.getCurrentTask().setEndTime(schedule.getCurrentTask().getEndTime() + queueTime);
 		}else{
-			schedule.addTask(currentTaskIdx + 1, new DrtQueueTask(timer.getTimeOfDay(), timer.getTimeOfDay() + 1.0, nextTask.getLink()));
-			modifyLanes(nextTask.getLink().getId(), timer.getTimeOfDay(), -1.0);
+			schedule.addTask(currentTaskIdx + 1, new DrtQueueTask(timer.getTimeOfDay(), timer.getTimeOfDay() + queueTime, nextTask.getLink()));
 			schedule.nextTask();
 		}
-
+        //modifyLanes(nextTask.getLink().getId(), timer.getTimeOfDay(), -1.0);
 	}
+
+	public void changeCharger(Vehicle vehicle, double now){
+        Schedule schedule = vehicle.getSchedule();
+        int currentTaskIdx = schedule.getCurrentTask().getTaskIdx();
+        schedule.getTasks().get(currentTaskIdx + 1).setBeginTime(now);
+        schedule.getTasks().get(currentTaskIdx + 1).setEndTime(now);
+        updateTimingsStartingFromTaskIdx(vehicle, currentTaskIdx + 2,now);
+    }
 
     public void modifyLanes(Id<Link> linkId, double time, double change){
 	    Link currentLink = network.getLinks().get(linkId);
         double numOfLanes = currentLink.getNumberOfLanes();
-        if (numOfLanes == 1){
-            change = 0.5 * change;
+        if ((change == 0 && currentLink.getCapacity() != currentLink.getCapacity(time)) || (change != 0 && currentLink.getCapacity() == currentLink.getCapacity(time)) ) {
+            if (numOfLanes == 1) {
+                change = 0.5 * change;
+            }
+            NetworkChangeEvent event = new NetworkChangeEvent(time + MatsimRandom.getRandom().nextDouble());
+            event.addLink(currentLink);
+            NetworkChangeEvent.ChangeValue capacityChange = new NetworkChangeEvent.ChangeValue(NetworkChangeEvent.ChangeType.ABSOLUTE_IN_SI_UNITS, (numOfLanes + change) / numOfLanes * currentLink.getCapacity() / 3600.0);
+            NetworkChangeEvent.ChangeValue lanesChange = new NetworkChangeEvent.ChangeValue(NetworkChangeEvent.ChangeType.ABSOLUTE_IN_SI_UNITS, numOfLanes + change);
+            event.setLanesChange(lanesChange);
+            event.setFlowCapacityChange(capacityChange);
+            qSim.addNetworkChangeEvent(event);
         }
-        NetworkChangeEvent event = new NetworkChangeEvent(time + Math.random());
-        event.addLink(currentLink);
-        NetworkChangeEvent.ChangeValue capacityChange = new NetworkChangeEvent.ChangeValue(NetworkChangeEvent.ChangeType.ABSOLUTE_IN_SI_UNITS, (numOfLanes + change)/numOfLanes * currentLink.getCapacity() / 3600.0);
-        NetworkChangeEvent.ChangeValue lanesChange = new NetworkChangeEvent.ChangeValue(NetworkChangeEvent.ChangeType.ABSOLUTE_IN_SI_UNITS, numOfLanes + change);
-        event.setLanesChange(lanesChange);
-        event.setFlowCapacityChange(capacityChange);
-        qSim.addNetworkChangeEvent(event);
     }
 
     public void chargingVehicle(Vehicle vehicle, ChargerPathPair lp) {
-        Schedule schedule = vehicle.getSchedule();
-        int idx = schedule.getCurrentTask().getTaskIdx();
-        Link currentLink = ((DrtStayTask)schedule.getCurrentTask()).getLink();
-        schedule.getCurrentTask().setEndTime(this.timer.getTimeOfDay());
-        if (currentLink != lp.charger.getLink()) {
-            if (lp.path.getArrivalTime() < vehicle.getServiceEndTime()) {
-                idx++;
-                schedule.addTask(idx,new DrtDriveTask(lp.path)); // add DRIVE
+            Schedule schedule = vehicle.getSchedule();
+            int idx = schedule.getCurrentTask().getTaskIdx();
+            Link currentLink = ((DrtStayTask) schedule.getCurrentTask()).getLink();
+            schedule.getCurrentTask().setEndTime(this.timer.getTimeOfDay());
+            if (currentLink != lp.charger.getLink()) {
+                if (lp.path.getArrivalTime() < vehicle.getServiceEndTime()) {
+                    idx++;
+                    schedule.addTask(idx, new DrtDriveTask(lp.path)); // add DRIVE
+                }
             }
-        }
-        if (lp.path.getArrivalTime() >= vehicle.getServiceEndTime()){
-            return;
-        }
-        double chargingTime = lp.charger.getEstimatedChargeTime((VehicleImpl) vehicle, ((VehicleImpl) vehicle).getBattery() - DischargingRate.calculateDischargeByDistance(VrpPaths.calcDistance(lp.path), (VehicleImpl) vehicle));
-        DrtChargeTask drtChargeTask = new DrtChargeTask(lp.path.getArrivalTime(), Double.min(lp.path.getArrivalTime() + chargingTime, vehicle.getServiceEndTime()) , lp.charger );
-        idx++;
-        schedule.addTask(idx, drtChargeTask);
-        idx++;
-        if (drtChargeTask.getEndTime() <= vehicle.getServiceEndTime()) {
-            schedule.addTask(idx, new DrtStayTask(drtChargeTask.getEndTime(), vehicle.getServiceEndTime(), lp.charger.getLink()));
-        }
-        ((VehicleImpl) vehicle).changeStatus(true);
+            if (lp.path.getArrivalTime() >= vehicle.getServiceEndTime()) {
+                return;
+            }
+            double chargingTime = lp.charger.getEstimatedChargeTime((VehicleImpl) vehicle, ((VehicleImpl) vehicle).getBattery() - DischargingRate.calculateDischargeByDistance(VrpPaths.calcDistance(lp.path), ((VehicleImpl) vehicle).getVehicleType().getId()));
+            DrtChargeTask drtChargeTask = new DrtChargeTask(lp.path.getArrivalTime(), Double.min(lp.path.getArrivalTime() + chargingTime, vehicle.getServiceEndTime()), lp.charger);
+            idx++;
+            schedule.addTask(idx, drtChargeTask);
+            idx++;
+            if (drtChargeTask.getEndTime() <= vehicle.getServiceEndTime()) {
+                schedule.addTask(idx, new DrtStayTask(drtChargeTask.getEndTime(), vehicle.getServiceEndTime(), lp.charger.getLink()));
+            }
+            ((VehicleImpl) vehicle).changeStatus(true);
     }
 }

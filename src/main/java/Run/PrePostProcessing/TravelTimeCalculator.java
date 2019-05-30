@@ -36,24 +36,24 @@ public class TravelTimeCalculator {
     private static String EVENTSFILE;
     protected static final double END_TIME = 30 * 3600;
     public static void main(String[] args) throws IOException {
-        String[] parking = new String[]{"depot","roam","road"};
+        String[] parking = new String[]{"tp_base","tp_cheap_drtaxi","tp_expensive_drt"};
         String[] bay = new String[]{"bay","curb","infinity","single"};
 //        for (String p:parking) {
 //            for (String b: bay) {
-                FOLDER = "/home/biyu/IdeaProjects/NewParking/output/charging/drt_mix_V450_T250_bay_charger_lograndom/";
-                //FOLDER = "/home/biyu/IdeaProjects/matsim-spatialDRT/output/trb/" + p + "/" + b + "/";
-                EVENTSFILE = FOLDER + "it.40/40.events.xml.gz";
+                //FOLDER = "/home/biyu/IdeaProjects/NewParking/output/charging/drt_mix_V450_T250_bay_nocharger_debug/";
+                FOLDER = "/home/biyu/IdeaProjects/matsim-spatialDRT/output/depot/demand_bay_mix/ITERS/";
+                EVENTSFILE = FOLDER + "it." + ITER + "/" + ITER + ".events.xml.gz";
                 EventsManager manager = EventsUtils.createEventsManager();
                 Network network = NetworkUtils.createNetwork();
-                new NetworkReaderMatsimV2(network).readFile("/home/biyu/IdeaProjects/NewParking/scenarios/mp_c_tp/mp_c_tp_2018.xml");
+            new NetworkReaderMatsimV2(network).readFile("/home/biyu/IdeaProjects/NewParking/scenarios/tanjong_pagar/network/tp_phase4.xml");
                 TravelTimeHandler handler = new TravelTimeHandler();
                 manager.addHandler(handler);
                 new MatsimEventsReader(manager).readFile(EVENTSFILE);
                 handler.output(FOLDER + ITER + "travel_time.csv");
 //            }
-//        }
+        }
     }
-}
+//}
 
 class TravelTimeHandler implements BasicEventHandler,PersonEntersVehicleEventHandler, PersonLeavesVehicleEventHandler, PersonDepartureEventHandler, PersonArrivalEventHandler, ActivityStartEventHandler, ActivityEndEventHandler{
     HashMap<Id<Person>, TravelTime> tt = new HashMap<>();

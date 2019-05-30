@@ -7,6 +7,8 @@ package Run;
 
 import BayInfrastructure.VehicleLength;
 import DynAgent.VrpAgentLogic.DynActionCreator;
+import EAV.ChargingStrategy;
+import EAV.EarlyReservedChargingStrategy;
 import ParkingAnalysis.DrtAnalysisModule;
 import ParkingStrategy.DefaultDrtOptimizer;
 import ParkingStrategy.MixedParkingStrategy;
@@ -151,6 +153,9 @@ public final class DrtControlerCreator {
 		return new com.google.inject.AbstractModule() {
 			protected void configure() {
 				AtodConfigGroup drtCfg = AtodConfigGroup.get(config);
+				if (drtCfg.isEAV()) {
+					this.bind(ChargingStrategy.class).to(EarlyReservedChargingStrategy.class).asEagerSingleton();
+				}
 				this.bind(DrtOptimizer.class).to(DefaultDrtOptimizer.class).asEagerSingleton();
 				this.bind(VrpOptimizer.class).to(DrtOptimizer.class);
 				this.bind(DefaultUnplannedRequestInserter.class).asEagerSingleton();
@@ -181,6 +186,7 @@ public final class DrtControlerCreator {
 
 					this.bind(ParkingStrategy.class).to(NoParkingStrategy.class).asEagerSingleton();
 				}
+
 
 			}
 

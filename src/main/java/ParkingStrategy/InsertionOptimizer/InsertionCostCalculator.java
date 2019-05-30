@@ -144,24 +144,24 @@ public class InsertionCostCalculator {
 		Double drive = 0.0;
 		Task currentTask = vEntry.vehicle.getSchedule().getCurrentTask();
 		//synchronized (drive) {
-//		if (currentTask instanceof StayTaskImpl) {
-//			drive = drive + ((StayTaskImpl) currentTask).getLink().getLength();
-//		}
-//		for (int i = vEntry.vehicle.getSchedule().getCurrentTask().getTaskIdx(); i < vEntry.vehicle.getSchedule().getTasks().size(); i++) {
-//			Task drtTask = vEntry.vehicle.getSchedule().getTasks().get(i);
-//			if (drtTask instanceof DrtDriveTask) {
-//				drive = drive + VrpPaths.calcDistance(((DrtDriveTask) drtTask).getPath());
-//			}
-//		}
-//		drive = drive + insertion.pathToPickup.getPathDistance() + insertion.pathFromPickup.getPathDistance() + (insertion.dropoffIdx == insertion.pickupIdx ? 0 : insertion.pathToDropoff.getPathDistance()) +
-//				(insertion.dropoffIdx == vEntry.stops.size() ? 0 : insertion.pathFromDropoff.getPathDistance());
-//		//}
-//		double estimatedBatteryAfterAccept = (((VehicleImpl) vEntry.vehicle).getBattery() - DischargingRate.calculateDischargeByDistance( drive, (VehicleImpl) vEntry.vehicle));
-//		insertion.estimatedBattery = estimatedBatteryAfterAccept;
-//
-//		if (estimatedBatteryAfterAccept <= DischargingRate.getMinAccepted(vEntry.vehicle.getCapacity())){
-//			return false;
-//		}
+		if (currentTask instanceof StayTaskImpl) {
+			drive = drive + ((StayTaskImpl) currentTask).getLink().getLength();
+		}
+		for (int i = vEntry.vehicle.getSchedule().getCurrentTask().getTaskIdx(); i < vEntry.vehicle.getSchedule().getTasks().size(); i++) {
+			Task drtTask = vEntry.vehicle.getSchedule().getTasks().get(i);
+			if (drtTask instanceof DrtDriveTask) {
+				drive = drive + VrpPaths.calcDistance(((DrtDriveTask) drtTask).getPath());
+			}
+		}
+		drive = drive + insertion.pathToPickup.getPathDistance() + insertion.pathFromPickup.getPathDistance() + (insertion.dropoffIdx == insertion.pickupIdx ? 0 : insertion.pathToDropoff.getPathDistance()) +
+				(insertion.dropoffIdx == vEntry.stops.size() ? 0 : insertion.pathFromDropoff.getPathDistance());
+		//}
+		double estimatedBatteryAfterAccept = (((VehicleImpl) vEntry.vehicle).getBattery() - DischargingRate.calculateDischargeByDistance( drive,  ((VehicleImpl) vEntry.vehicle).getVehicleType().getId()));
+		insertion.estimatedBattery = estimatedBatteryAfterAccept;
+
+		if (estimatedBatteryAfterAccept <= DischargingRate.getMinAccepted(((VehicleImpl) vEntry.vehicle).getVehicleType().getId())){
+			return false;
+		}
 
 
 		if (currentTask instanceof DrtStayTask){

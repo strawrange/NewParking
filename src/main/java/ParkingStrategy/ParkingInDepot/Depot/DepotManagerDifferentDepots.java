@@ -24,6 +24,10 @@ public class DepotManagerDifferentDepots implements DepotManager{
         new DepotReader(this,network).parse(drtConfig.getDepotFileUrl(config.getContext()));
     }
 
+    public DepotManagerDifferentDepots(){
+
+    }
+
     public void addDepot(Depot depot) {
         depots.put(depot.getId(), depot);
     }

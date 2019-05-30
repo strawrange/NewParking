@@ -11,9 +11,7 @@ import java.util.Map;
 public interface ChargerManager extends IterationStartsListener {
     void addCharger(Charger charger);
 
-    Map<Id<Link>, Charger> getChargers();
-    Map<Id<Link>, Charger> getChargers(Charger.ChargerMode chargerMode);
+    Map<Id<Charger>, Charger> getChargers();
+    Map<Id<Charger>, Charger> getChargers(Charger.ChargerMode chargerMode);
 
-
-    Charger getChargersByLinkId(Id<Link> linkId);
 }

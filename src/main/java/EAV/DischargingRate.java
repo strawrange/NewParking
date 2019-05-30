@@ -20,37 +20,33 @@ import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.controler.events.IterationEndsEvent;
 import org.matsim.core.controler.listener.IterationEndsListener;
 import org.matsim.vehicles.Vehicle;
-import sun.plugin2.message.EventMessage;
+import Vehicle.*;
+import org.matsim.vehicles.VehicleType;
 
 public class DischargingRate implements LinkEnterEventHandler, LinkLeaveEventHandler, IterationEndsListener{
     Map<Id<Vehicle>, Event> events = new HashMap<>();
     ArrayList<Id<Vehicle>> departure = new ArrayList<>();
     @Inject
     Network network;
-    @Inject
     Fleet fleet;
-    private static final double DISCHARGE_RATE_DRT_4_PER_M = 32.0 / 180000.0;
-    private static final double DISCHARGE_RATE_DRT_10_PER_M = 60.0 / 150000.0;
-    private static final double DISCHARGE_RATE_DRT_20_PER_M = 90.0 / 130000.0;
-    private static double MIN_BATTERY_DRT_4;
-    private static double MIN_BATTERY_DRT_10;
-    private static double MIN_BATTERY_DRT_20;
-    private static double MIN_ACCEPTED_DRT_4;
-    private static double MIN_ACCEPTED_DRT_10;
-    private static double MIN_ACCEPTED_DRT_20;
+    private static double MIN_METER;
+    private static double MIN_ACCEPTED_METER;
+    private static Map<Id<VehicleType>,DynVehicleType> vehicleTypes = new HashMap<>();
+
+
 
     @Inject
-    public DischargingRate(EventsManager eventsManager, AtodConfigGroup atodConfigGroup){
+    public DischargingRate(EventsManager eventsManager, AtodConfigGroup atodConfigGroup, Fleet fleet){
         eventsManager.addHandler(this);
-        double minKm = atodConfigGroup.getMinBattery();
-        double minAccept = atodConfigGroup.getMinRequestAccept();
-        MIN_BATTERY_DRT_4 = minKm * DISCHARGE_RATE_DRT_4_PER_M;
-        MIN_BATTERY_DRT_10 = minKm * DISCHARGE_RATE_DRT_10_PER_M;
-        MIN_BATTERY_DRT_20 = minKm * DISCHARGE_RATE_DRT_20_PER_M;
-        MIN_ACCEPTED_DRT_4 = minAccept * DISCHARGE_RATE_DRT_4_PER_M;
-        MIN_ACCEPTED_DRT_10 = minAccept * DISCHARGE_RATE_DRT_10_PER_M;
-        MIN_ACCEPTED_DRT_20 = minAccept * DISCHARGE_RATE_DRT_20_PER_M;
+        MIN_METER = atodConfigGroup.getMinBattery() ;
+        MIN_ACCEPTED_METER = atodConfigGroup.getMinRequestAccept() ;
+        this.fleet = fleet;
+        for (DynVehicleType vehicleType: ((FleetImpl)fleet).getVehicleTypes()){
+            vehicleTypes.put(vehicleType.getId(),vehicleType);
+        }
     }
+
+
 
     @Override
     public void handleEvent(LinkEnterEvent event) {
@@ -79,28 +75,13 @@ public class DischargingRate implements LinkEnterEventHandler, LinkLeaveEventHan
     private void discharge(Id<Vehicle> vehicleId, Id<Link> linkId) {
        VehicleImpl veh = (VehicleImpl) fleet.getVehicles().get(vehicleId);
        Link link = network.getLinks().get(linkId);
-       veh.discharge(link.getLength() * calculateDischarge(veh));
+       veh.discharge(link.getLength() * vehicleTypes.get(veh.getVehicleType().getId()).getDischargingRate());
     }
 
-    public static double calculateDischargeByDistance(double distance, VehicleImpl vehicle){
-        return distance * calculateDischarge(vehicle);
+    public static double calculateDischargeByDistance(double distance, Id<VehicleType> vehicle){
+        return distance * vehicleTypes.get(vehicle).getDischargingRate();
     }
 
-    private static double calculateDischarge(VehicleImpl veh){
-        switch ((int)veh.getCapacity()){
-            case 1:
-                return DISCHARGE_RATE_DRT_4_PER_M;
-            case 4:
-                return DISCHARGE_RATE_DRT_4_PER_M;
-            case 10:
-                return DISCHARGE_RATE_DRT_10_PER_M;
-            case 20:
-                return DISCHARGE_RATE_DRT_20_PER_M;
-            default:
-                throw  new RuntimeException("Wrong capacity!");
-        }
-
-    }
 
     public void clear(){
         events.clear();
@@ -112,33 +93,11 @@ public class DischargingRate implements LinkEnterEventHandler, LinkLeaveEventHan
         clear();
     }
 
-    public static double getMinBattery(double capacity) {
-        switch ((int)capacity){
-            case 1:
-                return MIN_BATTERY_DRT_4;
-            case 4:
-                return MIN_BATTERY_DRT_4;
-            case 10:
-                return MIN_BATTERY_DRT_10;
-            case 20:
-                return MIN_BATTERY_DRT_20;
-            default:
-                throw  new RuntimeException("Wrong capacity!");
-        }
+    public static double getMinBattery(Id<VehicleType> vehicleTypeId) {
+        return vehicleTypes.get(vehicleTypeId).getDischargingRate() * MIN_METER;
     }
 
-    public static double getMinAccepted(double capacity) {
-        switch ((int)capacity){
-            case 1:
-                return MIN_ACCEPTED_DRT_4;
-            case 4:
-                return MIN_ACCEPTED_DRT_4;
-            case 10:
-                return MIN_ACCEPTED_DRT_10;
-            case 20:
-                return MIN_ACCEPTED_DRT_20;
-            default:
-                throw  new RuntimeException("Wrong capacity!");
-        }
+    public static double getMinAccepted(Id<VehicleType> vehicleTypeId) {
+        return vehicleTypes.get(vehicleTypeId).getDischargingRate() * MIN_ACCEPTED_METER;
     }
 }

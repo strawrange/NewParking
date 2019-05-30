@@ -18,7 +18,7 @@ public class MixedParkingStrategy implements ParkingStrategy {
     ParkingInDepot parkingInDepot;
     @Inject
     ParkingOntheRoad parkingOntheRoad;
-    public static final double dayT0 = 7 * 3600;
+    public static final double dayT0 = 6 * 3600;
     public static final double dayT1 = 20 * 3600;
     Map<Id<Vehicle>, ParkingStrategy.Strategies> parkingStrategiesPerVehicle = new HashMap<Id<Vehicle>, ParkingStrategy.Strategies>();
 

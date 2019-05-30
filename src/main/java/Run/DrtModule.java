@@ -8,9 +8,13 @@ package Run;
 import BayInfrastructure.BayManager;
 import Dwelling.ClearNetworkChangeEvents;
 import Dwelling.DrtAndTransitStopHandlerFactory;
+import EAV.*;
+import ParkingStrategy.DefaultDrtOptimizer;
 import RoutingModule.DrtRoutingModule;
+import Vehicle.DynVehicleType;
 import Vehicle.FleetProvider;
 import com.google.inject.name.Names;
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.drt.data.validator.DefaultDrtRequestValidator;
 import org.matsim.contrib.drt.data.validator.DrtRequestValidator;
@@ -29,6 +33,10 @@ import org.matsim.core.router.costcalculators.TravelDisutilityFactory;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt.transitSchedule.api.TransitScheduleReader;
+import org.matsim.vehicles.VehicleType;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public final class DrtModule extends AbstractModule {
 	public DrtModule() {
@@ -36,16 +44,21 @@ public final class DrtModule extends AbstractModule {
 
 	public void install() {
 		DrtConfigGroup drtCfg = DrtConfigGroup.get(this.getConfig());
+		AtodConfigGroup atodCfg = AtodConfigGroup.get(this.getConfig());
+
 		this.bind(Fleet.class).toProvider(new FleetProvider(drtCfg.getVehiclesFileUrl(this.getConfig().getContext()))).asEagerSingleton();
 		this.bind(DrtRequestValidator.class).to(DefaultDrtRequestValidator.class);
 		this.bind(BayManager.class).asEagerSingleton();
 		this.bind(RebalancingStrategy.class).to(NoRebalancingStrategy.class);
-		this.bind(TravelDisutilityFactory.class).annotatedWith(Names.named("drt_optimizer")).toInstance((timeCalculator) -> {
-			return new TimeAsTravelDisutility(timeCalculator);
-		});
+		this.bind(TravelDisutilityFactory.class).annotatedWith(Names.named("drt_optimizer")).toInstance((timeCalculator) -> new TimeAsTravelDisutility(timeCalculator));
 		this.bind(TransitStopHandlerFactory.class).to(DrtAndTransitStopHandlerFactory.class);
 		this.addControlerListenerBinding().to(ClearNetworkChangeEvents.class).asEagerSingleton();
 		this.addControlerListenerBinding().to(BayManager.class).asEagerSingleton();
+
+		if (atodCfg.isEAV()) {
+			this.bind(DischargingRate.class).asEagerSingleton();
+			this.bind(ChargerManager.class).to(SimpleChargerManager.class).asEagerSingleton();
+		}
 		switch(drtCfg.getOperationalScheme()) {
 			case door2door:
 				this.addRoutingModuleBinding("drt").to(DrtRoutingModule.class).asEagerSingleton();

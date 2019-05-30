@@ -44,7 +44,7 @@ public class AtodConfigGroup extends ReflectiveConfigGroup {
 
 	@SuppressWarnings("deprecation")
 	public static AtodConfigGroup get(Config config) {
-		return (AtodConfigGroup)config.getModule(GROUP_NAME);
+		return (AtodConfigGroup)(config.getModule(GROUP_NAME));
 	}
 
 	public static final String PARKING_STRATEGY = "parkingStrategy";
@@ -63,11 +63,17 @@ public class AtodConfigGroup extends ReflectiveConfigGroup {
 	public static final String CHARGE_FILE ="chargingFile";
 	static final String CHARGE_FILE_EXP = "The location of the charging points. The file format according to charger.dtd";
 
+	public static final String DRT_VEHICLE_TYPE_FILE ="drtVehicleTypeFile";
+	static final String DRT_VEHICLE_TYPE_FILE_EXP = "The type of drt vehicles. The file format according to drt_vehicle_type.dtd";
+
 	public static final String MIN_BATTERY = "minBattery";
 	static final String MIN_BATTERY_EXP = "When reaches the min battery value, the vehicle will go to charge";
 
 	public static final String MIN_REQUEST_ACCEPT = "minRequestAccept";
 	static final String MIN_REQUEST_ACCEPT_EXP ="If the request is too far, reject it";
+
+	public static final String EAV = "eav";
+	static final String EAV_EXP = "If true, enable the charging behavior; If false, don't consider charging";
 
 	@NotNull
 	private ParkingStrategy.Strategies parkingStrategy = ParkingStrategy.Strategies.NoParkingStrategy;
@@ -87,8 +93,10 @@ public class AtodConfigGroup extends ReflectiveConfigGroup {
 	}
 
 	private String chargeFile = null;
+	private String drtVehicleTypeFile = null;
 	private double minBattery = 0.0;
 	private double minRequestAccept = 0.0;
+	private boolean eav = false;
 
 
 	@Override
@@ -99,8 +107,10 @@ public class AtodConfigGroup extends ReflectiveConfigGroup {
 		map.put(DOOR_2_DOOR_STOP, DOOR_2_DOOR_STOP_EXP);
 		map.put(MIN_BAY_SIZE, MIN_BAY_SIZE_EXP);
 		map.put(CHARGE_FILE, CHARGE_FILE_EXP);
+		map.put(DRT_VEHICLE_TYPE_FILE, DRT_VEHICLE_TYPE_FILE_EXP);
 		map.put(MIN_BATTERY, MIN_BATTERY_EXP);
 		map.put(MIN_REQUEST_ACCEPT, MIN_REQUEST_ACCEPT_EXP);
+		map.put(EAV, EAV_EXP);
 		return map;
 	}
 
@@ -169,6 +179,18 @@ public class AtodConfigGroup extends ReflectiveConfigGroup {
 	}
 
 
+	public URL getDrtVehicleTypeFileURL(URL context){
+		return ConfigGroup.getInputFileURL(context, drtVehicleTypeFile);
+	}
+	@StringGetter(DRT_VEHICLE_TYPE_FILE)
+	public String getDrtVehicleTypeFile(){
+		return this.drtVehicleTypeFile;
+	}
+	@StringSetter(DRT_VEHICLE_TYPE_FILE)
+	public void setDrtVehicleTypeFile(String drtVehicleTypeFile){
+		this.drtVehicleTypeFile = drtVehicleTypeFile;
+	}
+
 	public URL getChargeFileURL(URL context){
 		return ConfigGroup.getInputFileURL(context, chargeFile);
 	}
@@ -197,6 +219,15 @@ public class AtodConfigGroup extends ReflectiveConfigGroup {
 	@StringSetter(MIN_REQUEST_ACCEPT)
 	public void setMinRequestAccept(double minRequestAccept) {
 		this.minRequestAccept = minRequestAccept;
+	}
+
+	@StringGetter(EAV)
+	public boolean isEAV() {
+		return eav;
+	}
+	@StringSetter(EAV)
+	public void setEAV(boolean eav) {
+		this.eav = eav;
 	}
 
 }

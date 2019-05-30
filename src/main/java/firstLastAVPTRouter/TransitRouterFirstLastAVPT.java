@@ -383,4 +383,7 @@ public class TransitRouterFirstLastAVPT implements RoutingModule {
 		return config;
 	}
 
+	public TransitRouterTravelTimeAndDisutilityFirstLastAVPT getTtCalculator() {
+		return ttCalculator;
+	}
 }

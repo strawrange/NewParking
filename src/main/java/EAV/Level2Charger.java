@@ -9,18 +9,23 @@ import org.matsim.api.core.v01.network.Link;
 public class Level2Charger extends Charger {
     public static final double CHARGING_RATE_PER_SECOND =  8.0/75.0/60.0;
 
-    public Level2Charger(Id<Charger> id, Link link, int capacity) {
-        super(id, link, capacity);
+    public Level2Charger(Id<Charger> id, Link link, int capacity, double startTime, double endTime, boolean isBlocking) {
+        super(id, link, capacity, startTime, endTime, isBlocking);
+    }
+
+    @Override
+    public double getChargingRate() {
+        return CHARGING_RATE_PER_SECOND;
     }
 
     @Override
     public double getChargingTime(VehicleImpl vehicle) {
-        return (((Vehicle.DynVehicleType)vehicle.getVehicleType()).getBatteryCapacity() - vehicle.getBattery()) / CHARGING_RATE_PER_SECOND;
+        return ((vehicle.getVehicleType()).getBatteryCapacity() - vehicle.getBattery()) / CHARGING_RATE_PER_SECOND;
     }
 
     @Override
     public double getEstimatedChargeTime(VehicleImpl vehicle, double estimatedBattery) {
-        return ((((Vehicle.DynVehicleType)vehicle.getVehicleType()).getBatteryCapacity()) - estimatedBattery) / CHARGING_RATE_PER_SECOND;
+        return (((vehicle.getVehicleType()).getBatteryCapacity()) - estimatedBattery) / CHARGING_RATE_PER_SECOND;
     }
 
 
